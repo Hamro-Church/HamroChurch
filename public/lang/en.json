@@ -378,6 +378,7 @@
     },
     "tabs": {
         "shows": "Shows",
+        "shows_info": "A show is made up of slides; it can be a song, presentation, media, scripture, and more.",
         "media": "Media",
         "overlays": "Overlays",
         "audio": "Audio",
@@ -1073,7 +1074,8 @@
         "fahrenheit": "Fahrenheit",
         "longRange": "Long range",
         "media_item_tip": "Are you trying to use the media as a background?",
-        "convert_to_background": "Convert to background"
+        "convert_to_background": "Convert to background",
+        "convert_to_media_item": "Convert background to media item"
     },
     "items": {
         "text": "Textbox",
@@ -1439,6 +1441,7 @@
         "verses_on_individual_lines": "Verses on individual lines",
         "divide_long_verses": "Split long verses",
         "split_long_verses_suffix": "Show letter suffix",
+        "tolerance": "Tolerance",
         "version": "Show version",
         "reference": "Show reference",
         "split_reference": "Split reference",

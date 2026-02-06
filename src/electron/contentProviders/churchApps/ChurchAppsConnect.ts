@@ -86,7 +86,7 @@ export class ChurchAppsConnect {
                 apiUrl = LESSONS_API_URL
                 fullEndpoint = data.endpoint
             } else {
-                const pathPrefix = data.api === "doing" ? "/doing" : data.api === "membership" ? "/membership" : "/content"
+                const pathPrefix = data.api === "doing" ? "/doing" : data.api === "membership" ? "/membership" : data.api === "messaging" ? "/messaging" : "/content"
                 fullEndpoint = `${pathPrefix}${data.endpoint}`
             }
 
@@ -97,7 +97,7 @@ export class ChurchAppsConnect {
                     // ignore if checking for missing songs
                     if (fullEndpoint.includes("/missing")) return resolve(null)
 
-                    sendToMain(ToMain.ALERT, "Could not get data! " + err.message + "\n" + apiUrl + fullEndpoint)
+                    // sendToMain(ToMain.ALERT, "Could not get data! " + err.message + "\n" + apiUrl + fullEndpoint)
                     return resolve(null)
                 } else resolve(result)
             })

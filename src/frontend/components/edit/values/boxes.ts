@@ -320,6 +320,12 @@ export const textSections: { [key: string]: EditBoxSection } = {
     }
 }
 
+const croppingRowsPercentage = splitIntoRows([
+    { id: "cropping.top", type: "number", value: 0, values: { label: "screen.top (%)", max: 100, showSlider: true } },
+    { id: "cropping.right", type: "number", value: 0, values: { label: "screen.right (%)", max: 100, showSlider: true } },
+    { id: "cropping.bottom", type: "number", value: 0, values: { label: "screen.bottom (%)", max: 100, showSlider: true } },
+    { id: "cropping.left", type: "number", value: 0, values: { label: "screen.left (%)", max: 100, showSlider: true } }
+])
 const mediaSections: { [key: string]: EditBoxSection } = {
     default: {
         inputs: splitIntoRows([
@@ -331,10 +337,10 @@ const mediaSections: { [key: string]: EditBoxSection } = {
             { id: "speed", type: "number", value: 1, values: { label: "media.speed", defaultValue: 1, step: 0.1, min: 0.1, max: 15, showSlider: true } },
             { id: "flipped", type: "checkbox", value: false, values: { label: "media.flip_horizontally" } },
             { id: "flippedY", type: "checkbox", value: false, values: { label: "media.flip_vertically" } }
-            // WIP crop image
-            // object-position: 20px 20px;
-            // transform: scale(1.2) translate(0, 5%);
         ])
+    },
+    cropping: {
+        inputs: croppingRowsPercentage
     },
     filters: {
         inputs: filterSection
@@ -641,7 +647,10 @@ export const itemBoxes: Box2 = {
     icon: {
         icon: "star",
         sections: {
-            default: { inputs: [[{ id: "style", key: "color", type: "color", value: "", values: { label: "edit.color", allowOpacity: true, allowEmpty: true } }]] }
+            default: { inputs: [[{ id: "style", key: "color", type: "color", value: "", values: { label: "edit.color", allowOpacity: true, allowEmpty: true } }]] },
+            special: {
+                inputs: [[{ id: "button.press", type: "dropdown", value: "", values: { label: "edit.press_action", options: "actions", allowEmpty: true } }], [{ id: "button.release", type: "dropdown", value: "", values: { label: "edit.release_action", options: "actions", allowEmpty: true } }]]
+            }
         }
     }
 }
