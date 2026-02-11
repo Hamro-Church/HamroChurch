@@ -587,7 +587,7 @@ export const historyActions = ({ obj, undo = null }: any) => {
                         if (layoutValue.background && cloudId && cloudId !== "default") id = layoutValue.background
 
                         // find existing
-                        const existingBackgrounds = _show(showId).get("media")
+                        const existingBackgrounds = _show(showId).get("media") || {}
                         const existingId = Object.keys(existingBackgrounds).find((mediaId) => existingBackgrounds[mediaId].path === background.path)
                         if (existingId) id = existingId
 
@@ -843,7 +843,8 @@ export const historyActions = ({ obj, undo = null }: any) => {
                 const previousFirstSlideTemplateId = get(templates)[data.previousData?.template || ""]?.settings?.firstSlideTemplate || ""
 
                 Object.entries(slides).forEach(([id, slide]) => {
-                    if ((slideId && slideId !== id) || !slide) return
+                    const isGroupLocked = !!slide.locked // WIP get group slide
+                    if ((slideId && slideId !== id) || !slide || isGroupLocked) return
 
                     // show template
                     let slideTemplate = template

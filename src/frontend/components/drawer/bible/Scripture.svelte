@@ -127,7 +127,6 @@
 
         const { id, subverse } = getVerseIdParts(verseId)
         const isSplit = subverse > 0
-        const chars = Number($scriptureSettings.longVersesChars || 100)
 
         return activeScriptures
             .map((scriptureId) => {
@@ -144,8 +143,7 @@
                     const fullText = verse.getHTML() || verse?.data?.text || ""
 
                     if (isSplit && fullText) {
-                        const tolerance = Number($scriptureSettings.longVersesTolerance || 0)
-                        const splitParts = splitText(fullText, chars, tolerance)
+                        const splitParts = splitText(fullText, splitChars, splitTolerance)
                         if (splitParts.length > 1) {
                             return { id: scriptureId, name, text: splitParts[subverse - 1] || "", isSplit: true }
                         }
@@ -198,12 +196,8 @@
 
     // Check if any translation in collection supports splitting for verses
     function checkCollectionSplitSupport(): { [verseNumber: number]: number } {
-        console.log('DEBUG: checkCollectionSplitSupport called')
         if (!isCollection || !$scriptureSettings.splitLongVerses || !verses) return {}
 
-        const chars = Number($scriptureSettings.longVersesChars || 100)
-        const tolerance = Number($scriptureSettings.longVersesTolerance || 0)
-        console.log('DEBUG: Split settings in checkCollectionSplitSupport', { chars, tolerance })
         const splitCounts: { [verseNumber: number]: number } = {}
 
         activeScriptures.forEach((scriptureId) => {
@@ -216,8 +210,7 @@
                     const fullText = verseObj.getHTML() || verseObj?.data?.text || ""
                     if (!fullText) return
 
-                    const tolerance = Number($scriptureSettings.longVersesTolerance || 0)
-                    const splitParts = splitText(fullText, chars, tolerance)
+                    const splitParts = splitText(fullText, splitChars, splitTolerance)
                     if (splitParts.length > 1) {
                         splitCounts[verse.number] = Math.max(splitCounts[verse.number] || 0, splitParts.length)
                     }
@@ -229,19 +222,15 @@
     }
 
     // Extract values to ensure proper reactivity
-    $: splitChars = $scriptureSettings.longVersesChars || 100
-    $: splitTolerance = $scriptureSettings.longVersesTolerance ?? 0
+    $: splitChars = Number($scriptureSettings.longVersesChars || 100)
+    $: splitTolerance = Number($scriptureSettings.longVersesTolerance || 0)
     $: splitEnabled = $scriptureSettings.splitLongVerses
-    
+
     let collectionSplitCounts: { [verseNumber: number]: number } = {}
-    $: {
-        collectionSplitCounts = isCollection && splitEnabled ? checkCollectionSplitSupport() : {}
-    }
+    $: collectionSplitCounts = isCollection && splitEnabled ? checkCollectionSplitSupport() : {}
 
     let splittedVerses: (Verse & { id: string })[] = []
-    $: {
-        splittedVerses = updateSplitted(verses, $scriptureSettings, collectionSplitCounts)
-    }
+    $: splittedVerses = updateSplitted(verses, $scriptureSettings, collectionSplitCounts)
 
     let apiError = false
 
@@ -273,12 +262,10 @@
         if (!verses) return []
         if (!$scriptureSettings.splitLongVerses) return verses.map((verse) => ({ ...verse, id: (verse.number || "").toString() + (verse.endNumber ? "-" + verse.endNumber : "") }))
 
-        const chars = Number($scriptureSettings.longVersesChars || 100)
-        const tolerance = Number($scriptureSettings.longVersesTolerance || 0)
         const newVerses: (Verse & { id: string })[] = []
         verses.forEach((verse) => {
             const sanitizedVerse = sanitizeVerseText(verse.text)
-            const newVerseStrings = splitText(sanitizedVerse, chars, tolerance)
+            const newVerseStrings = splitText(sanitizedVerse, splitChars, splitTolerance)
             const end = verse.endNumber ? `-${verse.endNumber}` : ""
             const numParts = Math.max(newVerseStrings.length, collectionSplitCounts[verse.number] || 0)
 
@@ -553,8 +540,15 @@
             openChapter([result.chapter])
 
             // VERSES
-            if (result.verses.length) openVerse([result.verses])
-            else selectAllTimeout = setTimeout(selectAllVerses)
+            if (result.verses.length) {
+                if (splittedVerses) {
+                    openVerse([splittedVerses.filter((a) => result.verses.includes(a.number)).map((a) => a.id)])
+                } else {
+                    openVerse([result.verses])
+                }
+            } else {
+                selectAllTimeout = setTimeout(selectAllVerses)
+            }
         }
     }
 
@@ -962,7 +956,7 @@
                         {#if chapters?.length}
                             {#each chapters as chapter}
                                 {@const id = chapter.number.toString()}
-                                {@const isActive = activeReference.chapters.find((cid) => cid.toString() === id)}
+                                {@const isActive = activeReference.chapters.find((cid) => cid?.toString() === id)}
 
                                 <span
                                     {id}

@@ -626,6 +626,7 @@
         "unlink_pco": "Unlink from Planning Center",
         "import": "Import",
         "export": "Export",
+        "save_to_file": "Save to file",
         "import_calendar": "Import calendar",
         "imported": "Imported!",
         "duplicate": "Duplicate",
@@ -1499,7 +1500,8 @@
         "blur": "Blur",
         "scale": "Scale",
         "spin": "Spin",
-        "slide": "Slide"
+        "slide": "Slide",
+        "fade_in_offset": "Fade in offset"
     },
     "easings": {
         "linear": "Linear",

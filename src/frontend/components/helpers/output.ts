@@ -324,12 +324,22 @@ export function clearOverlayTimer(outputId: string, overlayId: string) {
 ///
 
 export function getAllOutputs() {
+    if (!Object.keys(get(outputs)).length) return [{ ...clone(defaultOutput), id: "default" }]
     // sort by normal first A-Z, then stage A-Z
     return sortObject(sortByName(keysToID(get(outputs))), "stageOutput")
     // return sortByName(keysToID(get(outputs)))
 }
 export function getAllEnabledOutputs() {
-    return getAllOutputs().filter((a) => a.enabled)
+    const outputsList = getAllOutputs()
+    const enabled = outputsList.filter((a) => a.enabled)
+    if (!enabled.length && isMainWindow()) {
+        outputs.update((a) => {
+            a[Object.keys(a)[0]].enabled = true
+            return a
+        })
+        return [outputsList[0]]
+    }
+    return enabled
 }
 
 export function getAllNormalOutputs() {
@@ -351,7 +361,19 @@ export function getWindowOutputId() {
 }
 
 export function getAllActiveOutputs() {
-    return getAllEnabledOutputs().filter((a) => !a.stageOutput && a.active)
+    const outputsList = getAllNormalOutputs()
+    const active = outputsList.filter((a) => a.active)
+    if (!active.length && isMainWindow()) {
+        outputs.update((a) => {
+            a[Object.keys(a)[0]].active = true
+            return a
+        })
+        return [outputsList[0]]
+    }
+    return active
+}
+export function getAllActiveOutputIds() {
+    return getAllActiveOutputs().map(({ id }) => id)
 }
 export function getFirstActiveOutput(_updater: any = null) {
     const firstActive = getAllActiveOutputs()[0]
@@ -1195,7 +1217,7 @@ export function setTemplateStyle(outSlide: OutSlide | null, currentStyle: Styles
     if (!Array.isArray(items)) return []
 
     const isDrawerScripture = outSlide?.id === "temp"
-    const slideItems = isDrawerScripture ? outSlide.tempItems : items?.filter(checkSpecificOutput)
+    const slideItems = isDrawerScripture ? outSlide.tempItems : items
 
     const template = getStyleTemplate(outSlide, currentStyle)
     const templateItems = template.items || []
@@ -1219,9 +1241,11 @@ export function setTemplateStyle(outSlide: OutSlide | null, currentStyle: Styles
     //     newItemsAuto: newItems?.find((i) => i.auto)
     // })
 
-    return newItems
+    return newItems.filter(checkSpecificOutput)
 
     function checkSpecificOutput(item: Item) {
+        if (!item) return false
+        if (outSlide === null) return true // always show in slides preview
         return !item.bindings?.length || item.bindings.includes(outputId)
     }
 }

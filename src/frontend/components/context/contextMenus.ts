@@ -46,6 +46,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     delete_all: { label: "actions.delete_all", icon: "delete", iconColor: "#ff5454" },
     import: { label: "actions.import", icon: "import" },
     export: { label: "actions.export", icon: "export" },
+    save_to_file: { label: "actions.save_to_file", icon: "save" },
     custom_text: { label: "popup.custom_text", icon: "rename", iconColor: "#6effbe" },
     // DRAWER
     enabledTabs: { label: "context.enabledTabs", items: ["LOAD_enabled_drawer_tabs"] },
@@ -101,6 +102,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     sort_media_by: { label: "sort.sort_by", icon: "sort", iconColor: "#979aff", items: ["LOAD_sort_media"] },
     // SHOWS
     lock_show: { label: "context.lockForChanges", icon: "lock", iconColor: "#ff5454" },
+    lock_group: { label: "context.lockForChanges", icon: "lock", iconColor: "#ff5454" },
     remove: { label: "actions.remove", icon: "delete", iconColor: "#ff6b54" },
     remove_group: { label: "actions.remove_group_short", tooltip: "actions.remove_group", icon: "delete", iconColor: "#ff9b54", shortcuts: ["Del"] },
     delete_slide: { label: "actions.delete_slide_short", tooltip: "actions.delete_slide", icon: "delete", iconColor: "#ff5454" },
@@ -179,6 +181,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     lock_to_output: { label: "context.lock_to_output", icon: "locked", iconColor: "#ff5454" },
     place_under_slide: { label: "context.place_under_slide", icon: "under", iconColor: "#d497ff" },
     display_duration: { label: "popup.display_duration", icon: "clock", iconColor: "#d497ff" },
+    overlay_actions: { label: "tabs.actions", icon: "actions", iconColor: "#d497ff" },
     // TEMPLATES
     template_actions: { label: "tabs.actions", icon: "actions", iconColor: "#d497ff" },
     // STAGE
@@ -263,7 +266,7 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     media_card: ["GROUP_open", "createSlideshow", "play_no_audio", "play_no_filters", "SEPARATOR", "favourite", "SEPARATOR", "media_tag_set", "media_tag_filter", "sort_media_by", "SEPARATOR", "system_open"],
     // "addToFirstSlide",
     drawer_overlays: ["reset_defaults"],
-    overlay_card: ["GROUP_open", "display_duration", "SEPARATOR", "lock_to_output", "place_under_slide", "GROUP_rename_color"],
+    overlay_card: ["GROUP_open", "overlay_actions", "display_duration", "SEPARATOR", "lock_to_output", "place_under_slide", "GROUP_rename_color"],
     overlay_card_default: ["GROUP_open", "duplicate", "delete"],
     overlay_card_readonly: ["preview"],
     // "addToShow",
@@ -291,13 +294,14 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     // PROJECT
     projects: ["newProject", "newFolder", "SEPARATOR", "sort_projects_by"],
     projectsTab: ["import"],
-    projectTab: ["export", "SEPARATOR", "close"],
+    projectTab: ["save_to_file", "export", "SEPARATOR", "close"],
     project: ["newShowPopup", "section"], // "newShow"(empty) , "newPrivateShow"
     project_button: ["GROUP_rename", "export", "copy_to_template", "archive"], // "open",
     project_button_readonly: ["export"],
     project_template: ["GROUP_rename_only", "delete"],
     folder: ["GROUP_rename_only", "delete", "SEPARATOR", "newProject", "newFolder"],
     folder_readonly: ["sort_projects_by"],
+    folder_noediting: ["newProject", "newFolder"],
     project_media: ["play", "play_no_audio", "play_no_filters", "SEPARATOR", "remove", "SEPARATOR", "mark_played"],
     project_audio: ["remove", "SEPARATOR", "mark_played"],
     project_player: ["remove"],
@@ -332,7 +336,7 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     slide: ["GROUP_edit", "slideGroups", "actions", "bind_to", "format", "remove_layers", "slide_transition", "disable", "SEPARATOR", "duplicate", "GROUP_slide_remove"],
     slideChild: ["GROUP_edit", "slideGroups", "actions", "bind_to", "format", "remove_layers", "slide_transition", "disable", "SEPARATOR", "duplicate", "GROUP_slide_remove"],
     slideFocus: ["editSlideText"],
-    group: ["rename", "recolor", "SEPARATOR", "selectAll", "SEPARATOR", "duplicate", "delete_group"],
+    group: ["rename", "recolor", "SEPARATOR", "lock_group", "SEPARATOR", "selectAll", "SEPARATOR", "duplicate", "delete_group"],
     global_group: ["manage_groups"],
     metadata_tools: ["manage_metadata"],
     // global_group: ["rename"],

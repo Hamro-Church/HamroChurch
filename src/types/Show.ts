@@ -87,6 +87,7 @@ export interface Slide {
     group: null | string
     color: null | string
     globalGroup?: string
+    locked?: boolean // lock slide group to prevent changes
     settings: {
         template?: string
         background?: boolean
@@ -377,6 +378,7 @@ export interface Transition {
     type: TransitionType
     duration: number
     easing: string
+    fadeInOffset?: number // when to start fading in (default = 50%)
     delay?: number // item in/out wait
     custom?: any // e.g. transition direction
 
@@ -489,6 +491,7 @@ export interface Overlay {
     modified?: number // cloud sync
     items: Item[]
     locked?: boolean
+    actions?: any[]
     placeUnderSlide?: boolean
     displayDuration?: number
 }
