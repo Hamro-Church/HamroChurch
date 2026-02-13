@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import type { Template } from "../../../../types/Show"
-    import { activeEdit, activePage, activePopup, activeShow, alertMessage, labelsDisabled, mediaOptions, outputs, selected, showsCache, special, styles, templateCategories, templates } from "../../../stores"
+    import { activeEdit, activePage, activePopup, activeShow, alertMessage, categories, labelsDisabled, mediaOptions, outputs, selected, showsCache, special, styles, templateCategories, templates } from "../../../stores"
     import { getAccess } from "../../../utils/profile"
     import { clone, keysToID, sortByName } from "../../helpers/array"
     import { history } from "../../helpers/history"
@@ -80,9 +80,11 @@
         })
     }
 
+    // WIP take off on click if already applied? - it's auto removed when slide is edited & you can remove it in the bottom right menu
+    $: isShowActive = !!($activeShow && ($activeShow?.type || "show") === "show")
     function templateClick(e: MouseEvent, templateId: string) {
         if (e.target?.closest(".edit") || e.target?.closest(".icons")) return
-        if (!$activeShow || ($activeShow?.type || "show") !== "show" || e.ctrlKey || e.metaKey) return
+        if (!$activeShow || !isShowActive || e.ctrlKey || e.metaKey) return
 
         if ($showsCache[$activeShow.id]?.locked) {
             alertMessage.set("show.locked_info")
@@ -130,8 +132,18 @@
             return
         }
 
+        // alert if show category has a template
+        const categoryId = $showsCache[$activeShow.id]?.category || ""
+        const categoryTemplate = $categories[categoryId]?.template || ""
+        if (categoryTemplate) {
+            alertMessage.set("tips.category_template")
+            activePopup.set("alert")
+            return
+        }
+
         history({ id: "TEMPLATE", newData: { id: templateId, data: { createItems: true, shiftItems: e.shiftKey } }, location: { page: "none", override: "show#" + $activeShow.id } })
 
+        // alert if first output has a style template
         if ($special.styleTemplatePreview !== false) {
             const outputStyleId = getFirstActiveOutput()?.style || ""
             const styleTemplate = $styles[outputStyleId]?.template || ""
@@ -156,7 +168,7 @@
                     {@const isReadOnly = readOnly || profile[template.category || ""] === "read"}
 
                     <SelectElem id="template" data={template.id} class="context #template_card{template.isDefault && !isReadOnly ? '_default' : ''}{isReadOnly ? '_readonly' : ''}" draggable fill>
-                        <Card width={100} preview={$activePage === "edit" && $activeEdit.type === "template" && $activeEdit.id === template.id} active={template.id === activeTemplate} label={template.name} renameId="template_{template.id}" icon={template.isDefault ? "protected" : null} color={template.color} {resolution} on:click={(e) => templateClick(e, template.id)}>
+                        <Card width={100} preview={$activePage === "edit" && $activeEdit.type === "template" && $activeEdit.id === template.id} active={template.id === activeTemplate} label={template.name} renameId="template_{template.id}" icon={template.isDefault ? "protected" : null} color={template.color} {resolution} showApplyOnHover={isShowActive} on:click={(e) => templateClick(e, template.id)}>
                             <!-- icons -->
                             {#if template.settings?.actions?.length}
                                 <Actions columns={$mediaOptions.columns} templateId={template.id} actions={{ slideActions: template.settings?.actions }} />

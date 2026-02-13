@@ -31,14 +31,10 @@ export interface Show {
         modified: null | number
         used: null | number
     }
-    message?: {
-        text: string
-        template?: string
-    }
     metadata?: {
-        override: boolean
-        display: string
-        template: string
+        // override: boolean
+        // display: string
+        // template: string
         tags?: string[]
     }
     meta: {

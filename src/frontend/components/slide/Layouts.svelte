@@ -1,6 +1,8 @@
 <script lang="ts">
     import { uid } from "uid"
+    import { Main } from "../../../types/IPC/Main"
     import type { ClickEvent } from "../../../types/Main"
+    import { sendMain } from "../../IPC/main"
     import { changeSlidesView } from "../../show/slides"
     import { actions, activeEdit, activePage, activePopup, activeProject, activeShow, activeStyle, alertMessage, labelsDisabled, openToolsTab, outputs, projects, settingsTab, showsCache, slidesOptions, special, styles, templates } from "../../stores"
     import { triggerClickOnEnterSpace } from "../../utils/clickable"
@@ -13,7 +15,6 @@
     import { duplicate } from "../helpers/clipboard"
     import { history } from "../helpers/history"
     import { allOutputsHasStyleTemplate, getAllEnabledOutputs, getFirstActiveOutput } from "../helpers/output"
-    import { removeTemplatesFromShow } from "../helpers/show"
     import { _show } from "../helpers/shows"
     import { joinTime, secondsToTime } from "../helpers/time"
     import FloatingInputs from "../input/FloatingInputs.svelte"
@@ -22,8 +23,6 @@
     import MaterialZoom from "../inputs/MaterialZoom.svelte"
     import SelectElem from "../system/SelectElem.svelte"
     import Reference from "./Reference.svelte"
-    import { sendMain } from "../../IPC/main"
-    import { Main } from "../../../types/IPC/Main"
 
     $: showId = $activeShow?.id || ""
     $: currentShow = $showsCache[showId] || {}
@@ -146,16 +145,10 @@
             return
         }
 
-        const messageText = currentShow.message?.text
-        if (messageText?.length) {
-            notes = { text: messageText, id: "message", title: "meta.message", icon: "message", tab: "metadata" }
-            return
-        }
-
         const metadataValues = Object.values(currentShow.meta || {})
         const metadataText = metadataValues.reduce((v, a) => (v += a), "")
         if (metadataText.length) {
-            const divider = "; " // currentStyle.metadataDivider
+            const divider = "; "
             const text = metadataValues
                 .filter((a) => a?.length)
                 .join(divider)
@@ -273,11 +266,12 @@
                 >
                     <Icon size={1.1} id="templates" />
                 </MaterialButton>
-                {#if open}
+                <!-- use context menu to remove! -->
+                <!-- {#if open}
                     <MaterialButton title="actions.remove_template_from_show" on:click={() => removeTemplatesFromShow($activeShow?.id || "", true)}>
                         <Icon size={1.1} id="remove_circle" />
                     </MaterialButton>
-                {/if}
+                {/if} -->
             {/if}
 
             <!-- output style template -->

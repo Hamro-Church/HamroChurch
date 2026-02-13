@@ -70,6 +70,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     changeIcon: { label: "context.changeIcon", icon: "star", iconColor: "#6effbe" },
     category_action: { label: "popup.category_action", icon: "actions", iconColor: "#d497ff" },
     category_template: { label: "popup.category_template", icon: "templates", iconColor: "#d497ff" },
+    metadata_display: { label: "popup.metadata_display", icon: "info" },
     use_as_archive: { label: "context.use_as_archive", icon: "archive" },
     archive: { label: "actions.move_to_archive", icon: "archive" },
     toggle_clock: { label: "context.toggle_clock", icon: "clock" },
@@ -146,7 +147,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     stage: { label: "menu.stage", id: "stage" },
     // formatting
     find_replace: { label: "actions.find_replace", icon: "find_replace", iconColor: "#90f1cc" },
-    cut_in_half: { label: "actions.cut_in_half", tooltip: "tooltip.context_cut_in_half", icon: "cut_in_half", iconColor: "#90f1b5" },
+    cut_in_half: { label: "actions.cut_in_half", tooltip: "tooltip.context_cut_in_half [Alt+Enter]", icon: "cut_in_half", iconColor: "#90f1b5" },
     merge: { label: "actions.merge", tooltip: "tooltip.context_merge", icon: "merge", iconColor: "#90f1b5" },
     uppercase: { label: "actions.uppercase", icon: "increase_text", iconColor: "#93f190" },
     lowercase: { label: "actions.lowercase", icon: "decrease_text", iconColor: "#93f190" },
@@ -236,7 +237,7 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     category_media: ["newFolder"],
     category_audio: ["newFolder"],
     category_scripture: ["newScripture", "createCollection"],
-    category_shows_button: ["GROUP_rename_icon", "delete", "SEPARATOR", "category_action", "category_template", "SEPARATOR", "use_as_archive"],
+    category_shows_button: ["GROUP_rename_icon", "delete", "SEPARATOR", "category_action", "category_template", "metadata_display", "SEPARATOR", "use_as_archive"],
     category_shows_button_readonly: [],
     category_overlays_button: ["GROUP_rename_icon", "delete", "SEPARATOR", "use_as_archive"],
     category_templates_button: ["GROUP_rename_icon", "delete", "SEPARATOR", "use_as_archive"],
@@ -345,7 +346,6 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     show_template: ["remove_template"],
     tag: ["rename", "recolor", "SEPARATOR", "delete"],
     chord: ["set_key", "chord_list", "custom_key", "SEPARATOR", "delete"],
-    meta_message: ["dynamic_values"],
     edit_custom_action: ["edit"],
 
     // MEDIA
