@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
     import type { MediaStyle } from "../../../../types/Main"
     import type { ItemType } from "../../../../types/Show"
-    import { activeEdit, activePage, activePopup, activeShow, activeTriggerFunction, alertMessage, driveData, focusMode, groups, labelsDisabled, media, outputs, overlays, refreshEditSlide, showsCache, special, styles, templates, textEditActive } from "../../../stores"
+    import { activeEdit, activePage, activePopup, activeShow, activeTriggerFunction, alertMessage, focusMode, groups, labelsDisabled, media, outputs, overlays, refreshEditSlide, showsCache, special, styles, templates, textEditActive } from "../../../stores"
     import { transposeText } from "../../../utils/chordTranspose"
     import { triggerFunction } from "../../../utils/common"
     import { translateText } from "../../../utils/language"
@@ -12,7 +12,7 @@
     import Icon from "../../helpers/Icon.svelte"
     import T from "../../helpers/T.svelte"
     import { history } from "../../helpers/history"
-    import { getMedia, getMediaFileFromClipboard, getMediaLayerType, getMediaStyle, getThumbnailPath, mediaSize } from "../../helpers/media"
+    import { getExtension, getMedia, getMediaFileFromClipboard, getMediaLayerType, getMediaStyle, getMediaType, getThumbnailPath, mediaSize } from "../../helpers/media"
     import { getFirstActiveOutput, getResolution, getSlideFilter } from "../../helpers/output"
     import { getLayoutRef } from "../../helpers/show"
     import { _show } from "../../helpers/shows"
@@ -57,7 +57,7 @@
     let loadFullImage = false // true
 
     // get ghost background
-    $: if (!bgId) {
+    $: if (!bgId && !Slide?.settings?.backgroundImage) {
         ref?.forEach((a, i) => {
             if (i <= $activeEdit.slide! && !a.data.disabled) {
                 if (slideHasAction(a.data?.actions, "clear_background")) bgId = null
@@ -70,9 +70,8 @@
         })
     }
 
-    $: background = bgId && currentShowId ? currentShow?.media[bgId] : null
-    $: cloudId = $driveData.mediaId
-    $: backgroundPath = cloudId && cloudId !== "default" && background ? background.cloud?.[cloudId] || background.path || "" : background?.path || ""
+    $: background = bgId && currentShowId ? currentShow?.media[bgId] : Slide?.settings?.backgroundImage ? { path: Slide.settings.backgroundImage, type: getMediaType(getExtension(Slide.settings.backgroundImage)), id: "" } : null
+    $: backgroundPath = background?.path || ""
     // $: slideOverlays = layoutSlide.overlays || []
 
     // LOAD BACKGROUND
@@ -118,7 +117,7 @@
         //     updateStyles()
         // }, CHANGE_POS_TIME)
 
-        let items = currentShow?.slides[ref[$activeEdit.slide || 0]?.id].items
+        let items = currentShow?.slides?.[ref[$activeEdit.slide || 0]?.id]?.items || []
         let values: string[] = []
         active.forEach((id) => {
             let item = items[id]

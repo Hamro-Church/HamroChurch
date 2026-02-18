@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte"
-    import { activeFocus, activePage, activePopup, alertMessage, cachedShowsData, categories, focusMode, lessonsLoaded, notFound, outLocked, outputs, outputSlideCache, showsCache, slidesOptions, special, templates } from "../../stores"
+    import { activeEdit, activeFocus, activePage, activePopup, alertMessage, cachedShowsData, categories, focusMode, lessonsLoaded, notFound, outLocked, outputs, outputSlideCache, showsCache, slidesOptions, special, templates } from "../../stores"
     import { hasNewerUpdate, wait } from "../../utils/common"
     import { getAccess } from "../../utils/profile"
     import { videoExtensions } from "../../values/extensions"
@@ -15,11 +15,11 @@
     import T from "../helpers/T.svelte"
     import MaterialButton from "../inputs/MaterialButton.svelte"
     import Loader from "../main/Loader.svelte"
+    import SkeletonSlide from "../slide/SkeletonSlide.svelte"
     import Slide from "../slide/Slide.svelte"
     import Autoscroll from "../system/Autoscroll.svelte"
     import Center from "../system/Center.svelte"
     import DropArea from "../system/DropArea.svelte"
-    import SkeletonSlide from "../slide/SkeletonSlide.svelte"
 
     export let showId: string
     export let layout = ""
@@ -316,6 +316,7 @@
         if (isLocked) return
 
         history({ id: "SLIDES" })
+        activeEdit.set({ type: "show", slide: 0, items: [] })
         activePage.set("edit")
     }
 

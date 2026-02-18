@@ -88,6 +88,7 @@ export interface Slide {
         template?: string
         background?: boolean
         color?: string
+        backgroundImage?: string
         resolution?: Resolution
     }
     children?: string[]
@@ -516,8 +517,8 @@ export interface TemplateSettings {
     backgroundPath?: string
     overlayId?: string
     firstSlideTemplate?: string
-    maxLinesPerSlide?: number // auto break slides if more than set lines
-    breakLongLines?: number // auto break lines if longer than set words
+    maxLinesPerSlide?: number | string // auto break slides if more than set lines
+    breakLongLines?: number | string // auto break lines if longer than set words
     actions?: any[]
     styleOverrides?: TemplateStyleOverride[]
 }

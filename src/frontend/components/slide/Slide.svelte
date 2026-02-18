@@ -46,7 +46,7 @@
     $: isLessons = show?.reference?.type === "lessons"
 
     $: viewMode = isLessons ? "grid" : $slidesOptions.mode || "grid"
-    $: background = layoutSlide.background ? show.media[layoutSlide.background] : null
+    $: background = layoutSlide.background ? show.media[layoutSlide.background] : slide?.settings?.backgroundImage ? { path: slide.settings.backgroundImage } : null
 
     let ghostBackground: Media | null = null
     // don't show ghost slides above 40 when using optimized mode
@@ -78,7 +78,7 @@
     let thumbnailPath = ""
     let mediaStyle: MediaStyle = {}
 
-    let ghostSize = $special.optimizedMode || index + 1 > 20 ? mediaSize.small : mediaSize.drawerSize
+    let ghostSize = $special.optimizedMode || index + 1 > 28 ? mediaSize.small : mediaSize.drawerSize
 
     $: bg = clone(background || ghostBackground)
     $: bgPath = bg?.path || bg?.id || ""
@@ -106,7 +106,7 @@
 
         // create ghost ready thumbnails
         getMedia(bgPath, mediaSize.drawerSize)
-        if (Object.values(show.layouts).some((a) => a.slides.length > 20)) getMedia(bgPath, mediaSize.small)
+        if (Object.values(show.layouts).some((a) => a.slides.length > 28)) getMedia(bgPath, mediaSize.small)
 
         const media = await getMedia(bgPath, mediaSize.slideSize)
         if (!media) return

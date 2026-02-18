@@ -24,6 +24,7 @@ import { addToPos, getIndexes, mover } from "./mover"
 import { getLayoutRef } from "./show"
 import { getVariableNameId } from "./showActions"
 import { _show } from "./shows"
+import { getVimeoName, getYouTubeName, trimPlayerId } from "../drawer/player/playerHelper"
 
 function getId(drag: Selected): string {
     const id = ""
@@ -39,7 +40,7 @@ function getId(drag: Selected): string {
 }
 
 type Data = { drag: Selected; drop: DropData }
-type Keys = { shiftKey: boolean }
+type Keys = { shiftKey: boolean; ctrlKey: boolean; altKey: boolean }
 
 export const dropActions = {
     slides: ({ drag, drop }: Data, history: History, keys?: Keys) => dropActions.slide({ drag, drop }, history, keys),
@@ -181,23 +182,22 @@ export const dropActions = {
             // iport projects
             if (projectFiles.length) sendMain(Main.IMPORT_FILES, { id: "freeshow_project", paths: projectFiles })
         } else if (drag.id === "urls") {
-            data = data.map((url) => {
-                // WIP duplicate of url trimmer in CreatePlayer.svelte
-                if (url.includes("youtube.com") || url.includes("youtu.be")) {
-                    if (url.includes("?list")) url = url.slice(0, url.indexOf("?list"))
-                    if (url.includes("?si")) url = url.slice(0, url.indexOf("?si"))
-                    url = url.slice(-11)
-                    return { id: "-", type: "player", data: { type: "youtube", id: url } }
-                }
-                if (url.includes("vimeo.com")) {
-                    if (url.includes("?")) url = url.slice(0, url.indexOf("?"))
-                    let slash = url.lastIndexOf("/")
-                    url = url.slice(slash >= 0 ? slash + 1 : 0)
-                    return { id: "-", type: "player", data: { type: "vimeo", id: url } }
-                }
+            data = await Promise.all(
+                data.map(async (url) => {
+                    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+                        const id = trimPlayerId(url, "youtube")
+                        const name = await getYouTubeName(id)
+                        return { id: "-", type: "player", data: { type: "youtube", id, name } }
+                    }
+                    if (url.includes("vimeo.com")) {
+                        const id = trimPlayerId(url, "vimeo")
+                        const name = await getVimeoName(id)
+                        return { id: "-", type: "player", data: { type: "vimeo", id, name } }
+                    }
 
-                return { id: url, type: "url" }
-            })
+                    return { id: url, type: "url" }
+                })
+            )
             // WIP no URLs for now!
             data = data.filter((a) => a.type !== "url")
         } else if (drag.id === "audio" || drag.id === "audio_effect") {
@@ -527,7 +527,7 @@ const files = {
 }
 
 const slideDrop = {
-    media: ({ drag, drop }: Data, history: History) => {
+    media: ({ drag, drop }: Data, h: History, keys: Keys) => {
         let data = clone(drag.data)
         if (!data.length) return
 
@@ -576,15 +576,15 @@ const slideDrop = {
 
         if (center) {
             if (!data[0]) return
-            history.id = "showMedia"
+            h.id = "showMedia"
 
             if (drop.trigger?.includes("end")) drop.index!--
-            history.location!.layoutSlide = drop.index
-            const newData = data[0]
+            h.location!.layoutSlide = drop.index
+            let newData = data[0]
             delete newData.index
             delete newData.id
             delete newData.contentProvider
-            history.newData = newData
+            h.newData = newData
 
             // change slide group name if same name as previous media
             const showId = get(activeShow)?.id || ""
@@ -593,6 +593,17 @@ const slideDrop = {
             const slide = _show(showId).slides([slideId]).get()?.[0] || {}
             const currentBgId = layoutRef[drop.index!]?.data.background || ""
             const mediaName = removeExtension(_show(showId).media([currentBgId]).get()?.[0]?.name || "")
+
+            // add as slide bg instead of layout bg
+            if (keys.ctrlKey) {
+                const slideSettings = _show().slides([slideId]).get("settings")
+                const oldData = { style: clone(slideSettings) }
+                newData = { style: { ...clone(slideSettings), backgroundImage: newData.path } }
+
+                history({ id: "slideStyle", oldData, newData, location: { page: "edit", show: get(activeShow)!, slide: slideId } })
+                return
+            }
+
             if (newData.name && slide.group === mediaName) {
                 showsCache.update((shows) => {
                     if (!shows[showId]) return shows
@@ -601,15 +612,15 @@ const slideDrop = {
                 })
             }
 
-            return history
+            return h
         }
 
-        history.id = "SLIDES"
+        h.id = "SLIDES"
         const slides = drag.data.map((a) => ({ id: (a.id?.length > 11 ? "" : a.id) || uid(), group: removeExtension(a.name || ""), color: null, settings: {}, notes: "", items: [] }))
 
-        history.newData = { index: drop.index, data: slides, layout: { backgrounds: data } }
+        h.newData = { index: drop.index, data: slides, layout: { backgrounds: data } }
 
-        return history
+        return h
     },
     audio: ({ drag, drop }: Data, h: History) => {
         h.id = "showAudio"
@@ -755,12 +766,12 @@ const slideDrop = {
         const layoutId: string = _show().get("settings.activeLayout")
 
         const slides: { [key: string]: Slide } = clone(get(showsCache)[get(activeShow)?.id || ""]?.slides)
-        if (!slides || !Object.keys(slides).length) return
+        if (!slides) return
 
         const mediaData: any = clone(get(showsCache)[get(activeShow)?.id || ""]?.media || {})
         let layout: any[] = _show().layouts([layoutId]).slides().get()[0]
 
-        if (drop.index === undefined) drop.index = layout.length
+        if (drop.index === undefined) drop.index = ref.length
         const newIndex: number = drop.index
 
         let newMedia: any = mediaData
@@ -839,7 +850,7 @@ const slideDrop = {
         const layoutId: string = _show().get("settings.activeLayout")
 
         const slides: { [key: string]: Slide } = clone(get(showsCache)[get(activeShow)?.id || ""]?.slides)
-        if (!slides || !Object.keys(slides).length) return
+        if (!slides) return
 
         let layout: any[] = _show().layouts([layoutId]).slides().get()[0] || []
 

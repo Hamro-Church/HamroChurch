@@ -934,7 +934,7 @@ const clickActions = {
         history({ id: "UPDATE", newData: { data: project }, oldData: { id }, location: { page: "show", id: "project_template" } })
     },
     remove_template: () => {
-        removeTemplatesFromShow(get(activeShow)?.id || "", true)
+        removeTemplatesFromShow(get(activeShow)?.id || "", "", true)
     },
 
     // slide views
@@ -1224,6 +1224,8 @@ const clickActions = {
                 })
                 return a
             })
+
+            removeTemplatesFromShow(get(activeShow)?.id || "", slideRef.id)
         }
     },
     overlay_actions: (obj: ObjData) => {
@@ -1629,6 +1631,8 @@ const clickActions = {
             location: { page: "edit", show: get(activeShow)!, slide: slideRef.id, items, override: "itembind_" + slideRef.id + "_items_" + items.join(",") }
         })
         // _show().slides([slideID!]).set({ key: "items", value: items })
+
+        removeTemplatesFromShow(get(activeShow)?.id || "", slideRef.id)
     },
     dynamic_values: (obj: ObjData) => {
         const sel = getSelectionRange()
@@ -1889,9 +1893,14 @@ export async function removeSlide(initialData: any[], type: "delete" | "remove" 
     let data: any[] = []
     initialData.forEach((a: any) => {
         const slideId = ref[a.index]?.parent?.id ?? ref[a.index]?.id
-        if (!showSlides[slideId]?.locked) data.push(a)
+        if (showSlides[slideId]?.locked) {
+            newToast("output.state_locked")
+            return
+        }
+        if (type === "remove" && showSlides[slideId]?.group === ".") return
+
+        data.push(a)
     })
-    if (data.length < initialData.length) newToast("output.state_locked")
 
     if (type === "delete") {
         const selectedInDifferentLayout = checkIfAddedToDifferentLayout(ref, data)

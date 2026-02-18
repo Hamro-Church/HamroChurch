@@ -2,7 +2,7 @@ import { get } from "svelte/store"
 import { uid } from "uid"
 import type { Item, Slide, SlideData, Template } from "../../../types/Show"
 import { breakLongLines, removeItemValues } from "../../show/slides"
-import { activeEdit, activePage, activePopup, activeProject, activeShow, alertMessage, cachedShowsData, deletedShows, driveData, groups, notFound, projects, refreshEditSlide, renamedShows, shows, showsCache, templates } from "../../stores"
+import { activeEdit, activePage, activePopup, activeProject, activeShow, alertMessage, cachedShowsData, deletedShows, groups, notFound, projects, refreshEditSlide, renamedShows, shows, showsCache, templates } from "../../stores"
 import { save } from "../../utils/save"
 import { EMPTY_SHOW_SLIDE } from "../../values/empty"
 import { customActionActivation } from "../actions/actions"
@@ -581,10 +581,7 @@ export const historyActions = ({ obj, undo = null }: any) => {
                     // backgrounds
                     if (data.layout?.backgrounds?.length) {
                         const background = data.layout.backgrounds[i] || data.layout.backgrounds[0]
-
                         let id = ""
-                        const cloudId = get(driveData).mediaId
-                        if (layoutValue.background && cloudId && cloudId !== "default") id = layoutValue.background
 
                         // find existing
                         const existingBackgrounds = _show(showId).get("media") || {}
@@ -767,12 +764,14 @@ export const historyActions = ({ obj, undo = null }: any) => {
                 if (templateId && !slideId && previousTemplateId !== templateId) _show(data.remember.showId).set({ key: "settings.template", value: slideId ? null : templateId })
 
                 const template = clone(get(templates)[templateId])
-                if (template?.settings?.maxLinesPerSlide) {
-                    slides = splitToMaxLines(template.settings.maxLinesPerSlide)
+                const maxLines = template?.settings?.maxLinesPerSlide
+                if (maxLines !== "0" && !isNaN(Number(maxLines))) {
+                    slides = splitToMaxLines(Number(maxLines))
                     show.slides = slides
                 }
-                if (template?.settings?.breakLongLines) {
-                    slides = breakLongLines(data.remember.showId, template.settings.breakLongLines)
+                const brLongLines = template?.settings?.breakLongLines
+                if (brLongLines !== "0" && !isNaN(Number(brLongLines))) {
+                    slides = breakLongLines(data.remember.showId, Number(brLongLines))
                     show.slides = slides
                 }
                 updateSlidesWithTemplate(template)
@@ -794,6 +793,8 @@ export const historyActions = ({ obj, undo = null }: any) => {
 
             function splitToMaxLines(maxLines: number) {
                 const currentSlides = clone(show.slides) || {}
+                if (!maxLines) return currentSlides
+
                 const newSlides: { [key: string]: Slide } = {}
 
                 Object.entries(currentSlides).forEach(([id, slide]) => {

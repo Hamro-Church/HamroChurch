@@ -107,6 +107,7 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
         if (CHANGES.version !== version) CHANGES = clone(DEFAULT_CHANGES)
         cloudChanges = clone(CHANGES)
         isNewDevice = !CHANGES.devices.find((id) => id === deviceId)
+        if (isNewDevice) CHANGES.devices.push(deviceId)
     }
     // console.log("Devices:", CHANGES.devices)
 
@@ -284,8 +285,8 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
             }
 
             // any local changes
-            const hasChanged = JSON.stringify(localData) !== JSON.stringify(localStore.store)
-            if (!hasChanged) return
+            const hasNoChange = JSON.stringify(localData) === JSON.stringify(localStore.store) // checkIfMatching()
+            if (hasNoChange) return
 
             // changedFiles.push(id)
             setStore(localStore, localData)
@@ -319,6 +320,7 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
 
     async function uploadLocalData() {
         const zipPath = await compressUserData()
+        if (!zipPath) return false
         const uploadSuccess = await provider!.uploadData(data.teamId, zipPath)
         return uploadSuccess
     }
@@ -357,7 +359,7 @@ export async function syncData(data: { id: SyncProviderId; churchId: string; tea
     }
 }
 
-async function isCloudNewerThanFile(localFilePath: any, cloudDate: Date): Promise<boolean> {
+async function isCloudNewerThanFile(localFilePath: string, cloudDate: Date): Promise<boolean> {
     const localStats = await getFileStatsAsync(localFilePath)
     if (!cloudDate) return false
     if (!localStats) return true
@@ -373,12 +375,12 @@ function getLocalOnlyKeys(cloudKeys: any, localKeys: any): string[] {
 
 // WRITE USER DATA
 
-async function compressUserData(): Promise<string> {
+async function compressUserData(): Promise<string | null> {
     const backupPath = path.join(EXTRACT_LOCATION, "Backup")
     createFolder(backupPath)
     await startBackup({ customOutputLocation: backupPath })
     const filesNames = await readFolderAsync(backupPath)
-    if (!filesNames.length) return ""
+    if (!filesNames.length) return null
 
     const files: { name: string; content?: Buffer | string; filePath?: string }[] = filesNames.map((fileName) => ({ name: fileName, filePath: path.join(backupPath, fileName) }))
 
@@ -393,7 +395,7 @@ async function compressUserData(): Promise<string> {
         await compressToZip(files, zipPath)
     } catch (err) {
         console.error("Could not compress user data for cloud sync:", err)
-        return ""
+        return null
     }
 
     await deleteUnusedZips(outputFolderPath, zipPath)
@@ -427,23 +429,16 @@ async function deleteUnusedZips(folderPath: string, excludeZip: string) {
         const file = zipFiles[i]
         const age = now - file.ctime
 
-        // less than an hour old
-        if (age < ONE_HOUR) {
-            deleteFile(file.path)
-            continue
-        }
-
         if (i < 2) continue // keep two newest regardless
 
-        // more than two weeks old
-        if (age > ONE_HOUR * 24 * 14) {
+        // less than an hour old OR more than two weeks old
+        if (age < ONE_HOUR || age > ONE_HOUR * 24 * 14) {
             deleteFile(file.path)
-            continue
         }
     }
 }
 
-async function checkCloudEntry(id: ChangeId, key: string, cloudData: any, getLocalData: () => Promise<any>, isCloudNewer?: () => Promise<boolean>) {
+async function checkCloudEntry(id: ChangeId, key: string, cloudData: any, getLocalData: () => Promise<any> | any, isCloudNewer?: () => Promise<boolean>) {
     const cloudModTime = getModifiedDate(cloudData)
     if (cloudData !== null && !cloudModTime) return { action: "skip" } // invalid: no modified time
 
@@ -451,16 +446,21 @@ async function checkCloudEntry(id: ChangeId, key: string, cloudData: any, getLoc
 
     // exists only in cloud
     if (!localValue) {
-        if (isDeleted(id, key)) return { action: "skip" }
-
         // if marked as created and not yet created locally
-        if (isCreated(id, key) && !isCreatedLocally(id, key)) return { action: "create" }
+        if (isCreated(id, key) && !isCreatedLocally(id, key)) {
+            markAsCreated(id, key)
+            return { action: "create" }
+        }
 
         markAsDeleted(id, key)
-        return { action: "skip" }
+        return { action: "skip" } // already deleted
     }
 
-    if (isDeleted(id, key)) return { action: "delete" }
+    if (isDeleted(id, key)) {
+        markAsDeleted(id, key)
+        return { action: "delete" }
+    }
+    if (isCreated(id, key)) markAsCreated(id, key) // just in case it's marked as created when it already exists
 
     let localModTime = getModifiedDate(localValue)
     if (cloudData !== null && !localModTime) localModTime = setModifiedDate()
@@ -495,12 +495,12 @@ function checkLocalEntry(id: ChangeId, key: string) {
         // marked as already deleted for this device
         if (isDeletedLocally(id, key)) {
             // revert deletion when local file is restored
-            unmarkAsDeleted(id, key)
             markAsCreated(id, key)
             return { action: "upload" }
         }
 
         // delete local file/instance
+        markAsDeleted(id, key)
         return { action: "delete" }
     }
 
@@ -554,7 +554,7 @@ function markAsCreated(storeId: ChangeId, key: string) {
 
 const deviceId = getMachineId()
 function markAs(type: "deleted" | "created", instanceId: string) {
-    if (!CHANGES.devices.includes(deviceId)) CHANGES.devices.push(deviceId)
+    // if just one device, no need to keep track of changes
     if (CHANGES.devices.length < 2) return
 
     // init

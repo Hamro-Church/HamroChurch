@@ -1,15 +1,15 @@
-import { get } from "svelte/store"
+import { get, type Unsubscriber } from "svelte/store"
 import { Main } from "../../types/IPC/Main"
+import { clone } from "../components/helpers/array"
+import { generateLightRandomColor } from "../components/helpers/color"
 import { isLocalFile } from "../components/helpers/media"
 import { loadShows } from "../components/helpers/setShow"
 import { requestMain, sendMain } from "../IPC/main"
 import { activeEdit, activePage, activePopup, activeProject, activeShow, alertMessage, cloudSyncData, cloudUsers, deletedShows, popupData, providerConnections, renamedShows, saved, scripturesCache, shows, showsCache, special } from "../stores"
-import { isMainWindow, newToast, setStatus, wait } from "./common"
+import { hasNewerUpdate, isMainWindow, newToast, setStatus, wait } from "./common"
 import { confirmCustom } from "./popup"
-import { save } from "./save"
+import { getSyncedSettings, save } from "./save"
 import { SocketHelper } from "./SocketHelper"
-import { generateLightRandomColor } from "../components/helpers/color"
-import { clone } from "../components/helpers/array"
 
 export async function setupCloudSync(auto: boolean = false) {
     if (auto && get(cloudSyncData).id) {
@@ -211,6 +211,7 @@ async function socketConnect() {
 
     // initialize receivers
     socket.addHandler("presence", CLOUD_RECEIVERS.presence)
+    socket.addHandler("settings_update", CLOUD_RECEIVERS.settings_update)
 
     // announce self and get responses from all users
     broadcastPresence("iamnew")
@@ -225,11 +226,15 @@ function setupStoreListeners() {
     presenceUnsubscribers.push(activePage.subscribe(() => broadcastPresence()))
     presenceUnsubscribers.push(activeShow.subscribe(() => broadcastPresence()))
     presenceUnsubscribers.push(activeProject.subscribe(() => broadcastPresence()))
+
+    setupSettingsListeners()
 }
 
 function clearStoreListeners() {
     presenceUnsubscribers.forEach((u) => u())
     presenceUnsubscribers = []
+
+    clearSettingsListeners()
 }
 
 function broadcastPresence(action: string = "update") {
@@ -272,8 +277,7 @@ const CLOUD_RECEIVERS = {
         if (!name || name === currentName) return
 
         const isBye = data.action === "bye"
-        const isNewUser = data.action === "iamnew"
-        const userData = { displayName: name, activePage: data.activePage, activeShow: data.activeShow, activeProject: data.activeProject }
+        const userData = { displayName: name, lastUpdate: Date.now(), activePage: data.activePage, activeShow: data.activeShow, activeProject: data.activeProject }
 
         // store a persistent color
         let color = get(special).cloudUserColors?.[name]
@@ -285,6 +289,7 @@ const CLOUD_RECEIVERS = {
             })
         }
 
+        let isNewUser = data.action === "iamnew"
         cloudUsers.update((users) => {
             const existingIndex = users.findIndex((u) => u.displayName === name)
 
@@ -296,7 +301,10 @@ const CLOUD_RECEIVERS = {
             }
 
             // add user
-            if (existingIndex < 0) return [...users, { ...userData, color }]
+            if (existingIndex < 0) {
+                isNewUser = true
+                return [...users, { ...userData, color }]
+            }
 
             // update user
             users[existingIndex] = { ...users[existingIndex], ...userData }
@@ -304,5 +312,71 @@ const CLOUD_RECEIVERS = {
         })
 
         if (isNewUser) broadcastPresence("iamhere")
+        else if (data.action === "presence") removeInactive()
+    },
+    settings_update: (data: { id: string; key: string; value: any }) => {
+        const syncedSettings = getSyncedSettings()
+        const store = syncedSettings[data.id]
+        if (!store) return
+
+        currentlyUpdatingSettings.add(data.id)
+        store.update((s) => {
+            s[data.key] = data.value
+            return s
+        })
     }
+}
+
+async function removeInactive() {
+    if (await hasNewerUpdate("CLOUD_USERS", 1000)) return
+
+    const timeout = 60 * 3000 // 3 minutes
+    const now = Date.now()
+    cloudUsers.update((users) => users.filter((u) => now - (u.lastUpdate || 0) < timeout))
+}
+
+// SEND SYNCED SETTINGS CHANGES REAL-TIME
+// this can only be done for the stores that don't use the "deleted"/"created" system
+
+const activeListeners = new Map<string, Unsubscriber>()
+const previousData = new Map<string, any>()
+function setupSettingsListeners() {
+    const syncedSettings = getSyncedSettings()
+    Object.keys(syncedSettings).forEach((key) => {
+        if (activeListeners.has(key)) return
+
+        const store = syncedSettings[key]
+        const unsubscriber = store.subscribe((a) => settingsListener(key, a))
+        activeListeners.set(key, unsubscriber)
+
+        setTimeout(() => previousData.set(key, clone(get(store))), 50)
+    })
+}
+function clearSettingsListeners() {
+    activeListeners.forEach((unsubscribe, key) => {
+        unsubscribe()
+        activeListeners.delete(key)
+    })
+}
+
+const currentlyUpdatingSettings = new Set<string>()
+function settingsListener(key: string, data: any) {
+    if (currentlyUpdatingSettings.has(key)) {
+        currentlyUpdatingSettings.delete(key)
+        return
+    }
+    if (!previousData.has(key)) return
+    if (typeof data !== "object" || data === null) return
+
+    const previous = previousData.get(key)
+
+    // find changed key(s)
+    const changedKeys = Object.keys(data).filter((k) => JSON.stringify(data[k]) !== JSON.stringify(previous[k]))
+    if (!changedKeys.length) return
+
+    changedKeys.forEach((k) => {
+        cloudSyncMessage("settings_update", { id: key, key: k, value: data[k] })
+    })
+
+    previousData.set(key, clone(data))
 }
