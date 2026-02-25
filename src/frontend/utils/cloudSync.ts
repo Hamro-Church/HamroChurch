@@ -5,13 +5,14 @@ import { generateLightRandomColor } from "../components/helpers/color"
 import { isLocalFile } from "../components/helpers/media"
 import { loadShows } from "../components/helpers/setShow"
 import { requestMain, sendMain } from "../IPC/main"
-import { activeEdit, activePage, activePopup, activeProject, activeShow, alertMessage, cloudSyncData, cloudUsers, deletedShows, popupData, providerConnections, renamedShows, saved, scripturesCache, shows, showsCache, special } from "../stores"
+import { activeEdit, activePage, activePopup, activeProject, activeShow, alertMessage, cloudSyncData, cloudUsers, deletedShows, focusMode, popupData, providerConnections, renamedShows, saved, scripturesCache, shows, showsCache, special } from "../stores"
 import { hasNewerUpdate, isMainWindow, newToast, setStatus, wait } from "./common"
 import { confirmCustom } from "./popup"
 import { getSyncedSettings, save } from "./save"
 import { SocketHelper } from "./SocketHelper"
 
 export async function setupCloudSync(auto: boolean = false) {
+    if (get(cloudSyncData).enabled === false) return
     if (auto && get(cloudSyncData).id) {
         syncWithCloud()
         return
@@ -91,7 +92,7 @@ export async function syncWithCloud(initialize: boolean = false, isClosing: bool
 
     if (method === "replace") {
         // reset cached data
-        showsCache.set({})
+        if (!get(focusMode)) showsCache.set({})
         scripturesCache.set({})
         deletedShows.set([])
         renamedShows.set([])

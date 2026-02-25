@@ -23,6 +23,7 @@
     import Icons from "./Icons.svelte"
     import Textbox from "./Textbox.svelte"
     import Zoomed from "./Zoomed.svelte"
+    import { _show } from "../helpers/shows"
 
     export let showId: string
     export let slide: Slide
@@ -105,8 +106,11 @@
         }
 
         // create ghost ready thumbnails
-        getMedia(bgPath, mediaSize.drawerSize)
-        if (Object.values(show.layouts).some((a) => a.slides.length > 28)) getMedia(bgPath, mediaSize.small)
+        if (!bgPath.startsWith("http")) {
+            getMedia(bgPath, mediaSize.drawerSize)
+            const refs = _show().layouts().ref()
+            if (refs.some((a) => a.length > 28)) getMedia(bgPath, mediaSize.small)
+        }
 
         const media = await getMedia(bgPath, mediaSize.slideSize)
         if (!media) return
@@ -162,10 +166,16 @@
         colorStyle = ""
         style = ""
         // $fullColors &&
-        if (viewMode !== "lyrics" || noQuickEdit) colorStyle += `background-color: ${color};`
+        if (viewMode !== "lyrics" || noQuickEdit) colorStyle += `background-color: black;` // ${color}
         if (!$fullColors && (viewMode !== "lyrics" || noQuickEdit)) colorStyle += `color: ${color};`
         if (viewMode === "lyrics" && !noQuickEdit) colorStyle += "background-color: transparent;"
         if (viewMode !== "grid" && viewMode !== "simple" && viewMode !== "groups" && !noQuickEdit && viewMode !== "lyrics") style += `width: calc(${100 / columns}% - 6px)`
+    }
+
+    function fadeColor(hexColor: string | null) {
+        if (typeof hexColor !== "string" || !hexColor.startsWith("#")) return ""
+        const rgb = hexToRgb(hexColor)
+        return `rgba(${rgb.r} ${rgb.g} ${rgb.b} / 0.7)`
     }
 
     $: slideFilter = getSlideFilter(layoutSlide)
@@ -204,8 +214,9 @@
     $: if ($special.styleTemplatePreview !== false) updateItemsList(slide)
     else itemsList = clone(slide.items) || []
     function updateItemsList(_updater: any = null) {
+        // WIP show scripture style preview as well
         if (!allOutputsHasStyleTemplate(show?.reference?.type === "scripture")) return
-        itemsList = setTemplateStyle(null, currentStyle, itemsList, outputId)
+        itemsList = setTemplateStyle(null, currentStyle, itemsList, outputId, slide?.customDynamicValues)
     }
 
     // $: styleTemplate = getStyleTemplate(null, currentStyle)
@@ -248,7 +259,7 @@
     <!-- icons -->
     {#if icons && !altKeyPressed && viewMode !== "simple" && !$focusMode}
         <Icons {slide} {timer} {layoutSlide} {background} {backgroundCount} {duration} {columns} {index} style={viewMode === "lyrics" ? "padding-top: 23px;" : ""} />
-        <Actions {columns} {index} actions={layoutSlide.actions || {}} />
+        <Actions {slide} {columns} {index} actions={layoutSlide.actions || {}} />
     {/if}
     <!-- content -->
     <div class="slide context #{isLocked ? 'default' : $focusMode ? 'slideFocus' : name === null ? 'slideChild' : 'slide'}" class:disabled={layoutSlide.disabled} class:afterEnd={endIndex !== null && index > endIndex} {style} role="none" on:click>
@@ -265,7 +276,7 @@
                     </div>
                 {/if}
                 <Zoomed
-                    background={slide.items?.length && (viewMode !== "lyrics" || noQuickEdit) ? (transparentOutput || $special.transparentSlides ? "var(--primary);" : slide.settings?.color || currentStyle.background || "black") : (viewMode !== "lyrics" || noQuickEdit ? color : "") || "transparent"}
+                    background={slide.items?.length && (viewMode !== "lyrics" || noQuickEdit) ? (transparentOutput || $special.transparentSlides ? "var(--primary);" : slide.settings?.color || currentStyle.background || "black") : (viewMode !== "lyrics" || noQuickEdit ? fadeColor(color) : "") || "transparent"}
                     checkered={viewMode !== "lyrics" && slide.items?.length > 0 && (transparentOutput || $special.transparentSlides) && !bg}
                     let:ratio
                     {resolution}
@@ -320,6 +331,7 @@
                                     {ratio}
                                     slideIndex={index}
                                     ref={{
+                                        type: "show",
                                         showId,
                                         slideId: layoutSlide.id,
                                         id: layoutSlide.id,

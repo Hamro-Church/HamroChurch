@@ -7,6 +7,7 @@
     import { loadCustomFonts } from "../../helpers/fonts"
     import Textbox from "../../slide/Textbox.svelte"
     import SlideItemTransition from "../transitions/SlideItemTransition.svelte"
+    import { waitUntilValueIsDefined } from "../../../utils/common"
 
     export let outputId: string
     export let outSlide: OutSlide
@@ -155,7 +156,11 @@
         return item?.id ? String(item.id) : `idx-${index}`
     }
 
-    function updateItems() {
+    let isClearingToEmpty = false
+    async function updateItems() {
+        let betweenClearingTransition = transition.between || transition
+        if (betweenClearingTransition?.type === "none") betweenClearingTransition.duration = 0
+
         if (!currentSlideItems?.length) {
             scheduleAutoSizePrecompute([])
             currentItems = []
@@ -169,8 +174,17 @@
                 lines: clone(lines),
                 currentStyle: clone(currentStyle)
             }
+
+            // wait for items to properly clear
+            // if changing quickly from text to empty to text again, the first text will be displayed again (due to Svelte transition bug)
+            if (transitionEnabled) {
+                isClearingToEmpty = true
+                setTimeout(() => (isClearingToEmpty = false), betweenClearingTransition.duration)
+            }
             return
         }
+
+        if (isClearingToEmpty) await waitUntilValueIsDefined(() => !isClearingToEmpty, 10, betweenClearingTransition.duration)
 
         scheduleAutoSizePrecompute(currentSlide.items)
 
@@ -292,7 +306,7 @@
                 transition={null}
                 {ratio}
                 {outputId}
-                ref={{ showId: current.outSlide?.id, slideId: current.currentSlide?.id, id: current.currentSlide?.id || "", layoutId: current.outSlide?.layout }}
+                ref={{ type: "show", showId: current.outSlide?.id, slideId: current.currentSlide?.id, id: current.currentSlide?.id || "", layoutId: current.outSlide?.layout }}
                 linesStart={current.lines?.[currentLineId || ""]?.[item.lineReveal ? "linesStart" : "start"]}
                 linesEnd={current.lines?.[currentLineId || ""]?.[item.lineReveal ? "linesEnd" : "end"]}
                 clickRevealed={!!current.lines?.[currentLineId || ""]?.clickRevealed}
@@ -317,7 +331,7 @@
                             {transition}
                             {ratio}
                             {outputId}
-                            ref={{ showId: customOut?.id, slideId: customSlide?.id, id: customSlide?.id || "", layoutId: customOut?.layout, origin }}
+                            ref={{ type: "show", showId: customOut?.id, slideId: customSlide?.id, id: customSlide?.id || "", layoutId: customOut?.layout, origin }}
                             linesStart={customLines?.[currentLineId || ""]?.[item.lineReveal ? "linesStart" : "start"]}
                             linesEnd={customLines?.[currentLineId || ""]?.[item.lineReveal ? "linesEnd" : "end"]}
                             clickRevealed={!!customLines?.[currentLineId || ""]?.clickRevealed}
@@ -338,7 +352,7 @@
 {#if precomputeTargets.length}
     <div class="autosize-precompute" aria-hidden="true">
         {#each precomputeTargets as target (target.key)}
-            <Textbox item={target.item} {ratio} {outputId} outputStyle={currentStyle} {mirror} {preview} {styleIdOverride} ref={{ showId: outSlide?.id, slideId: currentSlide?.id, id: currentSlide?.id || "", layoutId: outSlide?.layout }} autoSizeKey={target.key} on:autosizeReady={handlePrecomputeReady} />
+            <Textbox item={target.item} {ratio} {outputId} outputStyle={currentStyle} {mirror} {preview} {styleIdOverride} ref={{ type: "show", showId: outSlide?.id, slideId: currentSlide?.id, id: currentSlide?.id || "", layoutId: outSlide?.layout }} autoSizeKey={target.key} on:autosizeReady={handlePrecomputeReady} />
         {/each}
     </div>
 {/if}

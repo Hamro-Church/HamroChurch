@@ -159,7 +159,7 @@ export const dropActions = {
                     }
 
                     // pre-download online media
-                    if (typeof path === "string" && path.includes("http")) {
+                    if (typeof path === "string" && path.startsWith("http")) {
                         downloadOnlineMedia(path)
                     }
 
@@ -310,7 +310,7 @@ export const dropActions = {
                 }
 
                 const showId = drag.showId || drag.data[0]?.showId || get(activeShow)?.id || ""
-                const slides: { [key: string]: Slide } = _show(showId).get().slides
+                const slides: { [key: string]: Slide } = _show(showId).get()?.slides || {}
                 let layout = _show(showId).layouts("active").get()[0]?.slides || []
                 const oldData = clone({ slides, layout })
                 const ref = getLayoutRef(showId)
@@ -427,7 +427,7 @@ export const dropActions = {
 
         drag.data.forEach(({ index }) => {
             const ref = getLayoutRef()[index] || {}
-            const slides: { [key: string]: Slide } = _show().get().slides || {}
+            const slides: { [key: string]: Slide } = _show().get()?.slides || {}
             const slide = ref.type === "child" ? slides[ref.parent!.id] : slides[ref.id]
             const activeTab: string | null = get(drawerTabsData)[get(activeDrawerTab)]?.activeSubTab
 
@@ -606,7 +606,7 @@ const slideDrop = {
 
             if (newData.name && slide.group === mediaName) {
                 showsCache.update((shows) => {
-                    if (!shows[showId]) return shows
+                    if (!shows[showId]?.slides?.[slideId]) return shows
                     shows[showId].slides[slideId].group = removeExtension(newData.name)
                     return shows
                 })
@@ -679,7 +679,7 @@ const slideDrop = {
         const showId = drag.showId || drag.data[0]?.showId || get(activeShow)?.id || ""
         history.id = "slide"
         let ref = getLayoutRef(showId)
-        const slides: { [key: string]: Slide } = _show(showId).get().slides
+        const slides: { [key: string]: Slide } = _show(showId).get()?.slides || {}
 
         // remove locked slide groups
         let data: any[] = []
@@ -832,11 +832,11 @@ const slideDrop = {
         const selectedChapters = biblesContent[0].chapters
         const selectedVerses = biblesContent[0].activeVerses
 
-        const { slides: scriptureSlides, groupNames } = await getScriptureSlidesNew({ biblesContent, selectedChapters, selectedVerses })
+        const { slides: scriptureSlides, groupNames, slideDynamicValues } = await getScriptureSlidesNew({ biblesContent, selectedChapters, selectedVerses })
         const slideTemplate: string = get(scriptureSettings).verseNumbers ? "" : get(scriptureSettings).template || ""
         let newSlides = scriptureSlides.map((items, i) => {
             const referenceText = getReferenceText(biblesContent)
-            return { group: groupNames[i] || referenceText, color: null, settings: { template: slideTemplate }, notes: "", items }
+            return { group: groupNames[i] || referenceText, color: null, settings: { template: slideTemplate }, notes: "", items, customDynamicValues: slideDynamicValues?.[i] }
         })
 
         // set to correct order

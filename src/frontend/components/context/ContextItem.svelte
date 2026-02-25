@@ -1,6 +1,6 @@
 <script lang="ts">
     import { cameraManager } from "../../media/cameraManager"
-    import { actions, activeEdit, activeProject, activeRecording, activeShow, categories, colorbars, dictionary, disabledServers, drawerTabsData, effects, effectsLibrary, events, forceClock, livePrepare, media, mediaFolders, os, outputs, overlayCategories, overlays, projects, redoHistory, scriptures, selected, shows, showsCache, slidesOptions, stageShows, styles, templateCategories, timers, topContextActive, undoHistory } from "../../stores"
+    import { actions, activeEdit, activeProject, activeRecording, activeShow, categories, colorbars, dictionary, disabledServers, drawerTabsData, effects, effectsLibrary, events, forceClock, globalTags, livePrepare, media, mediaFolders, os, outputs, overlayCategories, overlays, projects, redoHistory, scriptures, selected, shows, showsCache, slidesOptions, special, stageShows, styles, templateCategories, timers, topContextActive, undoHistory } from "../../stores"
     import { translateText } from "../../utils/language"
     import { closeContextMenu } from "../../utils/shortcuts"
     import { keysToID } from "../helpers/array"
@@ -86,6 +86,10 @@
             if (!$styles[styleId]) disabled = true
             menu.label += `: ${styleId ? $styles[styleId]?.name || "error.not_found" : "main.none"}`
         },
+        lock_sections: () => {
+            const projectId = $activeProject || ""
+            enabled = !!$projects[projectId]?.sectionsLocked
+        },
         lock_show: () => {
             if (!$shows[$selected.data[0]?.id]?.locked) return
             enabled = !!$shows[$selected.data[0].id].locked
@@ -113,6 +117,10 @@
 
             enabled = isEnabled
             menu.label = isEnabled ? "actions.enable" : "actions.disable"
+        },
+        display_tags: () => {
+            enabled = $special.displayTags
+            hide = !Object.keys($globalTags).length
         },
         move_connections: () => {
             hide = $disabledServers.stage === true

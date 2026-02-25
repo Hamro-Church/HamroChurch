@@ -78,7 +78,11 @@
     $: isEmpty = !allSlideItems?.length
     $: tabs.item.disabled = isEmpty
     let previousCount = 0
-    $: if (isEmpty || activeId || activeSlide) previousCount = 0
+    let actualPreviousCount = 0
+    $: if (isEmpty || activeId || activeSlide) {
+        actualPreviousCount = previousCount
+        previousCount = 0
+    }
     $: if (item !== undefined) itemChanged()
     function itemChanged() {
         if (item === null) {
@@ -91,7 +95,8 @@
         if (previousCount === currentCount) return
         previousCount = currentCount
 
-        if (active === "items") active = "text"
+        if (active === "items" && (!actualPreviousCount || actualPreviousCount !== currentCount)) active = "text"
+        actualPreviousCount = 0
         tabs.text.disabled = false
     }
 
@@ -366,7 +371,7 @@
     $: currentShow = $showsCache[$activeShow?.id || ""]
     $: isSlideLockedFn = () => {
         const slideId = ref[activeSlide]?.parent?.id || ref[activeSlide]?.id
-        return !!currentShow.slides?.[slideId]?.locked
+        return !!currentShow?.slides?.[slideId]?.locked
     }
     $: isLocked = activeId ? false : currentShow?.locked || isSlideLockedFn() || profile.global === "read" || profile[currentShow?.category || ""] === "read"
     // $: isDefault = $activeEdit.type === "overlay" ? $overlays[activeId || ""]?.isDefault : $activeEdit.type === "template" ? $templates[activeId || ""]?.isDefault : false

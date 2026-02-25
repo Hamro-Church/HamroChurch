@@ -137,9 +137,8 @@
             if (activeSlides[index]) refreshOut()
         })
 
-        // WIP focus mode does not auto scroll on arrow navigation when many slides (that overflow view area)
-        // always auto scroll in focus mode (if not very many slides)
-        if ($focusMode && projectIndex > -1 && index < 10) {
+        // set to active in focus mode
+        if ($focusMode) {
             activeFocus.set({ id: showId, index: projectIndex, type: "show" })
             return
         }
@@ -171,12 +170,16 @@
         if (!loaded) return
 
         let currentTemplate = currentShow?.settings?.template || ""
+        let createItems = false
 
         // override with category template if any
         const categoryTemplate = $categories[currentShow?.category || ""]?.template || ""
-        if (categoryTemplate && $templates[categoryTemplate]) currentTemplate = categoryTemplate
+        if (categoryTemplate && $templates[categoryTemplate]) {
+            currentTemplate = categoryTemplate
+            createItems = true
+        }
 
-        history({ id: "TEMPLATE", save: false, newData: { id: currentTemplate }, location: { page: "show" } })
+        history({ id: "TEMPLATE", save: false, newData: { id: currentTemplate, data: { createItems } }, location: { page: "show" } })
     }
 
     $: if (showId && $special.capitalize_words) capitalizeWords()

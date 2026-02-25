@@ -5,7 +5,7 @@
     import { ShowType } from "../../../types/Show"
     import { addProjectItem, addToProject, updateRecentlyAddedFiles } from "../../converters/project"
     import { actions, activeFocus, activePopup, activeProject, activeShow, contextActive, drawer, focusMode, fullColors, labelsDisabled, playerVideos, projects, projectView, recentFiles, selected, shows, special } from "../../stores"
-    import { triggerFunction } from "../../utils/common"
+    import { newToast, triggerFunction } from "../../utils/common"
     import { getAccess } from "../../utils/profile"
     import { getActionIcon } from "../actions/actions"
     import { getTimeUntilClock } from "../drawer/timers/timers"
@@ -99,7 +99,10 @@
 
             if (!splittedProjectsList.at(-1)) newSection()
             else if (a.type === "section" && (a.color || previousItem?.type === "section")) newSection()
-            else if (previousItem?.type !== "section" && a.type !== "section" && a.type !== previousItem?.type) newSection()
+            else if (previousItem?.type !== "section" && a.type !== "section" && a.type !== previousItem?.type) {
+                if (splittedProjectsList.at(-1)?.color === "") newSection()
+                else splittedProjectsList.at(-1)!.items.push({ type: "DIVIDER", id: "" })
+            }
 
             a.index = index
             splittedProjectsList.at(-1)!.items.push(a)
@@ -215,58 +218,63 @@
                             {@const borderRadiusStyle = `${isFirst ? "border-top-right-radius: 10px;" : ""}${isLast ? "border-bottom-right-radius: 10px;" : ""}`}
                             {@const sectionTime = show.data?.time ? getTimeUntilClock(show.data.time, today) : 0}
                             {@const isActive = show.type === "section" ? ($focusMode ? $activeFocus.id === show.id : $activeShow?.id === show.id) : false}
+                            {@const isLocked = show.type === "section" && $projects[$activeProject || ""]?.sectionsLocked}
 
-                            <SelectElem id="show" dropAbove={isFirst} triggerOnHover data={{ ...show, name: show.name || removeExtension(getFileName(show.id)), index }} {fileOver} borders="edges" trigger="column" draggable>
-                                {#if show.type === "section"}
-                                    <MaterialButton
-                                        {isActive}
-                                        class="section {projectReadOnly ? '' : `context #project_section ${show.color ? 'color-border' : ''}`}"
-                                        style="{borderRadiusStyle}justify-content: left;background-color: var(--primary-darkest);border-top: 1px solid var(--primary-lighter);padding: 0.1em 1em;{$fullColors ? `background-color: ${show.color || 'var(--primary-darker)'} !important;color: ${getContrast(show.color || '')};` : `border-bottom: 1px solid ${show.color || 'transparent'} !important;`}"
-                                        on:click={(e) => {
-                                            if (e.detail.ctrl) return
-                                            if ($focusMode) activeFocus.set({ id: show.id, index, type: show.type })
-                                            else activeShow.set({ ...show, index })
-                                        }}
-                                        tab
-                                    >
-                                        {#if sectionTime}
-                                            <span style="font-weight: normal;">
-                                                <span style="opacity: 0.7;">{show.data.time}</span>
-                                                <!-- && sectionTime < 3600 -->
-                                                {#if sectionTime > 0 && closestTime === sectionTime}
-                                                    <span style="color: var(--secondary);">{joinTimeBig(sectionTime)}</span>
-                                                {/if}
-                                            </span>
-                                        {/if}
-
-                                        <p style="min-height: 10px;max-width: 97%;">
-                                            {#if show.name?.length}
-                                                {show.name}
-                                            {:else}
-                                                <span style="opacity: 0.5;"><T id="main.unnamed" /></span>
+                            {#if show.type === "DIVIDER"}
+                                <div style="border-top: 1px solid var(--primary-lighter);margin: 5px 0;"></div>
+                            {:else}
+                                <SelectElem id="show" dropAbove={isFirst} triggerOnHover data={{ ...show, name: show.name || removeExtension(getFileName(show.id)), index }} {fileOver} borders="edges" trigger="column" draggable={!isLocked} selectable={!isLocked}>
+                                    {#if show.type === "section"}
+                                        <MaterialButton
+                                            {isActive}
+                                            class="section {projectReadOnly || isLocked ? '' : `context #project_section ${show.color ? 'color-border' : ''}`}"
+                                            style="{borderRadiusStyle}justify-content: left;background-color: var(--primary-darkest);border-top: 1px solid var(--primary-lighter);padding: 0.1em 1em;{$fullColors ? `background-color: ${show.color || 'var(--primary-darker)'} !important;color: ${getContrast(show.color || '')};` : `border-bottom: 1px solid ${show.color || 'transparent'} !important;`}"
+                                            on:click={(e) => {
+                                                if (e.detail.ctrl) return
+                                                if ($focusMode) activeFocus.set({ id: show.id, index, type: show.type })
+                                                else activeShow.set({ ...show, index })
+                                            }}
+                                            tab
+                                        >
+                                            {#if sectionTime}
+                                                <span style="font-weight: normal;">
+                                                    <span style="opacity: 0.7;">{show.data.time}</span>
+                                                    <!-- && sectionTime < 3600 -->
+                                                    {#if sectionTime > 0 && closestTime === sectionTime}
+                                                        <span style="color: var(--secondary);">{joinTimeBig(sectionTime)}</span>
+                                                    {/if}
+                                                </span>
                                             {/if}
-                                        </p>
 
-                                        {#if show.notes?.length}
-                                            <p style="opacity: 0.5;font-weight: normal;font-size: 0.9em;max-width: 50%;">{show.notes}</p>
-                                        {/if}
+                                            <p style="min-height: 10px;max-width: 97%;">
+                                                {#if show.name?.length}
+                                                    {show.name}
+                                                {:else}
+                                                    <span style="opacity: 0.5;"><T id="main.unnamed" /></span>
+                                                {/if}
+                                            </p>
 
-                                        {#if triggerAction && $actions[triggerAction]}
-                                            <span style="display: flex;position: absolute;inset-inline-end: 7px;" data-title={$actions[triggerAction].name}>
-                                                <Icon id={getActionIcon(triggerAction)} size={0.8} white />
-                                            </span>
-                                        {/if}
+                                            {#if show.notes?.length}
+                                                <p style="opacity: 0.5;font-weight: normal;font-size: 0.9em;max-width: 50%;">{show.notes}</p>
+                                            {/if}
 
-                                        {#if isActive}
-                                            <span class="arrow">
-                                                <Icon id="next" white />
-                                            </span>
-                                        {/if}
-                                    </MaterialButton>
-                                {:else}
-                                    <ShowButton id={show.id} {show} {index} class={projectReadOnly ? "" : `context #${pcoLink ? "pco_item__" : ""}project_${getContextMenuId(show.type)}`} style={borderRadiusStyle} icon isProject />
-                                {/if}
-                            </SelectElem>
+                                            {#if triggerAction && $actions[triggerAction]}
+                                                <span style="display: flex;position: absolute;inset-inline-end: 7px;" data-title={$actions[triggerAction].name}>
+                                                    <Icon id={getActionIcon(triggerAction)} size={0.8} white />
+                                                </span>
+                                            {/if}
+
+                                            {#if isActive}
+                                                <span class="arrow">
+                                                    <Icon id="next" white />
+                                                </span>
+                                            {/if}
+                                        </MaterialButton>
+                                    {:else}
+                                        <ShowButton id={show.id} {show} {index} class={projectReadOnly ? "" : `context #${pcoLink ? "pco_item__" : ""}project_${getContextMenuId(show.type)}`} style={borderRadiusStyle} icon isProject />
+                                    {/if}
+                                </SelectElem>
+                            {/if}
                         {/each}
                     </div>
                 {/each}
@@ -326,6 +334,12 @@
                             <T id="actions.import" />
                         </MaterialButton> -->
 
+                        <!-- WIP people would not know what this does -->
+                        <!-- <MaterialButton variant="outlined" title="actions.import: formats.clipboard" on:click={clipboardToProject}>
+                            <Icon id="paste" white />
+                            <T id="formats.clipboard" />
+                        </MaterialButton> -->
+
                         {#if Object.keys($shows).length > 10}
                             <MaterialButton variant="outlined" title="tabs.search_tip [Ctrl+F]" on:click={openSearch}>
                                 <Icon id="search" white />
@@ -356,9 +370,13 @@
             <div class="divider"></div>
         {/if}
 
-        <MaterialButton icon="section" title="new.section" on:click={addSection} white={lessVisibleSection}>
-            {#if !lessVisibleSection && !$labelsDisabled}<T id="new.section" />{/if}
-        </MaterialButton>
+        {#if $projects[$activeProject]?.sectionsLocked}
+            <MaterialButton icon="lock" title="output.state_locked" class="context #new_section" on:click={() => newToast("output.state_locked")} white={lessVisibleSection} />
+        {:else}
+            <MaterialButton icon="section" title="new.section" class="context #new_section" on:click={addSection} white={lessVisibleSection}>
+                {#if !lessVisibleSection && !$labelsDisabled}<T id="new.section" />{/if}
+            </MaterialButton>
+        {/if}
     </FloatingInputs>
 {/if}
 

@@ -219,17 +219,14 @@ function startDownload(data: DownloadFile) {
 
 /// //
 
-const downloading: string[] = []
+const downloading = new Set<string>()
 export function downloadMedia({ url, contentFile }: { url: string; contentFile?: any }) {
-    if (!url?.includes("http") || url?.includes("blob:")) return
+    if (!url?.startsWith("http") || url?.startsWith("blob:")) return
 
-    if (downloading.includes(url)) return
-    downloading.push(url)
+    if (downloading.has(url)) return
+    downloading.add(url)
 
-    const removeFromDownloading = () => {
-        const index = downloading.indexOf(url)
-        if (index > -1) downloading.splice(index, 1)
-    }
+    const removeFromDownloading = () => downloading.delete(url)
 
     console.info("Downloading online media: " + url)
 
@@ -311,10 +308,10 @@ export function downloadMedia({ url, contentFile }: { url: string; contentFile?:
 }
 
 export async function checkIfMediaDownloaded({ url, contentFile }: { url: string; contentFile?: any }) {
-    if (!url?.includes("http")) return null
+    if (!url?.startsWith("http")) return null
 
     // still being downloaded
-    if (downloading.includes(url)) return { path: url, buffer: null, isDownloading: true }
+    if (downloading.has(url)) return { path: url, buffer: null, isDownloading: true }
 
     const outputPath = getMediaThumbnailPath(url, contentFile)
     if (!doesPathExist(outputPath)) return null

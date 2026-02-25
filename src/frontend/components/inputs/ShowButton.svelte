@@ -2,11 +2,11 @@
     import { getDocument, GlobalWorkerOptions } from "pdfjs-dist"
     import type { ClickEvent, MediaStyle } from "../../../types/Main"
     import { AudioPlayer } from "../../audio/audioPlayer"
-    import { activeEdit, activeFocus, activePage, activeProject, activeShow, categories, focusMode, media, notFound, outLocked, outputs, overlays, playerVideos, playingAudio, projects, refreshEditSlide, shows, showsCache, styles } from "../../stores"
+    import { activeEdit, activeFocus, activePage, activeProject, activeShow, categories, focusMode, globalTags, media, notFound, outLocked, outputs, overlays, playerVideos, playingAudio, projects, refreshEditSlide, shows, showsCache, special, styles } from "../../stores"
     import { getAccess } from "../../utils/profile"
     import { historyAwait } from "../helpers/history"
     import Icon from "../helpers/Icon.svelte"
-    import { encodeFilePath, getFileName, getMedia, getMediaLayerType, getMediaStyle, mediaSize, removeExtension } from "../helpers/media"
+    import { encodeFilePath, getExtension, getFileName, getMedia, getMediaLayerType, getMediaStyle, getMediaType, mediaSize, removeExtension } from "../helpers/media"
     import { findMatchingOut, getActiveOutputs, setOutput } from "../helpers/output"
     import { loadShows } from "../helpers/setShow"
     import { checkName, getLayoutRef } from "../helpers/show"
@@ -211,7 +211,9 @@
         }
 
         const media = await getMedia(id, mediaSize.small)
-        if (media?.thumbnail) thumbnailPath = media.thumbnail
+        if (media) thumbnailPath = media.thumbnail || media.altPath || media.path
+        // online videos (Pixabay) might not have a thumbnail ready
+        if (getMediaType(getExtension(thumbnailPath)) === "video") thumbnailPath = ""
     }
 </script>
 
@@ -253,8 +255,22 @@
                 {/if}
             {:else}
                 <span class="cell">
-                    {#if showNumber}
-                        <span class="number">{showNumber}</span>
+                    <!-- tags -->
+                    {#if $special.displayTags}
+                        <span class="tags">
+                            {#each $shows[show.id]?.quickAccess?.tags || [] as tagId}
+                                {@const tag = $globalTags[tagId]}
+                                {#if tag}
+                                    <span class="tag" style="--color: {tag.color || 'white'};">
+                                        <p style="margin: 0;">{tag.name || "—"}</p>
+                                    </span>
+                                {/if}
+                            {/each}
+                        </span>
+                    {/if}
+
+                    {#if showNumber || $special.displayTags}
+                        <span class="number">{showNumber || ""}</span>
                     {/if}
 
                     <span class="date">{data || ""}</span>
@@ -365,5 +381,26 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    /* tags */
+
+    .tags {
+        display: flex;
+        gap: 5px;
+        padding-left: 10px;
+    }
+
+    .tag {
+        --color: white;
+
+        display: flex;
+        padding: 0px 5px;
+
+        color: var(--color);
+        font-weight: 600;
+
+        border-radius: 20px;
+        border: 2px solid var(--color);
     }
 </style>

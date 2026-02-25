@@ -94,6 +94,8 @@ export interface Slide {
     children?: string[]
     notes: string
     items: Item[]
+
+    customDynamicValues?: { [key: string]: string | [string, string][] } // used for scripture slides
 }
 
 export interface Item {
@@ -565,6 +567,7 @@ export interface OutSlide {
 
     translations?: number // scripture translations count (for style template)
     attributionString?: string // scripture custom attributionString
+    customDynamicValues?: { [key: string]: string | [string, string][] } // used for scripture slides
 }
 
 export interface OutTransition {
@@ -595,6 +598,6 @@ export interface Tag {
 
 export type ID = string
 export type ItemType = "text" | "list" | "media" | "camera" | "timer" | "clock" | "button" | "events" | "weather" | "variable" | "web" | "mirror" | "icon" | "slide_tracker" | "visualizer" | "captions" | "metronome" | "current_output" // "shape" | "video"
-export type ShowType = "show" | "image" | "video" | "audio" | "player" | "section" | "overlay" | "pdf" | "ppt" | "screen" | "ndi" | "camera" | "folder" // "private"
+export type ShowType = "DIVIDER" | "show" | "image" | "video" | "audio" | "player" | "section" | "overlay" | "pdf" | "ppt" | "screen" | "ndi" | "camera" | "folder" // "private"
 export type TransitionType = "none" | "blur" | "fade" | "crossfade" | "fly" | "scale" | "slide" | "spin"
 export type MediaType = "media" | "video" | "image" | "effect" | "screen" | "ndi" | "camera" | "player" | "audio"

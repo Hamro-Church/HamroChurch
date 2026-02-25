@@ -30,6 +30,7 @@ import {
     activeVariableTagFilter,
     audioFolders,
     categories,
+    cloudSyncData,
     colorbars,
     currentOutputSettings,
     drawer,
@@ -64,6 +65,7 @@ import {
     showsCache,
     slidesOptions,
     sorted,
+    special,
     stageShows,
     styles,
     templateCategories,
@@ -156,6 +158,10 @@ const clickActions = {
 
         activePage.set("show")
         focusMode.set(!get(focusMode))
+
+        if (!get(focusMode) && get(cloudSyncData).enabled) {
+            showsCache.set({})
+        }
     },
     fullscreen: () => sendMain(Main.FULLSCREEN),
     // edit
@@ -511,6 +517,13 @@ const clickActions = {
     },
     action_history: () => {
         activePopup.set("action_history")
+    },
+
+    display_tags: () => {
+        special.update((a) => {
+            a.displayTags = !a.displayTags
+            return a
+        })
     },
 
     addToShow: (obj: ObjData) => {
@@ -910,9 +923,25 @@ const clickActions = {
             return a
         })
     },
-    section: (obj) => {
-        const index: number = obj.sel.data[0] ? obj.sel.data[0].index + 1 : get(projects)[get(activeProject)!]?.shows?.length || 0
+    section: (obj: ObjData) => {
+        if (get(projects)[get(activeProject)!]?.sectionsLocked) {
+            newToast("output.state_locked")
+            return
+        }
+
+        const index: number = obj.sel?.data[0] ? obj.sel.data[0].index + 1 : get(projects)[get(activeProject)!]?.shows?.length || 0
         history({ id: "UPDATE", newData: { key: "shows", index }, oldData: { id: get(activeProject) }, location: { page: "show", id: "section" } })
+    },
+    lock_sections: () => {
+        const projectId = get(activeProject)
+        if (!projectId) return
+
+        projects.update((a) => {
+            if (!a[projectId]) return a
+
+            a[projectId].sectionsLocked = !a[projectId].sectionsLocked
+            return a
+        })
     },
     mark_played: (obj: ObjData) => {
         const indexes = (obj.sel?.data || []).map((item) => Number(item.index))
@@ -1897,7 +1926,10 @@ export async function removeSlide(initialData: any[], type: "delete" | "remove" 
             newToast("output.state_locked")
             return
         }
-        if (type === "remove" && showSlides[slideId]?.group === ".") return
+        if (type === "remove" && showSlides[slideId]?.group === ".") {
+            newToast("inputs.group: main.none")
+            return
+        }
 
         data.push(a)
     })
