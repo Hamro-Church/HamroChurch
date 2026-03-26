@@ -41,6 +41,7 @@ import {
     fullColors,
     gain,
     globalTags,
+    globalRegexes,
     groupNumbers,
     groups,
     labelsDisabled,
@@ -57,6 +58,7 @@ import {
     outLocked,
     overlayCategories,
     overlays,
+    playerTags,
     playerVideos,
     ports,
     profiles,
@@ -133,7 +135,10 @@ export function updateSettings(data: any) {
     if (disabled.remote === undefined) disabled.remote = false
     if (disabled.stage === undefined) disabled.stage = false
     const customPorts: { [key: string]: number } = data.ports || { remote: 5510, stage: 5511 }
-    sendMain(Main.START, { ports: customPorts, max: data.maxConnections === undefined ? 10 : data.maxConnections, disabled, data: get(serverData) })
+    // let potential NDI output start first
+    setTimeout(() => {
+        sendMain(Main.START, { ports: customPorts, max: data.maxConnections === undefined ? 10 : data.maxConnections, disabled, data: get(serverData) })
+    }, 4000)
 
     // theme
     let currentTheme = get(themes)[data.theme]
@@ -315,6 +320,7 @@ const updateList: { [key in SaveListSettings | SaveListSyncedSettings]: any } = 
     midiIn: (v: any) => actions.set(v),
     videoMarkers: (v: any) => videoMarkers.set(v),
     mediaTags: (v: any) => mediaTags.set(v),
+    playerTags: (v: any) => playerTags.set(v),
     actionTags: (v: any) => actionTags.set(v),
     variableTags: (v: any) => variableTags.set(v),
     customizedIcons: (v: any) => customizedIcons.set(v),
@@ -326,6 +332,7 @@ const updateList: { [key in SaveListSettings | SaveListSyncedSettings]: any } = 
     eqPresets: (v: any) => eqPresets.set(v),
     effectsLibrary: (v: any) => effectsLibrary.set(v),
     globalTags: (v: any) => globalTags.set(v),
+    globalRegexes: (v: any) => globalRegexes.set(v),
     customMetadata: (v: any) => customMetadata.set(v),
     companion: (v: any) => {
         companion.set(v)

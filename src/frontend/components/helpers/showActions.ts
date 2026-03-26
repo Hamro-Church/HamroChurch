@@ -847,8 +847,12 @@ export function updateOut(showId: string, index: number, layout: LayoutRef[], ex
             setTimeout(() => {
                 data.audio?.forEach((audio: string) => {
                     const a = clone(_show(showId).get("media")?.[audio] || {})
+                    if (!a) return
 
-                    if (a) AudioPlayer.start(a.path, { name: a.name }, { pauseIfPlaying: false })
+                    // don't start from 0 again if already playing
+                    if (AudioPlayer.getPlaying(a.path)) return
+
+                    AudioPlayer.start(a.path, { name: a.name }, { pauseIfPlaying: false })
                 })
             }, 200)
         }
@@ -1334,7 +1338,7 @@ const replaceTokens = (str: string, id: string, inputs: string[] = []) => {
     })
 }
 
-export function replaceDynamicValues(text: string, { showId, layoutId, slideIndex, type, id, mode }: any, _updater = 0) {
+export function replaceDynamicValues(text: string, { showId, layoutId, slideIndex, type, id, mode }: any, _updater = 0, popup = false) {
     const isOutputWin = isOutputWindow()
 
     if (type === "stage") {
@@ -1351,7 +1355,7 @@ export function replaceDynamicValues(text: string, { showId, layoutId, slideInde
 
     // remove unused scripture dynamic values ({scripture_X} / {scriptureNUM_X})
     const regex = /\{scripture(?:\d+)?_[^}]+\}/g
-    if (regex.test(text)) text = text.replace(regex, "")
+    if (regex.test(text) && !popup) text = text.replace(regex, "")
 
     const customIds = ["slide_text_current", "active_layers", "active_styles", "output_windows_active", "log_song_usage"]
     ;[...getDynamicIds(false, mode), ...customIds].forEach((dynamicId) => {
@@ -1629,11 +1633,11 @@ const scriptureDynamicValues = {
     scripture_text: () => "In the beginning...",
     scripture_book: () => "Genesis",
     scripture_book_abbr: () => "Gen",
-    scripture_verses: () => "1",
     scripture_chapter: () => "1",
-    scripture_reference: () => "Genesis 1:1", // current slide only
-    scripture_reference_full: () => "Genesis 1:1-3", // across all slides
-    scripture_reference_last: () => "", // full reference, only on last slide
+    scripture_verses: () => "1-3",
+    scripture_reference: () => "Genesis 1:1-3", // current slide only
+    scripture_reference_full: () => "Genesis 1:1-10", // across all slides
+    scripture_reference_last: () => "Last slide only", // full reference, only on last slide
     scripture_name: () => "King James Version", // version
     // scripture_name_abbr: () => "KJV",
     // chapter_verses, book_chapters
