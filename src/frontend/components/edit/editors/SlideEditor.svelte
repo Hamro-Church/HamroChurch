@@ -270,7 +270,7 @@
             if (Slide?.items.length === 1 && !$activeEdit.items.length) {
                 activeEdit.update((a) => ({ ...(a || {}), items: [0] }))
                 const elem = document.querySelector(".editItem")?.querySelector(".edit")
-                if (elem) {
+                if (elem && !$special.slideTimelineActive) {
                     elem.addEventListener("focus", () => setCaretAtEnd(elem))
                     ;(elem as HTMLElement).focus()
                 }
@@ -522,6 +522,8 @@
     {/if}
 
     {#if $special.slideTimelineActive}
+        <MaterialZoom hidden columns={zoom} min={0.2} max={4} defaultValue={1} addValue={0.1} on:change={updateZoom} />
+
         <Resizeable id="slide_timeline" side="bottom" maxWidth={DEFAULT_WIDTH} minWidth={40}>
             {#key currentShowId + "-" + $activeEdit.slide}
                 <Timeline type="slide" isClosed={$resized.slide_timeline <= 40} />

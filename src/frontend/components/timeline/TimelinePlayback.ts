@@ -152,6 +152,8 @@ export class TimelinePlayback {
         this.checkAudioStop(this.actions)
 
         this.runCallbacks(this.onStopCallbacks)
+
+        if (this.type === "slide") this.tick(false)
     }
 
     close() {
@@ -179,6 +181,11 @@ export class TimelinePlayback {
     setActions(actions: TimelineAction[]) {
         this.actions = actions
         this.updateDuration()
+    }
+
+    private shouldLoop: boolean = false
+    setLoopState(shouldLoop: boolean) {
+        this.shouldLoop = shouldLoop
     }
 
     private showDurations: Record<string, number> = {}
@@ -297,6 +304,18 @@ export class TimelinePlayback {
 
         this.playClosestSlide(this.actions)
         this.styleActions(this.actions)
+
+        // loop back when reached last action
+        if (this.shouldLoop) {
+            const lastActionTime = this.actions.length > 0 ? Math.max(...this.actions.map((a) => a.time + (a.duration || 0) * 1000)) : 0
+            if (this.getTimeWithOffset(this.currentTime) >= lastActionTime) {
+                this.currentTime = 0
+
+                this.sendTimecode()
+                if (this.onTimeCallback) this.onTimeCallback(this.currentTime)
+                return
+            }
+        }
 
         // check end
         if (this.currentTime >= this.duration) {

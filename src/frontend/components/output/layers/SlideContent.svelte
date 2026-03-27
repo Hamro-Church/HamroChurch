@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte"
     import type { Item, OutSlide, SlideData, TimelineAction, Transition } from "../../../../types/Show"
-    import { showsCache } from "../../../stores"
+    import { showsCache, slideTimelineSpeedMultiplier } from "../../../stores"
     import { waitUntilValueIsDefined } from "../../../utils/common"
     import { shouldItemBeShown } from "../../edit/scripts/itemHelpers"
     import { clone } from "../../helpers/array"
@@ -309,10 +309,16 @@
     }
     onMount(() => {
         const interval = setInterval(() => {
-            if (isClearing || !isReady) return
+            if (isClearing || !isReady || !timelineActions.length) return
             // WIP use actual slide timeline pos when available?
-            timelinePos += 10
+            timelinePos += 10 * $slideTimelineSpeedMultiplier
             styleActions(timelineActions)
+
+            // loop back when reached last action
+            if (currentSlide?.timeline?.loop) {
+                const lastActionTime = Math.max(...timelineActions.map((a) => a.time + (a.duration || 0) * 1000))
+                if (timelinePos >= lastActionTime) timelinePos = 0
+            }
         }, 10)
 
         function styleActions(actions: TimelineAction[]) {
@@ -327,7 +333,7 @@
                 groupedActions.get(key)?.push(action)
             }
 
-            const slideKey = `${outSlide?.id}-${outSlide?.index}`
+            const slideKey = `${outSlide?.id}-${outSlide?.layout}-${outSlide?.index}`
             const items = clone(timelineItems.get(slideKey) || currentItems)
 
             const currentTime = timelinePos
@@ -342,9 +348,7 @@
                 // const slideId = ref[outSlide?.index || 0]?.id
                 // SlideTimeline.triggerAction(action, value, { id: outSlide.id, slideId: slideId })
 
-                // TODO: item index
-                const itemIndexes = [0]
-
+                const itemIndexes = action.data.indexes ?? [0]
                 itemIndexes.forEach((itemIndex) => {
                     const item = items[itemIndex]
                     if (!item) return
@@ -384,7 +388,7 @@
                 disableListTransition={mirror}
                 chords={item.chords?.enabled}
                 animationStyle={animationData.style || {}}
-                item={timelineItems.get(`${current.outSlide?.id}-${current.outSlide?.index}`)?.[index] || item}
+                item={timelineItems.get(`${current.outSlide?.id}-${current.outSlide?.layout}-${current.outSlide?.index}`)?.[index] || item}
                 transition={null}
                 {ratio}
                 {outputId}
@@ -410,7 +414,7 @@
                             disableListTransition={mirror}
                             chords={customItem.chords?.enabled}
                             animationStyle={animationData.style || {}}
-                            item={timelineItems.get(`${customOut?.id}-${customOut?.index}`)?.[index] || customItem}
+                            item={timelineItems.get(`${customOut?.id}-${customOut?.layout}-${customOut?.index}`)?.[index] || customItem}
                             {transition}
                             {ratio}
                             {outputId}
