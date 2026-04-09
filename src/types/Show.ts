@@ -224,6 +224,7 @@ export interface DynamicEvent {
 export interface Scrolling {
     type: "none" | "top_bottom" | "bottom_top" | "left_right" | "right_left"
     speed?: number
+    gap?: number
 }
 
 // pre 1.5.0
@@ -304,7 +305,10 @@ export interface TimelineAction {
     time: number // ms
     duration?: number // ms (media)
     name: string
+    color?: string
     type: string // "action" | "slide" | "show" | "audio" | "style"
+    easing?: { type?: "cubic-bezier"; x1: number; y1: number; x2: number; y2: number }
+
     data: {
         id?: string // slide/action/show
         path?: string // audio

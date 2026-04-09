@@ -4,6 +4,7 @@
     import { Main } from "../../../../types/IPC/Main"
     import type { ClickEvent, FileFolder } from "../../../../types/Main"
     import { requestMain } from "../../../IPC/main"
+    import { addProjectItem } from "../../../converters/project"
     import { activeDrawerTab, activeEdit, activeFocus, activeMediaTagFilter, activePopup, activeShow, audioFolders, drawerTabsData, focusMode, labelsDisabled, media, mediaFolders, mediaOptions, outLocked, outputs, popupData, providerConnections, selectAllMedia, selected, sorted, special } from "../../../stores"
     import Icon from "../../helpers/Icon.svelte"
     import T from "../../helpers/T.svelte"
@@ -368,10 +369,12 @@
     function keydown(e: KeyboardEvent) {
         if (e.key === "Enter" && searchValue.length > 1 && e.target?.closest(".search")) {
             if (fileCount) {
-                let file = mediaFilesOnly[0]
+                // let file = mediaFilesOnly[0] // not updating
+                let file = searchedFiles.filter((a) => !a.isFolder)[0]
 
-                if ($focusMode) activeFocus.set({ id: file.path, type: getMediaType(getExtension(file.name)) })
-                else activeShow.set({ id: file.path, name: file.name, type: getMediaType(getExtension(file.name)) })
+                // add to project
+                const data = { id: file.path, name: file.name, type: getMediaType(getExtension(file.name)) }
+                addProjectItem(data)
 
                 activeFile = searchedFiles.findIndex((a) => a.path === file.path)
                 if (activeFile < 0) activeFile = null

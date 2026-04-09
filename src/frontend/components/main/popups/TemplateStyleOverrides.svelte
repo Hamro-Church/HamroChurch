@@ -47,10 +47,12 @@
         commit(next)
     }
 
+    const preStyle = "paint-order: stroke fill;"
+    const resetStyle = ";font-size: unset;"
     $: templatesList = sortByName(
         keysToID($templates)
             .filter((a) => a.settings?.mode === "text")
-            .map((a) => ({ value: a.id, label: a.name, style: new TemplateHelper(a.id).getTextStyle() + ";font-size: unset;" })),
+            .map((a) => ({ value: a.id, label: a.name, style: preStyle + new TemplateHelper(a.id).getTextStyle() + resetStyle })),
         "value"
     )
 

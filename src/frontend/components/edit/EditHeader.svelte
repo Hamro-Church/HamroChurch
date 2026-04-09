@@ -51,7 +51,6 @@
 
                 <div class="DIVIDER"></div>
 
-                <!-- comming soon -->
                 <MaterialButton title="timeline.toggle_timeline" on:click={() => special.update((a) => ({ ...a, slideTimelineActive: !a.slideTimelineActive }))}>
                     <Icon id="timeline" white={!$special.slideTimelineActive} />
 

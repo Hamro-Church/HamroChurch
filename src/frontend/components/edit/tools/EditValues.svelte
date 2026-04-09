@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher, onDestroy } from "svelte"
-    import { actions, activeEdit, activeStage, outputs, special, timers } from "../../../stores"
+    import { actions, activeEdit, activePage, activeStage, outputs, special, timers } from "../../../stores"
     import { throttle } from "../../../utils/common"
     import { translateText } from "../../../utils/language"
     import { mediaExtensions } from "../../../values/extensions"
@@ -117,7 +117,7 @@
         if (input.multiplier) value = value / input.multiplier
 
         // update on change (if another keyframe of same key exists)
-        if ($special.slideTimelineActive && (onlyTimeline || SlideTimeline.hasActionWithKey(input.key || "", type))) {
+        if ($special.slideTimelineActive && $activePage === "edit" && ($activeEdit.type || "show") === "show" && (onlyTimeline || SlideTimeline.hasActionWithKey(input.key || "", type))) {
             let timelineValue = value
 
             if (!onlyTimeline && lastChanged.key === input.key && lastChanged.value === value) return
@@ -326,7 +326,7 @@
                             {#if !input.hidden}
                                 {@const value = getValue(input, { styles, item })}
                                 {@const values = getValues(input)}
-                                {@const hasTimelineAction = $special.slideTimelineActive && SlideTimeline.hasActionAtTime(input.key || "", type, $activeEdit?.items?.length ? $activeEdit.items : [0], timelineUpdater)}
+                                {@const hasTimelineAction = $special.slideTimelineActive && $activePage === "edit" && ($activeEdit.type || "show") === "show" && SlideTimeline.hasActionAtTime(input.key || "", type, $activeEdit?.items?.length ? $activeEdit.items : [0], timelineUpdater)}
 
                                 {#if input.type === "fontDropdown"}
                                     <MaterialFontDropdown label={values.label} {value} style={values.style} fontStyleValue={input.styleValue} on:change={(e) => changed(e, input)} on:fontStyle={(e) => changed(e, { ...input, key: "font" })} enableFontStyles />

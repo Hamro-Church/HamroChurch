@@ -785,6 +785,7 @@
         "next_project_item": "Next project item",
         "previous_project_item": "Previous project item",
         "index_select_project_item": "Open project item at index",
+        "name_start_project_item": "Start project item by name",
         "name_select_show": "Open show with name",
         "set_template_active": "Set template on active show",
         "change_slide_timeline_speed": "Change slide timeline speed",
@@ -860,7 +861,8 @@
     "timeline": {
         "toggle_timeline": "Toggle timeline",
         "start_time": "Start time",
-        "add_keyframe": "Add keyframe"
+        "add_keyframe": "Add keyframe",
+        "toggle_curve_editor": "Toggle curve editor"
     },
     "animate": {
         "change": "Change",
@@ -1069,6 +1071,7 @@
         "special": "Special",
         "scrolling": "Scrolling",
         "scrolling_speed": "Scrolling duration",
+        "gap": "Gap spacing",
         "top_bottom": "Top to bottom",
         "bottom_top": "Bottom to top",
         "left_right": "Left to right",

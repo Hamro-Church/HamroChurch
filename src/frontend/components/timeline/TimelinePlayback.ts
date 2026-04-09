@@ -80,6 +80,7 @@ export class TimelinePlayback {
 
             // update item styles to state 0
             setTimeout(() => {
+                // opening a slide timeline will reset the playing timeline because of this
                 if (activePlayback && activePlayback.getId() === JSON.stringify(this.ref)) activePlayback.tick(false)
                 else this.tick(false)
             })
@@ -162,7 +163,8 @@ export class TimelinePlayback {
     }
 
     setTime(time: number, isSeeking: boolean = false) {
-        this.setAsPlayer()
+        if (this.type === "slide") this.setAsPlayer()
+
         this.currentTime = time
         if (this.onTimeCallback) this.onTimeCallback(this.currentTime)
 
@@ -306,7 +308,7 @@ export class TimelinePlayback {
         this.styleActions(this.actions)
 
         // loop back when reached last action
-        if (this.shouldLoop) {
+        if (this.isPlaying && this.shouldLoop) {
             const lastActionTime = this.actions.length > 0 ? Math.max(...this.actions.map((a) => a.time + (a.duration || 0) * 1000)) : 0
             if (this.getTimeWithOffset(this.currentTime) >= lastActionTime) {
                 this.currentTime = 0
@@ -486,6 +488,8 @@ export class TimelinePlayback {
         this.slideCount = 0
 
         const slideActions = actions.filter((a) => a.type === "slide")
+        if (!slideActions.length) return
+
         // const now = this.getTimeWithOffset(this.currentTime) + 50 // add small offset to not interfere with exact timing of actions
         // const closestSlide = slideActions.reduce((prev, curr) => (curr.time > (prev?.time ?? -1) && curr.time <= now ? curr : prev), null as TimelineAction | null)
         // add small offset to not interfere with exact timing of actions
@@ -504,6 +508,8 @@ export class TimelinePlayback {
 
     private styleActions(actions: TimelineAction[]) {
         const itemStyleActions = actions.filter((a) => a.type === "style")
+        if (!itemStyleActions.length) return
+
         // group by style key
         const groupedActions = new Map<string, TimelineAction[]>()
         for (const action of itemStyleActions) {

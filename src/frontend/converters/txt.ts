@@ -71,13 +71,13 @@ export function convertText({ name = "", origin = "", category = null, text, noF
             }
 
             const meta = line.split("=")
-            const metaKey = meta[0].toLowerCase().replaceAll(" ", "")
+            const metaKey = meta[0].toLowerCase().replaceAll(" ", "").trim()
             if (metaKey === "notes") {
                 plainNotes = meta[1]
                 return
             }
 
-            const metadataKey = Object.keys(metadataKeys).find((key) => key.toLowerCase().replaceAll(" ", "") === metaKey || translateText("meta." + key).toLowerCase() === metaKey)
+            const metadataKey = Object.keys(metadataKeys).find((key) => key.toLowerCase().replaceAll(" ", "").trim() === metaKey || translateText("meta." + key).toLowerCase() === metaKey)
             if (!metadataKey) {
                 // create slide with unknown metadata
                 // newLines.push(line)

@@ -49,7 +49,6 @@ const ctrlKeys = {
     t: () => togglePanels(),
     y: () => redo(),
     z: () => undo(),
-    Z: () => redo(),
     "?": () => activePopup.set("shortcuts")
 }
 
@@ -70,7 +69,8 @@ const shiftCtrlKeys = {
     },
     f: () => menuClick("focus_mode"),
     n: () => activePopup.set("show"),
-    v: () => changeSlidesView()
+    v: () => changeSlidesView(),
+    z: () => redo()
 }
 
 const altKeys = {
@@ -176,13 +176,15 @@ export function keydown(e: KeyboardEvent) {
             return
         }
 
-        if (e.shiftKey && shiftCtrlKeys[key.toLowerCase()]) {
+        key = key.toLowerCase()
+
+        if (e.shiftKey && shiftCtrlKeys[key]) {
             e.preventDefault()
-            shiftCtrlKeys[key.toLowerCase()](e)
+            shiftCtrlKeys[key](e)
             return
         }
 
-        const preventDefaults = ["z", "Z", "y"]
+        const preventDefaults = ["z", "y"]
         if (ctrlKeys[key]) {
             ctrlKeys[key](e)
             if (preventDefaults.includes(key) || macShortcutDebug) {

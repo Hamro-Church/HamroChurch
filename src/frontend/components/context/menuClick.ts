@@ -918,12 +918,16 @@ const clickActions = {
     slide_transition: (obj: ObjData) => {
         if (obj.sel?.id !== "slide") return
 
+        popupData.set({})
         activePopup.set("transition")
     },
     disable: (obj: ObjData) => {
         if (obj.sel?.id === "slide") {
             const showId = get(activeShow)?.id
             if (!showId) return
+
+            const shouldBeDisabled = !obj.enabled
+            const disableGroups = get(slidesOptions).mode === "groups"
 
             showsCache.update((a) => {
                 obj.sel!.data.forEach((b) => {
@@ -933,11 +937,23 @@ const clickActions = {
                     if (!slides) return
 
                     if (ref.type === "child") {
-                        if (!slides[ref.parent!.index]) return
-                        if (!slides[ref.parent!.index].children) slides[ref.parent!.index].children = {}
-                        slides[ref.parent!.index].children![ref.id] = { ...slides[ref.parent!.index].children![ref.id], disabled: !obj.enabled }
-                    } else if (slides[ref.index]) slides[ref.index].disabled = !obj.enabled
+                        toggleDisabledChild(ref.parent!.index, ref.id)
+                    } else if (slides[ref.index]) {
+                        slides[ref.index].disabled = shouldBeDisabled
+
+                        if (disableGroups) {
+                            const childIds = _show().get("slides")[slides[ref.index].id]?.children || []
+                            childIds.forEach((childId) => toggleDisabledChild(ref.index, childId))
+                        }
+                    }
+
+                    function toggleDisabledChild(parentIndex: number, childId: string) {
+                        if (!slides[parentIndex]) return
+                        if (!slides[parentIndex].children) slides[parentIndex].children = {}
+                        slides[parentIndex].children[childId] = { ...(slides[parentIndex].children[childId] || {}), disabled: shouldBeDisabled }
+                    }
                 })
+
                 return a
             })
             return
