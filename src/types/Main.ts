@@ -358,7 +358,6 @@ export type Popups =
     | "assign_shortcut"
     | "dynamic_values"
     | "conditions"
-    | "animate"
     | "translate"
     | "next_timer"
     | "display_duration"
@@ -385,6 +384,8 @@ export type Popups =
     | "effect_items"
     | "timeline"
     | "timecode"
+    | "drawer_search_options"
+    | "template_info"
 
 export type DefaultProjectNames = "date" | "today" | "sunday" | "week" | "custom" | "blank"
 

@@ -1007,7 +1007,8 @@ const clickActions = {
             activePage.set("edit")
             setTimeout(() => selected.set({ id: null, data: [] }))
         } else if (obj.sel.id === "media") {
-            const path = obj.sel.data[0].path
+            const path = obj.sel.data[0]?.path
+            if (!path) return
             activeEdit.set({ type: "media", id: path, items: [] })
             activePage.set("edit")
             if (!get(activeShow) || (get(activeShow)!.type || "show") !== "show") activeShow.set({ id: path, type: getMediaType(getExtension(path)) })
@@ -1021,7 +1022,8 @@ const clickActions = {
             popupData.set({ active: onlineTab, id })
             activePopup.set("player")
         } else if (obj.sel.id === "audio") {
-            const path = obj.sel.data[0].path
+            const path = obj.sel.data[0]?.path
+            if (!path) return
             activeEdit.set({ type: "audio", id: path, items: [] })
             activePage.set("edit")
             if (!get(activeShow) || (get(activeShow)!.type || "show") !== "show") activeShow.set({ id: path, type: "audio" })
@@ -1076,6 +1078,43 @@ const clickActions = {
         } else if (obj.contextElem?.classList.value.includes("#edit_custom_action")) {
             activePopup.set("custom_action")
         }
+    },
+    change_style: (obj: ObjData) => {
+        const outputId = obj.contextElem?.id || ""
+        const output = get(outputs)[outputId]
+        if (!output) return
+
+        if (output.stageOutput) {
+            popupData.set({
+                active: output.stageOutput,
+                trigger: (stageId: string) => {
+                    outputs.update((a) => {
+                        a[outputId].stageOutput = stageId
+                        return a
+                    })
+                }
+            })
+
+            // activeStage.set({ id: output.stageOutput, items: [] })
+            activePopup.set("select_stage_layout")
+            return
+        }
+
+        if (!output.style) return
+
+        popupData.set({
+            active: output.style,
+            trigger: (styleId: string) => {
+                outputs.update((a) => {
+                    a[outputId].style = styleId
+                    return a
+                })
+            }
+        })
+
+        // activeStyle.set(output.style)
+        // settingsTab.set("styles")
+        activePopup.set("select_style")
     },
     edit_style: (obj: ObjData) => {
         const outputId = obj.contextElem?.id || ""
@@ -1821,20 +1860,6 @@ function changeSlideAction(obj: ObjData, id: string) {
         return
     }
 
-    if (id === "animate") {
-        if (!layoutActions[id]) {
-            layoutActions[id] = { actions: [{ type: "change", duration: 3, id: "text", key: "font-size", extension: "px" }] }
-            history({ id: "SHOW_LAYOUT", newData: { key: "actions", data: layoutActions, indexes }, location: { page: "show", override: "animate_slide" } })
-        }
-
-        const data = { data: layoutActions[id], indexes }
-
-        popupData.set(data)
-        activePopup.set("animate")
-
-        return
-    }
-
     if (id === "nextTimer") {
         const nextTimer = clone(ref[layoutSlide]?.data?.nextTimer) || 0
 
@@ -1867,6 +1892,8 @@ function changeSlideAction(obj: ObjData, id: string) {
 }
 
 export async function removeSlide(initialData: any[], type: "delete" | "remove" = "delete") {
+    if (!Array.isArray(initialData)) return
+
     const ref = getLayoutRef()
     const parents: any[] = []
     const childs: any[] = []
