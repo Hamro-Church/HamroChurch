@@ -3,10 +3,10 @@ import type { ExifData } from "exif"
 import type { Stats } from "fs"
 import type { Bible } from "json-bible/lib/Bible"
 import type { SyncProviderId } from "../../electron/cloud/syncManager"
-import type { ContentFile, ContentLibraryCategory, ContentProviderId } from "../../electron/contentProviders/base/types"
+import type { ContentFile, ContentLibraryCategory, ContentProviderId, MediaLicense } from "../../electron/contentProviders/base/types"
 import type { _store } from "../../electron/data/store"
 import type { TimecodeMode } from "../../electron/timecode/timecode"
-import type { ErrorLog, FileFolder, LessonsData, LyricSearchResult, MainFilePaths, Media, OS, Subtitle } from "../Main"
+import type { ErrorLog, FileFolder, LessonsData, LyricSearchResult, MainFilePaths, Media, OS, SpotifyState, Subtitle } from "../Main"
 import type { Output } from "../Output"
 import type { Folders, Projects } from "../Projects"
 import type { Dictionary, Resolution, Themes } from "../Settings"
@@ -158,7 +158,10 @@ export enum Main {
     TIMECODE_STOP = "TIMECODE_STOP",
     TIMECODE_VALUE = "TIMECODE_VALUE",
     TIMECODE_AUDIO_DATA = "TIMECODE_AUDIO_DATA",
-    TIMECODE_STATUS = "TIMECODE_STATUS"
+    TIMECODE_STATUS = "TIMECODE_STATUS",
+    // SPOTIFY
+    SPOTIFY_GET_STATE = "SPOTIFY_GET_STATE",
+    SPOTIFY_COMMAND = "SPOTIFY_COMMAND"
 }
 
 export interface MainSendPayloads {
@@ -247,6 +250,8 @@ export interface MainSendPayloads {
     [Main.TIMECODE_VALUE]: number
     [Main.TIMECODE_STATUS]: "play" | "pause" | "stop"
     [Main.TIMECODE_AUDIO_DATA]: { mode: TimecodeMode; buffer: Uint8Array }
+    [Main.SPOTIFY_GET_STATE]: undefined
+    [Main.SPOTIFY_COMMAND]: { command: "playpause" | "next" | "prev" | "seek" | "setVolume" | "pause"; value?: number }
 }
 
 export interface MainReturnPayloads {
@@ -330,11 +335,13 @@ export interface MainReturnPayloads {
     [Main.GET_CONTENT_PROVIDERS]: { providerId: ContentProviderId; displayName: string; hasContentLibrary: boolean }[]
     [Main.GET_CONTENT_LIBRARY]: Promise<ContentLibraryCategory[]>
     [Main.GET_PROVIDER_CONTENT]: Promise<ContentFile[]>
-    [Main.CHECK_MEDIA_LICENSE]: Promise<string | null>
+    [Main.CHECK_MEDIA_LICENSE]: Promise<MediaLicense | null>
     // Timecode
     [Main.TIMECODE_VALUE]: number | void
     [Main.TIMECODE_AUDIO_DATA]: Buffer | void
     [Main.TIMECODE_STATUS]: "play" | "pause" | "stop" | void
+    [Main.SPOTIFY_GET_STATE]: Promise<SpotifyState | null>
+    [Main.SPOTIFY_COMMAND]: Promise<boolean>
 }
 
 ///////////

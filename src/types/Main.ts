@@ -18,6 +18,18 @@ export interface OS {
     arch: string
 }
 
+export interface SpotifyState {
+    isPlaying: boolean
+    title: string
+    artist: string
+    albumArt?: string
+    positionSec: number
+    durationSec: number
+    platform: NodeJS.Platform
+    volume: number
+    bgColor?: string
+}
+
 export interface Option {
     name: string
     extra?: string
@@ -169,12 +181,15 @@ export interface MediaStyle {
     speed?: string
     fromTime?: number
     toTime?: number
+    softLoop?: number
     videoType?: string // default | "background" | "foreground"
     audioType?: AudioType // default | "music" | "effect"
     favourite?: boolean
     audio?: boolean
     loop?: boolean // audio
     volume?: number // audio
+    pitch?: number // audio
+    tempo?: number // audio
     rendering?: string // image rendering
     info?: any // cached codec/mime data
     tracks?: Subtitle[]
@@ -182,7 +197,7 @@ export interface MediaStyle {
     tags?: string[] // media tags
     name?: string // display name for content provider media (encrypted videos)
     contentFile?: any // ContentFile from content provider (imported type would create circular dependency)
-    licenseChecked?: boolean // whether license has been checked for this media
+    licenseExpiresAt?: number // unix ms; content provider license is valid while Date.now() < licenseExpiresAt
     pingbackUrl?: string // URL for sending pingback after playback
     cropping?: Partial<Cropping>
 

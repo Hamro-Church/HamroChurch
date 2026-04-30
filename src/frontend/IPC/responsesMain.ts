@@ -383,7 +383,10 @@ export const mainResponses: MainResponses = {
                     if (globalGroup) slide.globalGroup = globalGroup
                 })
 
-                tempShows.push({ id, show: { ...show, origin, name: checkName(show.name, id) } })
+                // set modified to now, so it will update properly in history
+                if (show.timestamps) show.timestamps.modified = Date.now()
+
+                tempShows.push({ id: linkedShow.id, show: { ...show, origin, name: checkName(show.name, linkedShow.id) } })
                 continue
             }
 
@@ -391,14 +394,16 @@ export const mainResponses: MainResponses = {
             const providerName = data.providerId === "planningcenter" ? "Planning Center" : data.providerId === "churchApps" ? "ChurchApps" : "the cloud"
             const existingShow = allShows.find(({ id: existingId, name }) => existingId !== id && name.toLowerCase() === show.name.toLowerCase())
             // const existingShowHasContent = existingShow && (await loadShows([existingShow.id])) && getSlidesText(get(showsCache)[existingShow.id].slides)
-            if (existingShow && songOrigin !== "cloud") {
+            if (existingShow && songOrigin !== "online") {
                 const useLocal = songOrigin === "local" || (await confirmCustom(`There is an existing show with the same name: ${existingShow.name}.<br><br>Would you like to use the local version instead of the one from ${providerName}?`))
                 if (useLocal) {
                     replaceIds[id] = existingShow.id
                     updateExistingShow(existingShow.id)
                     continue
                 }
+            }
 
+            if ((existingShow && songOrigin !== "local") || songOrigin === "online") {
                 // set link so we will automatically update from the provider in the future
                 if (!show.quickAccess) show.quickAccess = {}
                 show.quickAccess[linkKey] = id
@@ -423,11 +428,20 @@ export const mainResponses: MainResponses = {
             const templateId = get(contentProviderData)[providerId]?.projectTemplate || ""
             if (!templateId) return projectBase
 
-            const templateItems = get(projectTemplates)[templateId]?.shows || []
+            let templateItems = clone(get(projectTemplates)[templateId]?.shows || [])
+            let pcoItems = clone(projectBase.shows || [])
 
-            // project template first, then append the synced items
-            projectBase.shows = clone([...templateItems, ...(projectBase.shows || [])])
+            // project template first, then append the synced items (first to any placeholders, then to the end)
+            templateItems = templateItems.map((item) => {
+                if (item.type === "show_placeholder") {
+                    const show = pcoItems.shift()
+                    if (show) return show
+                }
 
+                return item
+            })
+
+            projectBase.shows = [...templateItems, ...pcoItems]
             return projectBase
         }
 

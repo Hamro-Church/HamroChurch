@@ -8,7 +8,7 @@ import type { Item, Layout, LayoutRef, Media, OutSlide, Show, Slide, SlideData, 
 import { AudioAnalyser } from "../../audio/audioAnalyser"
 import { fadeinAllPlayingAudio, fadeoutAllPlayingAudio } from "../../audio/audioFading"
 import { sendMain } from "../../IPC/main"
-import { actions, activeProject, activeRename, activeTimers, allOutputs, categories, connections, currentOutputSettings, customMessageCredits, disabledServers, effects, lockedOverlays, media, outputDisplay, outputs, outputSlideCache, outputState, overlays, overlayTimers, playingVideos, projects, scriptures, scriptureSettings, serverData, showsCache, special, stageShows, styles, templates, theme, themes, transitionData, usageLog } from "../../stores"
+import { actions, activeProject, activeRename, activeShow, activeTimers, allOutputs, categories, connections, currentOutputSettings, customMessageCredits, disabledServers, effects, lockedOverlays, media, outputDisplay, outputs, outputSlideCache, outputState, overlays, overlayTimers, playingVideos, projects, scriptures, scriptureSettings, serverData, showsCache, special, stageShows, styles, templates, theme, themes, transitionData, usageLog } from "../../stores"
 import { trackScriptureUsage } from "../../utils/analytics"
 import { isMainWindow, isOutputWindow, newToast } from "../../utils/common"
 import { translateText } from "../../utils/language"
@@ -62,6 +62,10 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
 
     customActionActivation("output_changed")
 
+    const bindings = data?.bindings || (data?.layout ? ref[data.index]?.data?.bindings || [] : [])
+    const allOutputIds = bindings.length ? bindings : getActiveOutputs(get(outputs), true, false, true)
+    const outs = outputId ? [outputId] : allOutputIds
+
     // track usage (& set attributionString)
     if (type === "slide" && data?.id) {
         const showReference = _show(data.id).get("reference")
@@ -82,18 +86,25 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
             if (translation.attributionString) data.attributionString = translation.attributionString
         }
 
-        const groupId = slide.globalGroup
-        if (groupId) customActionActivation("group_start", groupId)
+        if (data.type === "pdf") {
+            const out = get(outputs)[outs[0]]?.out?.slide
+            if (out?.type !== "pdf") customActionActivation("pdf_start")
+        } else {
+            const groupId = slide.globalGroup
+            if (groupId) customActionActivation("group_start", groupId)
+        }
+
+        // store project index so we can use it for dynamic values (in case there are multiple of the same project item)
+        const active = get(activeShow)
+        if (active?.id === data.id && active?.index !== undefined) {
+            data.projectIndex = active.index
+        }
     }
 
+    const inputData = clone(data)
+    const backgroundId = getFirstOutputIdWithAudableBackground(allOutputIds)
+
     outputs.update((a) => {
-        const bindings = data?.bindings || (data?.layout ? ref[data.index]?.data?.bindings || [] : [])
-        const allOutputIds = bindings.length ? bindings : getActiveOutputs(a, true, false, true)
-        const outs = outputId ? [outputId] : allOutputIds
-        const inputData = clone(data)
-
-        const backgroundId = getFirstOutputIdWithAudableBackground(allOutputIds)
-
         if (type === "slide" && data?.id) {
             // reset slide cache (after update)
             setTimeout(() => outputSlideCache.set({}), 50)
