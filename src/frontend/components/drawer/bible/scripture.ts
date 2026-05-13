@@ -35,7 +35,10 @@ export async function getApiBiblesList() {
     }
 }
 
+const jsonBibleCache: { [id: string]: any } = {}
 export async function loadJsonBible(id: string) {
+    if (jsonBibleCache[id]) return jsonBibleCache[id]
+
     const scriptureData = get(scriptures)[id]
     const isApi = !!scriptureData?.api
 
@@ -43,10 +46,14 @@ export async function loadJsonBible(id: string) {
         const key = getKey("bibleapi")
         const apiId = scriptureData?.id || id
         try {
-            return await JsonBibleApi(key, apiId, SCRIPTURE_API_URL)
+            const instance = await JsonBibleApi(key, apiId, SCRIPTURE_API_URL)
+            jsonBibleCache[id] = instance
+            return instance
         } catch (err) {
             console.error("Error loading API Bible:", err)
-            return await JsonBibleApi(key, apiId)
+            const instance = await JsonBibleApi(key, apiId)
+            jsonBibleCache[id] = instance
+            return instance
         }
     }
 
@@ -65,7 +72,9 @@ export async function loadJsonBible(id: string) {
     localBible.books = localBible.books.map((a) => ({ ...a, name: (a as any).customName || a.name }))
 
     try {
-        return await JsonBible(localBible)
+        const instance = await JsonBible(localBible)
+        jsonBibleCache[id] = instance
+        return instance
     } catch (err) {
         console.error("Error loading local Bible:", err)
         return null
@@ -79,9 +88,9 @@ async function getLocalBible(id: string) {
     if (!scriptureData) return null
 
     const localBibleResponse = await requestMain(Main.BIBLE, { name: scriptureData.name, id })
-    const localBible = localBibleResponse.content?.[1]
+    const localBible = localBibleResponse?.content?.[1]
 
-    if (localBibleResponse.error === "not_found" || !localBible) {
+    if (localBibleResponse?.error === "not_found" || !localBible) {
         notFound.update((a) => {
             a.bible.push(id)
             return a
@@ -310,7 +319,10 @@ export async function playScripture() {
 
     const tempItems: Item[] = slides[0] || []
     const categoryId = get(drawerTabsData).scripture?.activeSubTab || ""
-    setOutput("slide", { id: "temp", categoryId, tempItems, previousSlides: await getPreviousSlides(), nextSlides: await getNextSlides(), attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] })
+    
+    const [previousSlides, nextSlides] = await Promise.all([getPreviousSlides(), getNextSlides()])
+    
+    setOutput("slide", { id: "temp", categoryId, tempItems, previousSlides, nextSlides, attributionString, translations: biblesContent.length, settings, customDynamicValues: slideDynamicValues[0] })
 
     // track
     const reference = `${biblesContent[0].book} ${fullReferenceRange || biblesContent[0].chapters[0]}`.trim()
@@ -336,26 +348,26 @@ export async function playScripture() {
     ///
 
     async function getPreviousSlides() {
-        const lowestIndex = getVerseId(selectedVerses[0].sort((a, b) => getVerseId(a) - getVerseId(b))[0])
+        const lowestIndex = getVerseId([...selectedVerses[0]].sort((a, b) => getVerseId(a) - getVerseId(b))[0])
 
-        const slides: any[] = []
+        const promises: any[] = []
         for (let i = 1; i <= includeCount; i++) {
             const verseIndex = lowestIndex - i
-            slides.push((await getScriptureSlidesNew({ biblesContent: biblesContent!, selectedChapters, selectedVerses: [[verseIndex]] }, true, true)).slides[0])
+            promises.push(getScriptureSlidesNew({ biblesContent: biblesContent!, selectedChapters, selectedVerses: [[verseIndex]] }, true, true).then(res => res.slides[0]))
         }
 
-        return slides
+        return Promise.all(promises)
     }
     async function getNextSlides() {
-        const highestIndex = getVerseId(selectedVerses[0].sort((a, b) => getVerseId(b) - getVerseId(a))[0])
+        const highestIndex = getVerseId([...selectedVerses[0]].sort((a, b) => getVerseId(b) - getVerseId(a))[0])
 
-        const slides: any[] = []
+        const promises: any[] = []
         for (let i = 1; i <= includeCount; i++) {
             const verseIndex = highestIndex + i
-            slides.push((await getScriptureSlidesNew({ biblesContent: biblesContent!, selectedChapters, selectedVerses: [[verseIndex]] }, true, true)).slides[0])
+            promises.push(getScriptureSlidesNew({ biblesContent: biblesContent!, selectedChapters, selectedVerses: [[verseIndex]] }, true, true).then(res => res.slides[0]))
         }
 
-        return slides
+        return Promise.all(promises)
     }
 }
 
@@ -624,7 +636,7 @@ export async function getScriptureSlidesNew(data: any, onlyOne = false, disableR
 
             // replaced by template in output.ts
             // check if item has scripture value (and not {scripture_text})
-            const regex = /\{scripture(?:\d+)?_[^}]+\}/g
+            const regex = /\{scripture(?:\d+)?_[^}]*\}/g
             const text = getItemText(item)
             const isDecoration = (() => {
                 const matches = text?.match(regex)
@@ -1783,6 +1795,8 @@ function getScriptureTemplateId() {
 }
 
 export function getReferenceText(biblesContent: BibleContent[]) {
+    if (!biblesContent[0]) return ""
+
     // const referenceTextItem = items.find((a) => a.lines?.find((a) => a.text?.find((a) => a.value.includes(":") && a.value.length < 25)))
     // if (referenceTextItem) return referenceTextItem.lines?.[0]?.text?.[0]?.value
 

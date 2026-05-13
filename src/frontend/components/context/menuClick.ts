@@ -99,7 +99,7 @@ import { history, redo, undo } from "../helpers/history"
 import { getExtension, getFileName, getMediaLayerType, getMediaStyle, getMediaType, removeExtension, splitPath } from "../helpers/media"
 import { defaultOutput, getCurrentStyle, getFirstActiveOutput, setOutput, toggleOutput, toggleOutputs } from "../helpers/output"
 import { select } from "../helpers/select"
-import { checkName, formatToFileName, getLayoutRef, openShow, removeTemplatesFromShow, updateShowsList } from "../helpers/show"
+import { bindSlidesToOutput, checkName, formatToFileName, getLayoutRef, openShow, removeTemplatesFromShow, updateShowsList } from "../helpers/show"
 import { sendMidi } from "../helpers/showActions"
 import { _show } from "../helpers/shows"
 import { getMenuTagId, openTagManager, toggleSelectionTags, toggleTagFilter } from "../helpers/tags"
@@ -172,6 +172,41 @@ const clickActions = {
     history: () => activePopup.set("history"),
     cut: () => cut(),
     copy: () => copy(),
+    text_copy: () => copy(),
+    text_cut: (obj: ObjData) => {
+        const editElem = obj.contextElem?.closest(".edit") as HTMLElement | null
+        if (!editElem || !savedTextRange) return
+        const text = savedTextRange.toString()
+        if (!text) return
+        navigator.clipboard.writeText(text).then(() => {
+            editElem.focus()
+            const sel = window.getSelection()
+            if (sel) {
+                sel.removeAllRanges()
+                sel.addRange(savedTextRange!)
+                document.execCommand("delete")
+            }
+        })
+    },
+    text_paste: (obj: ObjData) => {
+        const editElem = obj.contextElem?.closest(".edit") as HTMLElement | null
+        if (!editElem) return
+        navigator.clipboard
+            .readText()
+            .then((text) => {
+                if (!text) return
+                editElem.focus()
+                if (savedTextRange) {
+                    const sel = window.getSelection()
+                    if (sel) {
+                        sel.removeAllRanges()
+                        sel.addRange(savedTextRange)
+                    }
+                }
+                document.execCommand("insertText", false, text)
+            })
+            .catch(() => {})
+    },
     paste: (obj: ObjData) => paste(null, {}, obj.contextElem),
     // view
     // help
@@ -1091,6 +1126,7 @@ const clickActions = {
         } else if (obj.sel.id === "action") {
             const firstActionId = obj.sel.data[0]?.id
             const action = get(actions)[firstActionId]
+            if (!action) return
 
             popupData.set({ id: firstActionId })
 
@@ -1301,7 +1337,7 @@ const clickActions = {
         const overlay = get(overlays)[overlayId]
         if (!overlay) return
 
-        const existingActions = overlay.actions || []
+        const existingActions = Array.isArray(overlay.actions) ? overlay.actions : []
 
         popupData.set({ mode: "overlay", overlayId, existing: existingActions.map((a) => a.triggers?.[0]) })
         activePopup.set("action")
@@ -1629,26 +1665,23 @@ const clickActions = {
     changeIcon: () => activePopup.set("icon"),
 
     selectAll: (obj: ObjData) => selectAll(obj.sel),
+    text_select_all: (obj: ObjData) => {
+        const editElem = obj.contextElem?.closest(".edit") as HTMLElement | null
+        if (!editElem) return
+        editElem.focus()
+        const range = document.createRange()
+        range.selectNodeContents(editElem)
+        const selection = window.getSelection()
+        if (selection) {
+            selection.removeAllRanges()
+            selection.addRange(range)
+        }
+    },
 
     bind_slide: (obj: ObjData) => {
-        const ref = getLayoutRef()
         const outputId = obj.menu.id || ""
-
         const indexes: number[] = obj.sel?.data.map(({ index }) => index) || []
-        const newBindings: string[][] = []
-
-        const add = !ref[indexes[0]]?.data?.bindings?.includes(outputId)
-
-        indexes.forEach((i) => {
-            const bindings: string[] = ref[i]?.data?.bindings || []
-            const existingIndex = bindings.indexOf(outputId)
-            if (add && existingIndex < 0) bindings.push(outputId)
-            else if (!add && existingIndex >= 0) bindings.splice(existingIndex, 1)
-
-            newBindings.push(bindings)
-        })
-
-        history({ id: "SHOW_LAYOUT", newData: { key: "bindings", data: newBindings, indexes, dataIsArray: false } })
+        bindSlidesToOutput(indexes, outputId)
     },
     // bind item
     bind_item: (obj: ObjData) => {
@@ -1844,6 +1877,16 @@ const clickActions = {
 
             return
         }
+    }
+}
+
+let savedTextRange: Range | null = null
+export function saveTextSelectionRange() {
+    const sel = window.getSelection()
+    if (sel && sel.rangeCount > 0) {
+        savedTextRange = sel.getRangeAt(0).cloneRange()
+    } else {
+        savedTextRange = null
     }
 }
 

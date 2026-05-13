@@ -84,12 +84,14 @@
     $: if ($providerConnections) getProviders()
     function getProviders() {
         requestMain(Main.GET_CONTENT_PROVIDERS).then((allProviders) => {
+            if (!allProviders) return
             contentProviders = allProviders.filter((p) => p.hasContentLibrary && $providerConnections[p.providerId])
         })
     }
 
     $: if ($providerConnections) {
         requestMain(Main.GET_CONTENT_PROVIDERS).then((allProviders) => {
+            if (!allProviders) return
             contentProviders = allProviders.filter((p) => p.hasContentLibrary && $providerConnections[p.providerId])
         })
     }
@@ -181,7 +183,7 @@
         requesting++
         let currentRequest = requesting
         const data = await requestMain(Main.READ_FOLDER, { path, depth, captureFolderContent })
-        if (requesting !== currentRequest) return
+        if (!data || requesting !== currentRequest) return
 
         // check if there's any audio files that the user might want to find
         if (!Array.isArray(path)) {
@@ -371,6 +373,7 @@
             if (fileCount) {
                 // let file = mediaFilesOnly[0] // not updating
                 let file = searchedFiles.filter((a) => !a.isFolder)[0]
+                if (!file) return
 
                 // add to project
                 const data = { id: file.path, name: file.name, type: getMediaType(getExtension(file.name)) }

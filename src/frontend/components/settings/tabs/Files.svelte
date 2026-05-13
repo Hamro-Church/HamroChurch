@@ -36,7 +36,9 @@
         { value: "5min", label: translateText("5 settings.minutes") },
         { value: "10min", label: translateText("10 settings.minutes") },
         { value: "15min", label: translateText("15 settings.minutes") },
-        { value: "30min", label: translateText("30 settings.minutes") }
+        { value: "30min", label: translateText("30 settings.minutes") },
+        { value: "60min", label: translateText("60 settings.minutes") },
+        { value: "120min", label: translateText("120 settings.minutes") }
     ]
 
     // NOTE: monthly is misspelled as "mothly"
@@ -71,7 +73,7 @@
         sendMain(Main.SET_MEDIA_FOLDER_PATH, mediaFolderPath)
 
         // get default path again if reset
-        if (!mediaFolderPath) mediaFolderPath = await requestMain(Main.GET_MEDIA_FOLDER_PATH)
+        if (!mediaFolderPath) mediaFolderPath = (await requestMain(Main.GET_MEDIA_FOLDER_PATH)) || ""
     }
 
     // get times
@@ -83,7 +85,7 @@
         checkTimes()
         updater = setInterval(checkTimes, 1000)
 
-        if ($special.cloudSyncMediaFolder) mediaFolderPath = await requestMain(Main.GET_MEDIA_FOLDER_PATH)
+        if ($special.cloudSyncMediaFolder) mediaFolderPath = (await requestMain(Main.GET_MEDIA_FOLDER_PATH)) || ""
     })
     onDestroy(() => {
         if (updater) clearInterval(updater)
@@ -123,7 +125,7 @@
             return
         }
 
-        const contents = (await requestMain(Main.READ_FILE, { path })).content
+        const contents = ((await requestMain(Main.READ_FILE, { path })) || {}).content
         if (contents) validateKeys(contents)
     }
 
@@ -247,7 +249,7 @@
             // activePopup.set("alert")
 
             sendMain(Main.BUNDLE_MEDIA_FILES, { openFolder: true })
-            mediaFolderPath = await requestMain(Main.GET_MEDIA_FOLDER_PATH)
+            mediaFolderPath = (await requestMain(Main.GET_MEDIA_FOLDER_PATH)) || ""
         }
     }
 </script>

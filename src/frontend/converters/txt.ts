@@ -353,11 +353,10 @@ function createSlides(labeled: { type: string; text: string }[], noFormatting) {
 
         // split slide notes from text ("---")
         const slideTextAndNotes = slideText.split("---")
-        if (!slideTextAndNotes[0]?.length) return
 
-        while (new Set(slideTextAndNotes[0].split("")).size === 1 && slideTextAndNotes[0][0] === "-") slideTextAndNotes.shift()
-        let allLines: string[] = [slideTextAndNotes.shift() || ""]
-        if (allLines[0].endsWith("\n")) allLines[0] = allLines[0].slice(0, -1)
+        while (slideTextAndNotes[0] && new Set(slideTextAndNotes[0].split("")).size === 1 && slideTextAndNotes[0][0] === "-") slideTextAndNotes.shift()
+        let allLines: string[] = [slideTextAndNotes.length > 0 ? slideTextAndNotes.shift() || "" : ""]
+        if (allLines[0] && allLines[0].endsWith("\n")) allLines[0] = allLines[0].slice(0, -1)
 
         while (slideTextAndNotes[0] === "") slideTextAndNotes.shift()
         const slideNotes = slideTextAndNotes.join("\n").slice(1)
@@ -469,6 +468,9 @@ function removeSlideDuplicates(slides: { [key: string]: Slide }, layouts: SlideD
         if (slide.group === null) return
 
         let text = getSlideText(slide)
+        // Include Group ID in the cache key to differentiate slides with identical text but different groups (e.g., key changes)
+        text += `_GROUPID_${slide.group}`
+
         // for empty slides, include group label in deduplication key
         if (!text.trim()) text = `EMPTY_${slide.group}`
         text += slide.children?.reduce((value, childId) => (value += getSlideText(slides[childId])), "") || ""
@@ -639,6 +641,11 @@ function findPatterns(sections: string[]) {
         if (find) return find.type
         if (!length) return "break"
 
+        // Priority: Use explicit label match before checking for text similarity to respect musical structure
+        const rawName = splitted[0].replace(/[\[\]'":]+/g, "").trim()
+        const exactMatch = findGroupMatch(rawName)
+        if (exactMatch) return exactMatch
+
         // TODO: group....
         const name = getLabelId(splitted[0])
         if (findGroupMatch(name)) return findGroupMatch(name) || name
@@ -656,7 +663,7 @@ function findPatterns(sections: string[]) {
 
         // if (length < 10 && !sections[i].includes("\n")) return sections[i].trim()
         if (length < 30 || linesSimilarity(sections[i])) return "tag"
-        if (splitted[0].length < 8 && splitted[1].length > 20) {
+        if (splitted[0].length < 8 && splitted[1]?.length > 20 && !/[,.!?-]/.test(splitted[0])) {
             sections[i] = splitted.slice(1, splitted.length).join("\n")
             let group = splitted[0]
             if (get(groupNumbers)) group = group.replace(/\d+/g, "").trim()
@@ -725,7 +732,19 @@ function editDistance(s1: string, s2: string) {
 }
 
 export function findGroupMatch(group: string): string {
-    if (get(groups)[group]) return group
+    // Check if the label matches a custom group name defined by the user
+    const allGroups = get(groups)
+    const searchLabel = group.toLowerCase().trim()
+
+    if (allGroups[searchLabel]) return searchLabel
+
+    let customMatchId = ""
+    Object.entries(allGroups).forEach(([id, config]: [string, any]) => {
+        if (config.name && config.name.toLowerCase() === searchLabel) {
+            customMatchId = id
+        }
+    })
+    if (customMatchId) return customMatchId
 
     let groupMatch = ""
     Object.entries(get(dictionary).groups || {}).forEach(([id, value]) => {

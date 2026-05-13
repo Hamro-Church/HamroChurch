@@ -537,12 +537,12 @@ export function outputSlideHasContent(output) {
 
 // this actually gets aspect ratio
 export function getResolution(initial: Resolution | undefined | null = null, _updater: any = null, _getSlideRes = false, outputId = "", styleIdOverride = ""): Resolution {
-    if (initial) return initial
+    if (initial?.width) return initial
 
     if (!outputId) outputId = getFirstActiveOutput()?.id || ""
     const currentOutput = get(outputs)[outputId]
 
-    if (currentOutput?.stageOutput) return currentOutput.bounds
+    if (currentOutput?.stageOutput) return currentOutput.bounds ?? DEFAULT_BOUNDS
 
     const style = styleIdOverride || currentOutput?.style ? get(styles)[(styleIdOverride || currentOutput?.style)!] || null : null
     const styleRatio: any = style?.aspectRatio || style?.resolution
@@ -565,7 +565,7 @@ export function getStageResolution(outputId = "", _updater = get(outputs)): Reso
 export const DEFAULT_BOUNDS = { width: 1920, height: 1080 }
 export function getOutputResolution(outputId: string, _updater = get(outputs), scaled = false, styleIdOverride = "") {
     const currentOutput = _updater[outputId]
-    const outputRes = clone(currentOutput?.bounds || DEFAULT_BOUNDS)
+    const outputRes = clone(currentOutput?.bounds?.width ? currentOutput.bounds : DEFAULT_BOUNDS)
 
     const styleRatio = getResolution(null, null, false, outputId, styleIdOverride)
     const styleAspectRatio = styleRatio.width / styleRatio.height
@@ -1092,7 +1092,7 @@ export function mergeWithTemplate(slideItems: Item[], templateItems: Item[], add
         if (hasScriptureDynamicValue) {
             remainingTextTemplateItems.forEach((item) => {
                 // check if item has scripture value (and not {scripture_text})
-                const regex = /\{scripture(?:\d+)?_[^}]+\}/g
+                const regex = /\{scripture(?:\d+)?_[^}]*\}/g
                 const text = getItemText(item)
                 const isDecoration = (() => {
                     const matches = text?.match(regex)
@@ -1210,14 +1210,17 @@ function replaceScriptureValues(items: Item[], templateItems: Item[], customDyna
 
                                 const bibleIndex = parseInt(key.replace(/\D/g, "")) || 0
 
-                                value.forEach(([number, value], index) => {
+                                value.forEach(([number, verseText], index) => {
                                     if (number && number !== "0") {
                                         const size = verseNumberSize * (i === 0 ? 1.2 : 1)
                                         const numberStyle = `;${verseNumberStyles[bibleIndex] || verseNumberStyles[0] || verseNumberStyle}font-size: ${size}px;margin-right: 0.3em;`
                                         newTexts.push({ value: number, style: style + numberStyle, customType: "disableTemplate" })
                                     }
 
-                                    newTexts.push({ value, sourceDynamicKey: key + ":" + index, style: style + ";" + baseStyle })
+                                    // Add trailing space if the next item is a continuation with no verse number
+                                    const nextItem = (value as [string, string][])[index + 1]
+                                    const needsSpace = nextItem && (!nextItem[0] || nextItem[0] === "0")
+                                    newTexts.push({ value: needsSpace ? verseText + " " : verseText, sourceDynamicKey: key + ":" + index, style: style + ";" + baseStyle })
                                 })
                             }
                         })
@@ -1429,8 +1432,14 @@ export function getStyleTemplate(outSlide: OutSlide | null, currentStyle: Styles
     const translations: number = outSlide?.id === "temp" ? outSlide.translations || 1 : reference?.data?.translations || reference?.data?.version?.split("+")?.length || 1
     const translationKey = translations > 1 ? `_${translations}` : ""
 
-    const templateId = isScripture ? currentStyle[`templateScripture${translationKey}`] || currentStyle.templateScripture : currentStyle.template
-    const template = get(templates)[templateId || ""] || {}
+    let templateId = isScripture ? currentStyle[`templateScripture${translationKey}`] || currentStyle.templateScripture : currentStyle.template
+    let template = get(templates)[templateId || ""] || {}
+
+    // use custom first slide template on first slide
+    if (template?.settings?.firstSlideTemplate && outSlide?.index === 0 && outSlide?.id !== "temp") {
+        templateId = template?.settings?.firstSlideTemplate
+        if (get(templates)[templateId]) template = get(templates)[templateId]
+    }
 
     return template
 }

@@ -28,7 +28,7 @@
     $: if (foldersList.length) getCounts()
     async function getCounts() {
         const folderPaths = foldersList.map((a) => a.path || "")
-        const data = keysToID(await requestMain(Main.READ_FOLDER, { path: folderPaths }))
+        const data = keysToID((await requestMain(Main.READ_FOLDER, { path: folderPaths })) || {})
         const newFolderLengths: { [key: string]: number } = {}
         allCount = 0
 
@@ -46,12 +46,14 @@
     $: if ($providerConnections) getProviders()
     function getProviders() {
         requestMain(Main.GET_CONTENT_PROVIDERS).then((allProviders) => {
+            if (!allProviders) return
             contentProviders = allProviders.filter((p) => p.hasContentLibrary && $providerConnections[p.providerId])
         })
     }
 
     $: if ($providerConnections) {
         requestMain(Main.GET_CONTENT_PROVIDERS).then((allProviders) => {
+            if (!allProviders) return
             contentProviders = allProviders.filter((p) => p.hasContentLibrary && $providerConnections[p.providerId])
         })
     }

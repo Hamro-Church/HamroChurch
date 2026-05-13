@@ -109,11 +109,13 @@ import {
 import type { SaveActions, SaveData, SaveList, SaveListSettings, SaveListSyncedSettings } from "./../../types/Save"
 import { audioStreams, companion } from "./../stores"
 import { socketDisconnect, syncWithCloud } from "./cloudSync"
-import { newToast, setStatus } from "./common"
+import { newToast, setStatus, startAutosave } from "./common"
 import { syncDrive } from "./drive"
 import { isOutCleared } from "../components/helpers/output"
 
 export function save(closeWhenFinished = false, customTriggers: SaveActions = {}) {
+    startAutosave() // reset auto save timer
+
     // don't save again while saving
     if (get(statusIndicator) === "saving") return
 
@@ -329,7 +331,12 @@ export function unsavedUpdater() {
         s[id].subscribe((a: any) => {
             if (customSavedListener[id] && a) {
                 a = customSavedListener[id](clone(a))
-                const stringObj = JSON.stringify(a)
+                let stringObj
+                try {
+                    stringObj = JSON.stringify(a)
+                } catch {
+                    return
+                }
                 if (cachedValues[id] === stringObj) return
 
                 cachedValues[id] = stringObj
@@ -347,7 +354,9 @@ export function unsavedUpdater() {
         let store = get(s[id])
         if (customSavedListener[id] && store) {
             store = customSavedListener[id](clone(store))
-            cachedValues[id] = JSON.stringify(store)
+            try {
+                cachedValues[id] = JSON.stringify(store)
+            } catch {}
         }
     })
 
@@ -364,6 +373,7 @@ const customSavedListener = {
             delete (data[id] as any).settings
 
             Object.values(data[id].slides).forEach((slide) => {
+                if (!slide) return
                 delete slide.id
             })
         })

@@ -513,7 +513,7 @@ export function goToPreviousProjectItem(key = "") {
             // mark as not played
             if (newShow.type !== "section") {
                 projects.update((a) => {
-                    if (!a[get(activeProject)!]?.shows?.[index]) return a
+                    if (typeof a[get(activeProject)!]?.shows?.[index] !== "object") return a
                     a[get(activeProject)!].shows[index].played = false
                     return a
                 })
@@ -1039,11 +1039,15 @@ export async function startShow(showId: string) {
 
     // slideClick() - Slides.svelte
     const slideRef = getLayoutRef(showId)
-    if (!slideRef[0]) return
 
-    setOutput("slide", { id: showId, layout: activeLayout, index: 0, line: 0 })
+    // get first non-disabled slide
+    let index = 0
+    while (slideRef[index] && slideRef[index]?.data?.disabled) index++
+    if (!slideRef[index]) return
+
+    setOutput("slide", { id: showId, layout: activeLayout, index, line: 0 })
     // timeout has to be 1200 to let output data update properly (in case slide has special actions)
-    updateOut(showId, 0, slideRef, true, "", 1200)
+    updateOut(showId, index, slideRef, true, "", 1200)
 }
 
 export function changeOutputStyle(data: API_output_style) {
@@ -1411,7 +1415,7 @@ export function replaceDynamicValues(text: string, { showId, layoutId, slideInde
     if (type === "show" && !currentShow) return ""
 
     // remove unused scripture dynamic values ({scripture_X} / {scriptureNUM_X})
-    const regex = /\{scripture(?:\d+)?_[^}]+\}/g
+    const regex = /\{scripture(?:\d+)?_[^}]*\}/g
     if (regex.test(text) && !popup) text = text.replace(regex, "")
 
     const customIds = ["slide_text_current", "active_layers", "active_styles", "output_windows_active", "log_song_usage"]
@@ -1782,10 +1786,8 @@ function getExif(path: string) {
     if (exifCache.has(path)) return exifCache.get(path)!
 
     requestMain(Main.READ_EXIF, { id: path }, (data) => {
-        const exif = data.exif
-        if (!exif) return
-
-        exifCache.set(path, exif)
+        if (!data?.exif) return
+        exifCache.set(path, data.exif)
     })
 
     return null
