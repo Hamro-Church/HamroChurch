@@ -9,6 +9,7 @@ executableName: HamroChurch
 #     mirror: https://github.com/castlabs/electron-releases/releases/download/
 
 files:
+    - package.json
     - build/electron/**
     - build/types/**
     - public/**
@@ -39,11 +40,6 @@ win:
     asarUnpack:
         - "**/node_modules/macadam/**/*.node"
         - "**/node_modules/libspotifyctl/**/*"
-    azureSignOptions:
-        publisherName: Live Church Solutions
-        endpoint: https://wus2.codesigning.azure.net/
-        certificateProfileName: HamroChurch
-        codeSigningAccountName: HamroChurch
 
 # linux
 

@@ -3,6 +3,7 @@ productName: Hamro Church
 artifactName: HamroChurch-${version}-${arch}.${ext}
 
 files:
+    - package.json
     - build/electron/**
     - build/types/**
     - public/**
