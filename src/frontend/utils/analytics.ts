@@ -41,7 +41,7 @@ export function startTracking() {
 }
 
 function trackFirstOpenIfNeeded() {
-    const key = "freeshow_first_open_sent"
+    const key = "hamrochurch_first_open_sent"
     if (!localStorage.getItem(key)) {
         trackEvent("first_open")
         localStorage.setItem(key, "1")
@@ -53,11 +53,11 @@ function trackAppLaunch() {
 }
 
 function trackPageView(title: string) {
-    trackEvent("page_view", { page_location: "https://freeshow.app/_app/" + title, page_title: title })
+    trackEvent("page_view", { page_location: "https://hamrocms.com/_app/" + title, page_title: title })
 }
 
 function trackDrawerView(title: string) {
-    trackEvent("drawer_view", { drawer_location: "https://freeshow.app/_app/" + title, drawer_title: title })
+    trackEvent("drawer_view", { drawer_location: "https://hamrocms.com/_app/" + title, drawer_title: title })
 }
 
 const previouslyTracked: { [key: string]: string } = {}

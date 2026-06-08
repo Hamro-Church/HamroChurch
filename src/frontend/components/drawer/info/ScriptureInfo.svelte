@@ -264,7 +264,7 @@
 
             {#if useOldSystem || (styleScriptureTemplate ? useOldScriptureSystem(styleScriptureTemplate) : false)}
                 <p style="margin-bottom: 10px;font-size: 0.9rem;opacity: 0.7;white-space: normal;">
-                    You are using a template with no scripture values! - <Link url="https://freeshow.app/docs/scripture#template">Read more</Link>
+                    You are using a template with no scripture values! - <Link url="https://hamrocms.com/docs/bible#templates">Read more</Link>
                 </p>
             {/if}
             {#if useOldSystem}

@@ -110,7 +110,7 @@
 
 <MaterialButton class="popup-options {options ? 'active' : ''}" icon="options" iconSize={1.3} title={options ? "actions.close" : "create_show.more_options"} on:click={() => (options = !options)} white />
 
-<MaterialButton class="popup-reset" icon="help" iconSize={1.1} title="titlebar.help" on:click={() => sendMain(Main.URL, "https://freeshow.app/docs/connecting")} white />
+<MaterialButton class="popup-reset" icon="help" iconSize={1.1} title="titlebar.help" on:click={() => sendMain(Main.URL, "https://hamrocms.com/docs/remote-control")} white />
 
 {#if options}
     <div class="reserved" class:isReserved>
@@ -136,11 +136,11 @@
 {:else}
     <div on:mouseup={mouseup}>
         {#if id === "companion"}
-            <Link url="https://freeshow.app/api">
+            <Link url="https://hamrocms.com/docs/remote-control#api-access">
                 API Docs
                 <Icon id="launch" white />
             </Link>
-            <Link url="https://freeshow.app/docs/companion">
+            <Link url="https://hamrocms.com/docs/remote-control#bitfocus-companion">
                 Bitfocus Companion Connection
                 <Icon id="launch" white />
             </Link>

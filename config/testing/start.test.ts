@@ -6,7 +6,7 @@ const timeoutMs = 2_000;
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 test.beforeEach(async ({ context }) => {
-    await context.route("https://api.github.com/repos/ChurchApps/freeshow/releases", (route) => route.abort())
+    await context.route("https://api.github.com/repos/Hamro-Church/HamroChurch/releases", (route) => route.abort())
 })
 
 test("Launch electron app", async () => {

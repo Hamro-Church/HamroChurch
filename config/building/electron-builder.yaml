@@ -19,6 +19,12 @@ files:
     - "!**/node_modules/**/*.pdb"
     - "!**/node_modules/**/obj/**"
 
+publish:
+    provider: github
+    owner: Hamro-Church
+    repo: HamroChurch
+    releaseType: release
+
 extraResources:
     - from: node_modules/slideshow/
       to: slideshow

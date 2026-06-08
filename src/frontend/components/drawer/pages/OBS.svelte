@@ -383,7 +383,7 @@
     </FloatingInputs>
 {:else}
     <Center>
-        <Link url="https://freeshow.app/docs/outputs">
+        <Link url="https://hamrocms.com/docs/stage-display#obs-control">
             <T id="main.docs" />
             <Icon id="launch" white />
         </Link>

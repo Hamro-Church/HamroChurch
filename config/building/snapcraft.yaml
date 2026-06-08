@@ -4,16 +4,16 @@ title: Hamro Church
 summary: Nepali-first church presentation software.
 description: A bilingual church presentation app for Nepali and English worship services.
 contact:
-    - https://github.com/ChurchApps/FreeShow/issues
+    - https://hamrocms.com/support
 license: GPL-3.0-or-later
 donation:
-    - https://churchapps.org/partner#give
+    - https://hamrocms.com/support
 issues:
-    - https://github.com/ChurchApps/FreeShow/issues
+    - https://github.com/Hamro-Church/HamroChurch/issues
 source-code:
-    - https://github.com/ChurchApps/FreeShow
+    - https://github.com/Hamro-Church/HamroChurch
 website:
-    - https://freeshow.app
+    - https://hamrocms.com
 platforms:
     amd64:
         build-on: amd64

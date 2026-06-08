@@ -639,7 +639,7 @@
 
         if (e.key === "<") {
             // Bamini font character "<" (ஈ)
-            // https://github.com/ChurchApps/FreeShow/issues/2899
+            // Preserve the special-case insertion workaround here.
             if (item?.lines?.some((line) => line.text?.some((text) => text.style?.toLowerCase()?.includes("bamini")))) {
                 e.preventDefault()
                 document.execCommand("insertHTML", false, "ஈ")

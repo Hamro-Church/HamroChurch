@@ -51,7 +51,7 @@
     function downloadLatest() {
         if (!hasUpdate || !latestVersion) return
 
-        sendMain(Main.URL, "https://github.com/ChurchApps/FreeShow/releases")
+        sendMain(Main.URL, "https://hamrocms.com/download")
     }
 
     onMount(checkUpdates)

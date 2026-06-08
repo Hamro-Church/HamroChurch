@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-labelledby="bibleTitle bibleDesc">
+  <title id="bibleTitle">Bible guide placeholder</title>
+  <desc id="bibleDesc">A stylized scripture browser placeholder with verse lists and bilingual references.</desc>
+  <rect width="960" height="640" rx="32" fill="#113633"/>
+  <rect x="42" y="42" width="876" height="556" rx="28" fill="#fdf7ed"/>
+  <rect x="74" y="74" width="812" height="54" rx="20" fill="#fff2dd"/>
+  <rect x="74" y="154" width="214" height="412" rx="24" fill="#13433f"/>
+  <rect x="314" y="154" width="256" height="412" rx="24" fill="#fffaf4" stroke="#ecd8bc" stroke-width="3"/>
+  <rect x="596" y="154" width="290" height="412" rx="24" fill="#fffaf4" stroke="#ecd8bc" stroke-width="3"/>
+  <rect x="104" y="184" width="152" height="18" rx="9" fill="#2dd4bf" opacity="0.75"/>
+  <rect x="104" y="220" width="124" height="12" rx="6" fill="#fff7ec" opacity="0.55"/>
+  <rect x="104" y="258" width="150" height="42" rx="14" fill="#fff7ec" opacity="0.12"/>
+  <rect x="104" y="316" width="150" height="42" rx="14" fill="#fff7ec" opacity="0.12"/>
+  <rect x="104" y="374" width="150" height="42" rx="14" fill="#fff7ec" opacity="0.12"/>
+  <rect x="104" y="432" width="150" height="42" rx="14" fill="#fff7ec" opacity="0.12"/>
+  <rect x="344" y="188" width="112" height="22" rx="11" fill="#d97706" opacity="0.82"/>
+  <rect x="478" y="188" width="58" height="22" rx="11" fill="#0f766e" opacity="0.76"/>
+  <rect x="344" y="234" width="192" height="16" rx="8" fill="#173330" opacity="0.18"/>
+  <rect x="344" y="278" width="192" height="86" rx="18" fill="#f7efe2"/>
+  <rect x="344" y="384" width="192" height="86" rx="18" fill="#f7efe2"/>
+  <rect x="344" y="490" width="192" height="48" rx="18" fill="#f1e8da"/>
+  <rect x="626" y="188" width="212" height="18" rx="9" fill="#d97706" opacity="0.74"/>
+  <rect x="626" y="228" width="180" height="14" rx="7" fill="#173330" opacity="0.18"/>
+  <rect x="626" y="270" width="228" height="54" rx="18" fill="#0f766e" opacity="0.1"/>
+  <rect x="626" y="340" width="228" height="54" rx="18" fill="#0f766e" opacity="0.08"/>
+  <rect x="626" y="410" width="228" height="54" rx="18" fill="#0f766e" opacity="0.08"/>
+  <rect x="626" y="480" width="228" height="54" rx="18" fill="#0f766e" opacity="0.08"/>
+</svg>

@@ -9,7 +9,7 @@ import type { CanvaAuthData, CanvaScopes } from "./CanvaProvider"
 const CANVA_OAUTH_AUTHORIZE_URL = "https://www.canva.com/api/oauth/authorize"
 const CANVA_OAUTH_TOKEN_URL = "https://api.canva.com/rest/v1/oauth/token"
 export const OAUTH_PORT = 5520
-const AUTH_REDIRECT_URL = `http://127.0.0.1:${OAUTH_PORT}/auth/complete` // "https://freeshow.app/auth_redirect"
+const AUTH_REDIRECT_URL = `http://127.0.0.1:${OAUTH_PORT}/auth/complete` // hosted redirect alternative: "https://hamrocms.com/auth_redirect"
 
 export class CanvaConnect {
     private static CANVA_ACCESS: CanvaAuthData | null = null

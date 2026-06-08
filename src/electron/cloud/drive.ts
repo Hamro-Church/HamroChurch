@@ -560,4 +560,4 @@ function combineFiles(cloudContent: any, localContent: any, newest: string) {
 }
 
 // a custom drive media folder is not planned as discussed here:
-// https://github.com/ChurchApps/FreeShow/issues/402
+// Preserve compatibility with the known drive-sync edge case.

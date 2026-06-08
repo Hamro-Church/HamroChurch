@@ -179,7 +179,7 @@
         </li>
     </ul>
 
-    <p style="margin: 20px 0;opacity: 0.9;">Find some available <Link url="https://freeshow.app/resources#scriptures">Bible versions</Link>.</p>
+    <p style="margin: 20px 0;opacity: 0.9;">Find some available <Link url="https://hamrocms.com/bible-resources">Bible versions</Link>.</p>
 
     <MaterialButton variant="outlined" icon="import" on:click={() => sendMain(Main.IMPORT, { channel: "BIBLE", format: { name: "Bible", extensions: ["xml", "xmm", "json", "fsb"] } })}>
         <T id="scripture.local" />

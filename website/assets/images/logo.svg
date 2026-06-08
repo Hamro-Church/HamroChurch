@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="hamroChurchLogoTitle hamroChurchLogoDesc">
+  <title id="hamroChurchLogoTitle">Hamro Church logo</title>
+  <desc id="hamroChurchLogoDesc">A rounded saffron and teal church mark with a cross.</desc>
+  <defs>
+    <linearGradient id="hamroChurchGlow" x1="18" x2="142" y1="20" y2="142" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect x="12" y="12" width="136" height="136" rx="38" fill="#fff9f0"/>
+  <rect x="18" y="18" width="124" height="124" rx="34" fill="url(#hamroChurchGlow)" opacity="0.18"/>
+  <path d="M80 30 116 62v54c0 7-6 12-12 12H56c-6 0-12-5-12-12V62Z" fill="#fff7ec" stroke="#11534f" stroke-linejoin="round" stroke-width="8"/>
+  <path d="M48 66h64" stroke="#d97706" stroke-linecap="round" stroke-width="8"/>
+  <path d="M80 44v52" stroke="#d97706" stroke-linecap="round" stroke-width="10"/>
+  <path d="M68 128v-28c0-7 5-12 12-12s12 5 12 12v28" fill="none" stroke="#11534f" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/>
+  <circle cx="80" cy="24" r="8" fill="#0f766e"/>
+</svg>

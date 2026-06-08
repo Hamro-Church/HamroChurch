@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hamro Church FAQ</title>
+    <meta name="description" content="Frequently asked questions about Hamro Church installation, language switching, Nepali Bible usage, hymn content, troubleshooting, and outputs." />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <script defer src="/assets/js/main.js"></script>
+</head>
+<body data-lang="en" data-nav-open="false">
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="/"><img class="brand-mark" src="/assets/images/logo.svg" alt="Hamro Church logo" /><div class="brand-copy"><strong>Hamro Church</strong><span><span class="lang-en">Frequently asked questions</span><span class="lang-ne">बारम्बार सोधिने प्रश्न</span></span></div></a>
+            <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">Menu</button>
+            <nav class="site-nav" id="site-nav" data-site-nav><ul><li><a href="/" data-nav><span class="lang-en">Home</span><span class="lang-ne">गृहपृष्ठ</span></a></li><li><a href="/download/" data-nav><span class="lang-en">Download</span><span class="lang-ne">डाउनलोड</span></a></li><li><a href="/docs/" data-nav><span class="lang-en">Docs</span><span class="lang-ne">दस्तावेज</span></a></li><li><a href="/faq/" data-nav><span class="lang-en">FAQ</span><span class="lang-ne">प्रश्नोत्तर</span></a></li></ul></nav>
+            <div class="header-actions"><div class="lang-switch" role="group" aria-label="Language switcher"><button type="button" class="is-active" data-language="en" aria-pressed="true">EN</button><button type="button" data-language="ne" aria-pressed="false">ने</button></div></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-hero">
+            <div class="container page-hero-grid">
+                <div class="page-hero-copy">
+                    <p class="eyebrow"><span class="lang-en">FAQ</span><span class="lang-ne">प्रश्नोत्तर</span></p>
+                    <h1>Answers for install, scripture, hymns, and troubleshooting.</h1>
+                    <p>These answers are written for the actual Hamro Church desktop workflow, so your website help pages and the app menus stay aligned.</p>
+                </div>
+                <div class="hero-panel">
+                    <small>Quick help</small>
+                    <h3>Need a deeper walkthrough?</h3>
+                    <p>Jump from the FAQ into the full documentation when you need setup steps, remote control instructions, or Bible and hymn guides.</p>
+                    <div class="link-row"><a class="button secondary" href="/docs/">Open Docs</a></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container faq-stack">
+                <article class="faq-item" id="installation">
+                    <details open>
+                        <summary>How do I install Hamro Church for the first time?</summary>
+                        <p>Download the build for your operating system, launch the installer, then open Hamro Church and pick your preferred language. After the first launch, confirm your media or content folder and test your audience or stage outputs.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="powerpoint-import">
+                    <details>
+                        <summary>Can I import PowerPoint or PDF files?</summary>
+                        <p>Yes. Hamro Church supports importing presentation content, PDFs, and other media workflows. Use the interface guide for text import workflows and test the slides before service time.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="cloud-sync">
+                    <details>
+                        <summary>Can I sync content between two computers?</summary>
+                        <p>Yes, but treat cloud sync as an intentional workflow rather than a last-minute backup. Keep one machine as your primary source, then verify that media, scripture files, and hymns are available on both systems before the service.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="transfer-files">
+                    <details>
+                        <summary>What is the best way to transfer files to another church computer?</summary>
+                        <p>Copy the relevant media, custom content, and Bible or hymn files to the destination machine, then verify the content paths in Hamro Church. The safest option is a controlled shared folder or versioned backup, not ad-hoc copying during rehearsal.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="videos-muted">
+                    <details>
+                        <summary>Why are my videos muted or not sending audio?</summary>
+                        <p>First confirm the media file itself contains audio. Then check your selected output routing, the preview or output audio setting, and whether the destination display or stream machine is using the correct audio device.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="ccli">
+                    <details>
+                        <summary>Does Hamro Church support CCLI or imported song libraries?</summary>
+                        <p>Hamro Church focuses on practical local church import workflows. If your team uses song libraries, plan a repeatable import process and keep titles, hymn numbers, and multilingual text consistent so the library stays manageable.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="slow-performance">
+                    <details>
+                        <summary>What should I do if the app feels slow?</summary>
+                        <p>Use a fast local drive for media, reduce unnecessary background applications, confirm video codecs are appropriate for playback, and avoid storing large working libraries on unstable network drives.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="app-freezing">
+                    <details>
+                        <summary>What if Hamro Church freezes before or during service?</summary>
+                        <p>Start by narrowing the trigger: a specific media file, output layout, or import action. Test the same workflow on a clean sample project, update to the latest release, and report a reproducible issue in the GitHub tracker if the problem persists.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="delete-vs-remove">
+                    <details>
+                        <summary>What is the difference between deleting a slide and removing it from a group?</summary>
+                        <p>Deleting removes the slide content itself. Removing it from a layout or group only changes where it appears in that service structure. Use remove when you still want the slide available elsewhere.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="video-loop">
+                    <details>
+                        <summary>Can videos loop during announcements or backgrounds?</summary>
+                        <p>Yes. Use the media and output settings to determine whether a background or video item should loop. Always test loop behavior on the actual presentation machine, especially before livestream use.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="video-codec">
+                    <details>
+                        <summary>Which video formats work best?</summary>
+                        <p>Prefer broadly supported codecs and avoid unusually large or heavily compressed files when possible. If playback fails, re-encode the clip to a more reliable delivery format and test again.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="embedded-presentations">
+                    <details>
+                        <summary>Can I embed Google Slides or PowerPoint Online?</summary>
+                        <p>For service reliability, local media or imported slide content is usually safer. Embedded web presentations can work, but they depend on connectivity and browser behavior, so rehearse them carefully.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="custom-hymns">
+                    <details>
+                        <summary>How do I add my own Nepali hymn collection?</summary>
+                        <p>Prepare the hymn content in a consistent importable format, keep titles and numbering clear, then import and test how the lyrics appear in your chosen style template. The hymns guide covers the recommended workflow.</p>
+                    </details>
+                </article>
+                <article class="faq-item" id="language-switching">
+                    <details>
+                        <summary>Can I switch the interface between English and Nepali?</summary>
+                        <p>Yes. Hamro Church is designed as a bilingual app. After switching languages, verify your preferred Bible collection, visible book names, and any localized date or number formatting that matters to your service flow.</p>
+                    </details>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><h2>Still need help?</h2><p>Move from the FAQ into the full guides when you need step-by-step instructions.</p><p class="footer-meta">&copy; <span data-year></span> Hamro Church</p></div><div class="footer-column"><h3>Guides</h3><ul><li><a href="/docs/getting-started/">Getting Started</a></li><li><a href="/docs/bible/">Bible</a></li><li><a href="/docs/hymns/">Hymns</a></li></ul></div><div class="footer-column"><h3>More</h3><ul><li><a href="/docs/stage-display/">Stage Display</a></li><li><a href="/docs/remote-control/">Remote Control</a></li><li><a href="/download/">Download</a></li></ul></div><div class="footer-column"><h3>Community</h3><ul><li><a href="https://github.com/Hamro-Church/HamroChurch/issues" target="_blank" rel="noreferrer">Report an Issue</a></li><li><a href="https://github.com/Hamro-Church/HamroChurch/releases" target="_blank" rel="noreferrer">Release Notes</a></li><li><a href="/support/">Support</a></li></ul></div></div></footer>
+</body>
+</html>

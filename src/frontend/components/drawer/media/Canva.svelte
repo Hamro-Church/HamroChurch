@@ -73,7 +73,7 @@
 {:else}
     <div class="gridgap">
         <Center style="flex-direction: column;">
-            <Link url="https://freeshow.app/docs/media#connecting-to-canva">
+            <Link url="https://hamrocms.com/docs/interface#canva">
                 <T id="main.docs" />
                 <Icon id="launch" white />
             </Link>

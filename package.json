@@ -4,7 +4,14 @@
     "private": true,
     "main": "build/electron/index.js",
     "description": "Nepali-localized church presentation software for worship services.",
-    "repository": "https://github.com/ChurchApps/FreeShow",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Hamro-Church/HamroChurch.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Hamro-Church/HamroChurch/issues"
+    },
+    "homepage": "https://hamrocms.com",
     "author": "Hamro Church",
     "license": "GPL-3.0",
     "scripts": {

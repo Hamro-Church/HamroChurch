@@ -8,7 +8,7 @@
 
     let changelog = ($popupData.changelog || "").replaceAll("\r\n", "<br>").replaceAll("-", "•")
     function download() {
-        sendMain(Main.URL, "https://github.com/ChurchApps/FreeShow/releases")
+        sendMain(Main.URL, "https://hamrocms.com/download")
 
         activePopup.set(null)
         popupData.set({})

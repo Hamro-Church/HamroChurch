@@ -965,7 +965,7 @@ export function replaceDynamicValues(text: string, { showId, layoutId, slideInde
         const audioPath = playingAudioIds[playingAudioIds.length - 1] // get newest
 
         // custom - only from external source (Companion)
-        // or used to set variable value: https://github.com/ChurchApps/FreeShow/issues/1720
+        // Also used when setting a variable value.
         if (dynamicId === "active_layers") {
             const backgroundActive = !isOutCleared("background")
             const slideActive = !isOutCleared("slide")

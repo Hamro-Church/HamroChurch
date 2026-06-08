@@ -114,7 +114,7 @@ export async function startBackup({ customTriggers, isCloudSync }: { customTrigg
                 )
 
                 // ensure all shows are added correctly
-                // https://github.com/ChurchApps/FreeShow/issues/1492
+                // Keep the backup directory available for migration and restore checks.
                 await wait(20)
             }
         }

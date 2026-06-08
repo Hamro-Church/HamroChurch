@@ -4,7 +4,7 @@ import { categories, drawerTabsData, textCache } from "../stores"
 import { formatSearch, tokenize } from "./search"
 import { sortObjectNumbers } from "../components/helpers/array"
 
-// https://github.com/ChurchApps/FreeShow/pull/2790
+// Adapted from the upstream search optimization.
 
 // ==========================================
 // INVERTED INDEX FOR O(1) WORD LOOKUPS

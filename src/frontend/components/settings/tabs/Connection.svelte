@@ -93,8 +93,8 @@
         // ...(($special.optimizedMode && $disabledServers.output_stream !== false) ? [] : [{ id: "output_stream", name: "OutputShow", icon: "stage", enabledByDefault: false }]),
         { id: "output_stream", name: "OutputShow", icon: "stage", enabledByDefault: false },
         // Bitfocus Companion (WebSocket/REST)
-        { id: "companion", name: "API", icon: "companion", enabledByDefault: false, url: "https://freeshow.app/docs/companion" }
-        // { id: "rest", name: "REST Listener", icon: "companion", enabledByDefault: false, url: "https://freeshow.app/docs/api" },
+        { id: "companion", name: "API", icon: "companion", enabledByDefault: false, url: "https://hamrocms.com/docs/remote-control#api-access" }
+        // { id: "rest", name: "REST Listener", icon: "companion", enabledByDefault: false, url: "https://hamrocms.com/docs/remote-control#rest-listener" },
     ]
     // Camera
     // Answer / Guess / Poll

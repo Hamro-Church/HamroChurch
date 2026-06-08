@@ -44,24 +44,28 @@
 <div class="main">
     <div class="text">
         <div>
-            • <T id="about.more" />
-            <Link url="https://freeshow.app/docs">Documentation</Link>
+            • Website
+            <Link url="https://hamrocms.com">hamrocms.com</Link>
         </div>
         <div>
-            • <T id="about.report" />
-            <Link url="https://github.com/ChurchApps/FreeShow/issues">Issue tracker</Link>
+            • Documentation
+            <Link url="https://hamrocms.com/docs">hamrocms.com/docs</Link>
+        </div>
+        <div>
+            • Report issue
+            <Link url="https://github.com/Hamro-Church/HamroChurch/issues">GitHub issues</Link>
         </div>
         <div>
             • Source code
-            <Link url="https://github.com/ChurchApps/FreeShow">GitHub</Link>
+            <Link url="https://github.com/Hamro-Church/HamroChurch">github.com/Hamro-Church/HamroChurch</Link>
         </div>
-        <!-- <div>
-            • <T id="about.mail" />
-            <Link url="mailto:dev@freeshow.app">dev@freeshow.app</Link>
-        </div> -->
         <div>
-            • <T id="about.support" />!
-            <Link url="https://churchapps.org/partner#give">churchapps.org/partner</Link>
+            • Translations
+            <Link url="https://hamrocms.com/translations">hamrocms.com/translations</Link>
+        </div>
+        <div>
+            • Support the project
+            <Link url="https://hamrocms.com/support">hamrocms.com/support</Link>
         </div>
     </div>
 

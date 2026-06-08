@@ -135,7 +135,7 @@ function requestHeaders() {
     const session = require("electron").session.defaultSession
     session.webRequest.onBeforeSendHeaders((details: any, callback: any) => {
         if (details.url.includes("youtube.com") || details.url.includes("youtube-nocookie.com")) {
-            details.requestHeaders.Referer = "https://freeshow.app/"
+            details.requestHeaders.Referer = "https://hamrocms.com/"
         }
         callback({ requestHeaders: details.requestHeaders })
     })

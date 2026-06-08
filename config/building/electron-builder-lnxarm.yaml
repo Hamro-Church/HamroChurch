@@ -8,6 +8,12 @@ files:
     - public/**
     - "!node_modules/@napi-rs"
 
+publish:
+    provider: github
+    owner: Hamro-Church
+    repo: HamroChurch
+    releaseType: release
+
 extraResources:
     - from: node_modules/slideshow/
       to: slideshow

@@ -1,4 +1,4 @@
-// https://github.com/ChurchApps/FreeShow/pull/1551
+// Adapted from the upstream chord transposition fix.
 
 // Standard chromatic scale with sharps
 const SHARP_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]

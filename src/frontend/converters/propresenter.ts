@@ -404,7 +404,7 @@ function decodeBase64(text: string) {
     })
 
     // WIP better RTF decoding
-    // https://github.com/ChurchApps/FreeShow/issues/1200
+    // Preserve the imported sub-slide structure for this edge case.
 
     // https://www.oreilly.com/library/view/rtf-pocket-guide/9781449302047/ch04.html
     r = r.replaceAll("\\u8217 ?", "'")
