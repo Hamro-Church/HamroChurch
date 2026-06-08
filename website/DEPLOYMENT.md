@@ -42,15 +42,12 @@ If you later deploy through GitHub Pages or a static hosting pipeline:
 
 ## Installer Links
 
-The download buttons currently use placeholder `#` links for direct platform installers.
+The website download page now includes:
 
-Replace those placeholders in `website/download/index.html` with the real published assets once your GitHub release artifacts exist:
+- A direct Windows installer URL
+- A live GitHub release page fallback for macOS and Linux while hosted builds finish publishing
 
-- Windows: direct `.exe` asset URL
-- macOS: direct `.dmg` asset URL
-- Linux: direct `.AppImage` or `.deb` asset URL
-
-Keep `https://github.com/Hamro-Church/HamroChurch/releases` listed as the fallback source even after the direct links are updated.
+If additional platform assets become available later, update `website/download/index.html` with their direct release asset URLs.
 
 ## Recommended Post-Upload Checks
 
