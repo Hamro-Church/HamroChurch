@@ -1,14 +1,34 @@
 # Hamro Church
 
-Hamro Church is a bilingual Nepali/English church presentation application for worship services, scripture projection, song lyrics, media playback, stage display, remote control, and multi-output presentations.
+![Hamro Church logo](website/assets/images/logo.svg)
 
-## Current Focus
+Hamro Church is bilingual church presentation software built for Nepali and English worship services. It supports scripture projection, hymn and lyric slides, media playback, stage display, remote control, and multi-output presentation workflows.
 
-- Full desktop presentation workflow with preview, stage, controller, remote, and output-stream views
-- Nepali-first localization with English fallback
-- Nepali Bible migration and local scripture support
-- Nepali hymn import and slide generation
-- Bikram Sambat display formatting and Nepali numerals in key UI surfaces
+## Links
+
+- Website: https://hamrocms.com
+- Documentation: https://hamrocms.com/docs
+- FAQ: https://hamrocms.com/faq
+- GitHub Repository: https://github.com/Hamro-Church/HamroChurch
+- Releases: https://github.com/Hamro-Church/HamroChurch/releases
+- Issue Tracker: https://github.com/Hamro-Church/HamroChurch/issues
+
+## Downloads
+
+Current release downloads will be published through GitHub Releases:
+
+- Windows installer: https://github.com/Hamro-Church/HamroChurch/releases
+- macOS installer: https://github.com/Hamro-Church/HamroChurch/releases
+- Linux installer: https://github.com/Hamro-Church/HamroChurch/releases
+
+## Core Capabilities
+
+- Bilingual Nepali and English interface support
+- Nepali Bible import and localized scripture presentation
+- Nepali hymn workflows and slide generation
+- Stage display, controller, remote, and output-stream views
+- Media playback and multi-output presentation control
+- Nepali number and date formatting in supported UI surfaces
 
 ## Development Setup
 
@@ -18,7 +38,7 @@ Hamro Church is a bilingual Nepali/English church presentation application for w
 4. On Linux, install `libfontconfig1-dev`.
 5. From the repository root, run `npm install`.
 
-## Common Commands
+## Build Commands
 
 - `npm start`
   Starts the desktop app in development mode.
@@ -38,35 +58,30 @@ Hamro Church is a bilingual Nepali/English church presentation application for w
 - `npm run test:svelte`
   Runs `svelte-check` for Svelte and TypeScript validation.
 
+- `npm run release`
+  Builds and publishes the current platform release using `electron-builder` and the GitHub release target.
+
 - `npm run pack`
   Creates an unpacked desktop build for manual packaging verification.
 
-## Manual Verification
+## Website Bundle
 
-Use this checklist after `npm start` or a successful production build:
+The production-ready static website for `hamrocms.com` is stored in the `website/` folder.
 
-1. Confirm the shell branding shows Hamro Church in splash, about, and window titles.
-2. Open scripture and verify local Bible content loads and inserts into slides.
-3. Open imported hymn content and verify Nepali text renders and splits into slides.
-4. Check preview, stage, remote, controller, and output-stream views.
-5. Verify Nepali number/date formatting in supported UI surfaces.
+- Homepage: `website/index.html`
+- Download page: `website/download/index.html`
+- Docs: `website/docs/**`
+- FAQ: `website/faq/index.html`
+- Deployment notes: `website/DEPLOYMENT.md`
 
-## Content Maintenance
+## Validation
 
-### Add or Update Hymns
+Recommended validation before release:
 
-Update the migrated hymn source JSON and regenerate the imported hymn shows through the application migration/import workflow.
+1. Run `npm run test:svelte`.
+2. Run `npm run build`.
+3. Verify branding, scripture, hymn, stage, remote, and output flows manually.
 
-### Update the Nepali Bible
+## License
 
-Replace the migrated Bible source database and rerun the application migration so the local Bible files are regenerated.
-
-### Extend Translations
-
-Edit the language files under `public/lang` and rerun `npm run test:svelte` plus `npm run build`.
-
-## Build Outputs
-
-- Frontend bundle: `public/build`
-- Electron/server build artifacts: `build/electron`
-- Packaged app output: produced by `npm run pack` or release packaging commands
+Hamro Church is licensed under GPL-3.0. See the `LICENSE` file for details.

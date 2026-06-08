@@ -1,6 +1,6 @@
 {
     "name": "hamro-church",
-    "version": "1.6.2-beta.1",
+    "version": "1.0.0",
     "private": true,
     "main": "build/electron/index.js",
     "description": "Nepali-localized church presentation software for worship services.",

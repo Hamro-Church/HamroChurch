@@ -8,6 +8,10 @@
 /public/*.ts
 /build/
 /dist/
+/release/
+
+hamro-church-website.zip
+website.zip
 
 *.env
 
