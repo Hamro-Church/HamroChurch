@@ -26,8 +26,8 @@
         // return () => renderer.stop()
     })
 
-    $: style = `${effect.style};background: ${effect.background};opacity: ${effect.opacity ?? 1};`
-    $: if (style && canvasElem) canvasElem.style = style
+    $: effectStyle = `${effect.style};background: ${effect.background};opacity: ${effect.opacity ?? 1};`
+    $: if (effectStyle && canvasElem) canvasElem.style.cssText = effectStyle
 
     onDestroy(() => {
         renderer?.stop()

@@ -33,7 +33,7 @@
     //     { id: "full", name: "$:settings.full:$ (60 fps)" },
     // ]
 
-    function updateSpecial(value, key) {
+    function updateSpecial(value: any, key: string) {
         special.update((a) => {
             if (!value) delete a[key]
             else a[key] = value

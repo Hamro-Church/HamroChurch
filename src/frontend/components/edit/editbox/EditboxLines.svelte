@@ -290,7 +290,7 @@
         } else if (ref.id) {
             // dont override history when undoing
             let lastRedo = $redoHistory[$redoHistory.length - 1]
-            if (lastRedo?.id === "SHOW_ITEMS") {
+            if (lastRedo && "id" in lastRedo && lastRedo.id === "SHOW_ITEMS" && "oldData" in lastRedo) {
                 let previousData = lastRedo.oldData.previousData
 
                 let historyText = previousData[index]?.lines.reduce((text, line) => (text += getLineText(line)), "")
@@ -392,7 +392,7 @@
     // update auto size
     let loaded = false
     $: isAuto = item?.auto || (item?.textFit || "none") !== "none"
-    $: textArray = Array.isArray(item?.lines?.[0]?.text) ? item.lines[0].text : []
+    $: textArray = Array.isArray(item?.lines?.[0]?.text) ? item?.lines?.[0]?.text || [] : []
     $: itemText = textArray.filter((a) => !a.customType?.includes("disableTemplate")) || []
     $: itemFontSize = Number(getStyles((ref.type === "stage" ? item : itemText[0])?.style, true)?.["font-size"] || "")
     $: if (isAuto || itemFontSize || textChanged) getCustomAutoSize()

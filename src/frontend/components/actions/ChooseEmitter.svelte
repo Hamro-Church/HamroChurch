@@ -11,7 +11,7 @@
     import MaterialButton from "../inputs/MaterialButton.svelte"
     import MaterialDropdown from "../inputs/MaterialDropdown.svelte"
     import MaterialTextInput from "../inputs/MaterialTextInput.svelte"
-    import { API_emitter } from "./api"
+    import type { API_emitter } from "./api"
     import { formatData } from "./emitters"
     import MidiValues from "./MidiValues.svelte"
 
@@ -95,6 +95,25 @@
         popupData.set({ id, actionData: $popupData })
         activePopup.set("manage_emitters")
     }
+
+    function getTemplateStringValue(index: number, input: { value?: string | { [key: string]: any } }) {
+        const currentValue = (value.templateValues?.[index] || input).value
+        return typeof currentValue === "string" ? currentValue : ""
+    }
+
+    $: midiTemplateValues = (() => {
+        const currentValue = customTemplateInputs[0]?.value
+        if (typeof currentValue !== "object" || !currentValue) return { channel: 1 }
+        const midiValue = currentValue as { channel?: number; note?: number; velocity?: number; controller?: number; value?: number }
+
+        return {
+            channel: midiValue.channel ?? 1,
+            note: midiValue.note,
+            velocity: midiValue.velocity,
+            controller: midiValue.controller,
+            value: midiValue.value
+        }
+    })()
 </script>
 
 <InputRow>
@@ -150,18 +169,16 @@
 
         {#if emitter?.type !== "midi"}
             {#each templateInputs as input, i}
-                {@const stringValue = typeof (value.templateValues?.[i] || input).value === "string" ? (value.templateValues?.[i] || input).value : ""}
-
-                <MaterialTextInput label={input.name} disabled={!!input.value} placeholder={translateText("variables.value")} value={stringValue} on:change={(e) => setTemplateValue(i, e)} />
+                <MaterialTextInput label={input.name || ""} disabled={!!input.value} placeholder={translateText("variables.value")} value={getTemplateStringValue(i, input)} on:change={(e) => setTemplateValue(i, e)} />
             {/each}
         {/if}
     {:else if emitter?.type === "midi"}
-        <MidiValues value={{ ...emitter.signal, values: typeof customTemplateInputs[0]?.value === "object" ? customTemplateInputs[0].value : {} }} on:change={(e) => setMidiTemplateValue(e)} type="emitter" />
+        <MidiValues value={{ ...emitter.signal, values: midiTemplateValues }} on:change={(e) => setMidiTemplateValue(e)} type="emitter" />
     {:else}
         <DynamicList addDisabled={!!customTemplateInputs?.find((a) => !a.name && !a.value)} items={customTemplateInputs} let:item={input} on:add={createTemplateValue} on:delete={(e) => removeTemplateValue(e.detail)} allowOpen={false} nothingText={false}>
             <div style="display: flex;width: 100%;">
                 <MaterialTextInput label="inputs.name" value={input.name} on:change={(e) => setTemplateValue(input.id, e, "name")} style="width: 50%;" />
-                <MaterialTextInput label="variables.value" value={input.value} on:change={(e) => setTemplateValue(input.id, e, "value")} style="width: 50%;" />
+                <MaterialTextInput label="variables.value" value={typeof input.value === "string" ? input.value : ""} on:change={(e) => setTemplateValue(input.id, e, "value")} style="width: 50%;" />
             </div>
         </DynamicList>
     {/if}

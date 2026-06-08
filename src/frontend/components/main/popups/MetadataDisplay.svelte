@@ -68,15 +68,16 @@
         if (type === "show_category") {
             categories.update((a) => {
                 ids.forEach((id) => {
-                    if (!a[id]) return
+                    const entry = a[id]
+                    if (!entry) return
 
                     if (key === "display" && value === "never") {
-                        delete a[id].metadata
+                        delete entry.metadata
                         return
                     }
 
-                    if (!a[id].metadata) a[id].metadata = {}
-                    a[id].metadata[key] = value
+                    if (!entry.metadata) entry.metadata = {}
+                    entry.metadata[key] = value
                 })
                 return a
             })
@@ -87,14 +88,16 @@
             styles.update((a) => {
                 const id = ids[0] || "default"
                 if (!a[id]) a[id] = { name: translateText("example.default") }
+                const entry = a[id]
+                if (!entry) return a
 
                 if (key === "display" && value === "default") {
-                    delete a[id].metadata
+                    delete entry.metadata
                     return a
                 }
 
-                if (!a[id].metadata) a[id].metadata = {}
-                a[id].metadata[key] = value
+                if (!entry.metadata) entry.metadata = {}
+                entry.metadata[key] = value
 
                 return a
             })

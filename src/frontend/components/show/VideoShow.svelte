@@ -258,14 +258,15 @@
         }
 
         content = formatVTT(content)
+        const trackContent = content
 
         media.update((a) => {
             if (!a[mediaPath]) a[mediaPath] = {}
             if (!a[mediaPath].tracks) a[mediaPath].tracks = []
 
-            let name = removeExtension(getFileName(path)).replaceAll(" ", "_")
+            let name = (removeExtension(getFileName(path)) || "").replaceAll(" ", "_")
             let id = name || uid(5)
-            a[mediaPath].tracks!.push({ lang: id, name, vtt: content })
+            a[mediaPath].tracks!.push({ lang: id, name, vtt: trackContent })
 
             activeRename.set("subtitle_" + (a[mediaPath].tracks!.length - 1))
 

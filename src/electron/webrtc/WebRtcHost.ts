@@ -155,7 +155,7 @@ export class WebRtcHost {
         /* eslint-disable no-useless-escape */
         return `<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>FreeShow WebRTC WHIP Host</title></head>
+<head><meta charset="UTF-8"><title>Hamro Church WebRTC WHIP Host</title></head>
 <body>
 <div id="canvases" style="display:none"></div>
 <script>
@@ -206,7 +206,7 @@ ipcRenderer.on("WEBRTC_FRAME", (_event, { outputId, buffer, size }) => {
 
 let audioLogCount = 0;
 
-// Receive dynamic interleaved signed Int16 PCM system audio buffers from FreeShow
+// Receive dynamic interleaved signed Int16 PCM system audio buffers from Hamro Church
 ipcRenderer.on("WEBRTC_AUDIO", (_event, { buffer, sampleRate, channelCount }) => {
     const streamKeys = Object.keys(streams);
     if (streamKeys.length === 0) return;

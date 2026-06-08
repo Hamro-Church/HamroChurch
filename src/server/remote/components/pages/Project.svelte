@@ -201,8 +201,10 @@
                     {#if canAddActiveShow}
                         <Button
                             on:click={() => {
-                                project.set($activeProject.id || "")
-                                send("API:add_to_project", { projectId: $activeProject.id, id: $activeShow?.id })
+                                const activeProjectId = $activeProject?.id
+                                if (!activeProjectId) return
+                                project.set(activeProjectId)
+                                send("API:add_to_project", { projectId: activeProjectId, id: $activeShow?.id })
                             }}
                             style="width: 100%;"
                             dark
@@ -219,8 +221,10 @@
                 {#if canAddActiveShow}
                     <Button
                         on:click={() => {
-                            project.set($activeProject.id || "")
-                            send("API:add_to_project", { projectId: $activeProject.id, id: $activeShow?.id })
+                            const activeProjectId = $activeProject?.id
+                            if (!activeProjectId) return
+                            project.set(activeProjectId)
+                            send("API:add_to_project", { projectId: activeProjectId, id: $activeShow?.id })
                         }}
                         style="width: 100%;"
                         dark

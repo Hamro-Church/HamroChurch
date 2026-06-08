@@ -1,13 +1,24 @@
 <script lang="ts">
     import { EXPORT } from "../../../types/Channels"
     import type { Show } from "../../../types/Show"
+    import type { ProjectShowRef } from "../../../types/Projects"
     import { currentWindow } from "../../stores"
     import { send } from "../../utils/request"
     import Textbox from "../slide/Textbox.svelte"
     import MediaItem from "../slide/views/MediaItem.svelte"
     import Zoomed from "../slide/Zoomed.svelte"
 
-    export let shows: Show[] = []
+    type ExportShow = Show &
+        Pick<ProjectShowRef, "id"> & {
+            type?: ProjectShowRef["type"]
+            notes?: string
+            color?: string
+            data?: { time?: string; [key: string]: any }
+            metaDisplay?: string
+            meta: Show["meta"] & { notes?: string }
+        }
+
+    export let shows: ExportShow[] = []
     export let options: any = {}
     export let path = ""
 
@@ -27,7 +38,7 @@
         }
     })
 
-    let layoutSlides: any = {}
+    let layoutSlides: Record<string, any[]> = {}
 
     $: if (shows.length) getRefs()
 
@@ -65,7 +76,7 @@
         if ($currentWindow === "pdf") exportPDF()
     }
 
-    function getPagesForShow(show: Show, showOptions: any) {
+    function getPagesForShow(show: ExportShow, showOptions: any) {
         if (show && show.type === "section") return 1
         if (!show || !layoutSlides[show.id!]) return 0
         const slides = layoutSlides[show.id!]
@@ -88,7 +99,7 @@
     $: renderedShows = options.oneFile ? shows : shows[index] ? [shows[index]] : []
 
     // dynamic counter
-    function getGroupName(show: Show, group: string, slideID: string) {
+    function getGroupName(show: ExportShow, group: string, slideID: string) {
         let name = group
         if (name) {
             let added: any = {}
@@ -133,7 +144,7 @@
         return lines
     }
 
-    function getShowChords(show: Show): string[] {
+    function getShowChords(show: ExportShow): string[] {
         const chords = new Set<string>()
 
         Object.values(show.slides || {}).forEach((slide) => {
@@ -149,7 +160,7 @@
         return Array.from(chords).sort()
     }
 
-    function getSongKey(show: Show): string {
+    function getSongKey(show: ExportShow): string {
         // First priority: explicit key in metadata
         if (show.meta?.key && show.meta.key.trim()) {
             return show.meta.key.trim()
@@ -165,7 +176,7 @@
                 slide.items?.forEach((item) => {
                     item.lines?.forEach((line) => {
                         line.chords?.forEach((chord) => {
-                            const key = chord.key || chord.chord || ""
+                            const key = chord.key || (chord as any).chord || ""
                             if (key) {
                                 chordCounts[key] = (chordCounts[key] || 0) + 1
                             }
@@ -189,7 +200,7 @@
         return "C"
     }
 
-    function getShowNotes(show: Show): string {
+    function getShowNotes(show: ExportShow): string {
         // Get notes from the active layout
         const activeLayoutId = show.settings?.activeLayout
         if (activeLayoutId && show.layouts?.[activeLayoutId]?.notes) {
@@ -216,8 +227,8 @@
         const sortedChords = [...chords].sort((a, b) => (a.pos || 0) - (b.pos || 0))
 
         sortedChords.forEach((chord) => {
-            const pos = Math.max(0, Math.min(chord.pos || 0, chordArray.length - (chord.chord || chord.key || "").length))
-            const chordStr = chord.chord || chord.key || ""
+            const pos = Math.max(0, Math.min(chord.pos || 0, chordArray.length - (((chord as any).chord || chord.key || "").length || 0)))
+            const chordStr = (chord as any).chord || chord.key || ""
 
             // Place chord at position, ensuring it fits
             for (let i = 0; i < chordStr.length && pos + i < chordArray.length; i++) {
@@ -316,7 +327,7 @@
                             <div style="font-size: 0.95em; color: #777; margin-bottom: 30px; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Media Item ({show.type})</div>
                             {#if show.type === "image"}
                                 <div style="max-width: 100%; height: 180mm; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; padding: 10px; border-radius: 8px; background: #fafafa; overflow: hidden; margin: 0 auto; box-sizing: border-box;">
-                                    <img src={show.media[show.id].path} alt={show.name} style="max-width: 100%; max-height: 100%; object-fit: contain;" />
+                                    <img src={show.media?.[show.id]?.path} alt={show.name} style="max-width: 100%; max-height: 100%; object-fit: contain;" />
                                 </div>
                             {/if}
                         </div>

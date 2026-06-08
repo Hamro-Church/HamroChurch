@@ -2,7 +2,7 @@
     import { onDestroy } from "svelte"
     import { uid } from "uid"
     import { BLACKMAGIC, NDI, OUTPUT } from "../../../../types/Channels"
-    import { Option } from "../../../../types/Main"
+    import type { Option } from "../../../../types/Main"
     import type { Output } from "../../../../types/Output"
     import { AudioAnalyser } from "../../../audio/audioAnalyser"
     import { activePage, activePopup, activeStage, activeStyle, alertMessage, currentOutputSettings, ndiData, os, outputDisplay, outputs, saved, settingsTab, stageShows, styles, toggleOutputEnabled } from "../../../stores"
@@ -18,6 +18,21 @@
     import MaterialPopupButton from "../../inputs/MaterialPopupButton.svelte"
     import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
+
+    type BlackmagicDisplayMode = {
+        name: string
+        width?: number
+        height?: number
+        frameRate?: string
+        videoModes?: string[]
+    }
+    type BlackmagicDevice = Option & {
+        data?: {
+            displayModes?: BlackmagicDisplayMode[]
+            supportsInternalKeying?: boolean
+            supportsExternalKeying?: boolean
+        }
+    }
 
     let outputsList: Output[] = []
     $: outputsList = sortObject(sortByName(keysToID($outputs)), "stageOutput")
@@ -222,7 +237,7 @@
     ]
 
     // blackmagic
-    let blackmagicDevices: Option[] = []
+    let blackmagicDevices: BlackmagicDevice[] = []
     function getUsedBlackmagicDeviceIds(excludeId = "") {
         return Object.entries($outputs)
             .filter(([id, o]: any) => id !== excludeId && o.blackmagic && o.blackmagicData?.deviceId)
@@ -256,22 +271,22 @@
                 let device = blackmagicDevices.find((a) => a.id === value)
                 if (!device) return
 
-                let displayModes = device.data?.displayModes || []
+                let displayModes: BlackmagicDisplayMode[] = device.data?.displayModes || []
                 updateBlackmagicData(displayModes, "displayModes")
                 if (displayModes.length) {
                     // try setting to "preferred" modes, or set to first available
-                    updateBlackmagicData(displayModes.find((a) => a.name === "1080i59.94" || a.name === "1080p29.97")?.name || displayModes[0]?.name, "displayMode")
+                    updateBlackmagicData(displayModes.find((mode) => mode.name === "1080i59.94" || mode.name === "1080p29.97")?.name || displayModes[0]?.name, "displayMode")
                 }
             } else if (key === "displayMode") {
                 let device = blackmagicDevices.find((a) => a.id === currentOutput?.blackmagicData?.deviceId)
                 if (!device) return
 
-                let displayModes = device.data?.displayModes || []
-                let modeData = displayModes.find((a) => a.name === value) || {}
-                if (!modeData.width) return
+                let displayModes: BlackmagicDisplayMode[] = device.data?.displayModes || []
+                let modeData = displayModes.find((mode) => mode.name === value)
+                if (!modeData?.width) return
 
                 // pixel format
-                let pixelFormats = (modeData.videoModes || []).map((format) => ({ name: format }))
+                let pixelFormats: Option[] = (modeData.videoModes || []).map((format: string) => ({ name: format }))
                 updateBlackmagicData(pixelFormats, "pixelFormats")
                 updateBlackmagicData(pixelFormats[0]?.name, "pixelFormat")
 
@@ -301,9 +316,9 @@
     let listenerId = uid()
     onDestroy(() => destroy(BLACKMAGIC, listenerId))
     const receiveBMD = {
-        GET_DEVICES: (data) => {
-            const parsedData = JSON.parse(data)
-            blackmagicDevices = parsedData.map((a) => ({
+        GET_DEVICES: (data: string) => {
+            const parsedData: any[] = JSON.parse(data)
+            blackmagicDevices = parsedData.map((a: any) => ({
                 id: a.deviceHandle,
                 name: a.displayName || a.modelName,
                 data: {
@@ -328,6 +343,9 @@
         if (!device) return false
         return device.data?.supportsInternalKeying || device.data?.supportsExternalKeying || false
     }
+
+    $: displayModeOptions = (currentOutput?.blackmagicData?.displayModes || []).map((mode: BlackmagicDisplayMode) => ({ label: mode.name, value: mode.name }))
+    $: pixelFormatOptions = (currentOutput?.blackmagicData?.pixelFormats || []).map((format: Option) => ({ label: format.name, value: format.name }))
 
     $: outputLabel = currentOutput?.blackmagicData?.displayMode || `${currentOutput?.bounds?.width || 1920}x${currentOutput?.bounds?.height || 1080}`
 
@@ -381,7 +399,7 @@
     <svelte:fragment slot="menu">
         {#if currentOutput}
             <InputRow>
-                <MaterialTextInput label="inputs.name" value={currentOutput.ndiData?.name || `FreeShow NDI${currentOutput.name ? ` - ${currentOutput.name}` : ""}`} defaultValue={`FreeShow NDI${currentOutput.name ? ` - ${currentOutput.name}` : ""}`} on:change={(e) => updateNdiData(e.detail, "name")} />
+                <MaterialTextInput label="inputs.name" value={currentOutput.ndiData?.name || `Hamro Church NDI${currentOutput.name ? ` - ${currentOutput.name}` : ""}`} defaultValue={`Hamro Church NDI${currentOutput.name ? ` - ${currentOutput.name}` : ""}`} on:change={(e) => updateNdiData(e.detail, "name")} />
                 <MaterialTextInput label="inputs.group" title="settings.comma_seperated" value={currentOutput.ndiData?.groups || ""} defaultValue="" placeholder="public" on:change={(e) => updateNdiData(e.detail, "groups")} />
             </InputRow>
 
@@ -414,8 +432,8 @@
 
         {#if currentOutput?.blackmagicData?.deviceId}
             <InputRow>
-                <MaterialDropdown label="settings.display_mode" value={currentOutput.blackmagicData?.displayMode} options={currentOutput.blackmagicData?.displayModes?.map((mode) => ({ label: mode.name, value: mode.name })) || []} on:change={(e) => updateBlackmagicData(e.detail, "displayMode")} />
-                <MaterialDropdown label="settings.pixel_format" value={currentOutput.blackmagicData?.pixelFormat} options={currentOutput.blackmagicData?.pixelFormats?.map((format) => ({ label: format.name, value: format.name })) || []} on:change={(e) => updateBlackmagicData(e.detail, "pixelFormat")} />
+                <MaterialDropdown label="settings.display_mode" value={currentOutput.blackmagicData?.displayMode} options={displayModeOptions} on:change={(e) => updateBlackmagicData(e.detail, "displayMode")} />
+                <MaterialDropdown label="settings.pixel_format" value={currentOutput.blackmagicData?.pixelFormat} options={pixelFormatOptions} on:change={(e) => updateBlackmagicData(e.detail, "pixelFormat")} />
             </InputRow>
 
             {#if isAlphaSupported()}

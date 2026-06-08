@@ -1,6 +1,5 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
-    import { translate } from "../util/helpers"
     import Icon from "../../common/components/Icon.svelte"
 
     export let variant: "contained" | "outlined" | "text" = "text"
@@ -16,7 +15,7 @@
     export let small = false
     export let tab = false
     export let red = false
-    let button
+    let button: HTMLButtonElement | null = null
 
     // automatically do white icon if no content
     if (!$$slots.default) white = true
@@ -24,26 +23,27 @@
     let ripples: { x: number; y: number; size: number; id: number }[] = []
 
     let dispatch = createEventDispatcher()
-    function click(e, double = false) {
-        if (e.target?.closest(".edit")) return
-        if (e.target?.closest("button") !== button) return
+    function click(e: MouseEvent | KeyboardEvent, double = false) {
+        const target = e.target instanceof HTMLElement ? e.target : null
+        if (target?.closest(".edit")) return
+        if (target?.closest("button") !== button) return
 
         const ctrl = e.ctrlKey || e.metaKey
         const shift = e.shiftKey
         const alt = e.altKey
         const doubleClick = e.detail === 2
-        const target = e.target
         dispatch(double ? "dblclick" : "click", { ctrl, shift, alt, doubleClick, target })
     }
 
-    function dblclick(e: any) {
+    function dblclick(e: MouseEvent) {
         click(e, true)
     }
 
-    function triggerRipple(e) {
+    function triggerRipple(e: MouseEvent) {
         if (disabled) return
-        if (e.target?.closest(".edit")) return
-        if (e.target?.closest("button") !== button) return
+        const target = e.target instanceof HTMLElement ? e.target : null
+        if (target?.closest(".edit")) return
+        if (target?.closest("button") !== button || !button) return
 
         const rect = button.getBoundingClientRect()
         const size = Math.max(rect.width, rect.height)
@@ -60,14 +60,14 @@
         ripples = [...ripples, ripple]
     }
 
-    function handleKey(e) {
+    function handleKey(e: KeyboardEvent) {
         if (disabled) return
         if (e.key === "Enter" || e.key === " ") {
             click(e)
         }
     }
 
-    function handleAnimationEnd(id) {
+    function handleAnimationEnd(id: number) {
         ripples = ripples.filter((r) => r.id !== id)
     }
 </script>

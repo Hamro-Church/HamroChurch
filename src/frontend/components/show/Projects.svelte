@@ -2,7 +2,6 @@
     import { fade } from "svelte/transition"
     import { uid } from "uid"
     import { Main } from "../../../types/IPC/Main"
-    import type { Project, Tree } from "../../../types/Projects"
     import { sendMain } from "../../IPC/main"
     import { activeProject, activeRename, dictionary, drawer, editingProjectTemplate, focusMode, folders, openedFolders, projects, projectTemplates, projectView, showRecentlyUsedProjects, sorted, special } from "../../stores"
     import { translateText } from "../../utils/language"
@@ -26,7 +25,7 @@
     import ProjectContentList from "./ProjectContentList.svelte"
     import ProjectList from "./ProjectList.svelte"
 
-    let tree: Tree[] = []
+    let tree = []
 
     if (Object.keys($projects).length) deleteDuplicatedProjects()
     function deleteDuplicatedProjects() {
@@ -38,10 +37,10 @@
 
     $: f = Object.entries($folders)
         .filter(([id, a]) => !a.deleted && profile[id] !== "none")
-        .map(([id, folder]) => ({ ...folder, id, type: "folder" as const }))
+        .map(([id, folder]) => ({ ...folder, id, type: "folder" }))
     $: p = Object.entries($projects)
         .filter(([_, a]) => !a.deleted)
-        .map(([id, project]) => ({ ...project, parent: $folders[project.parent] ? project.parent : "/", id, shows: [] as any }))
+        .map(([id, project]) => ({ ...project, parent: $folders[project.parent] ? project.parent : "/", id, shows: [] }))
     $: templates = sortByName(keysToID($projectTemplates)).filter((a) => !a.deleted)
 
     $: {
@@ -62,7 +61,7 @@
         // sort by archived state
         sortedProjects = sortedProjects.sort((a, b) => (!!a.archived === !!b.archived ? 0 : a.archived ? 1 : -1))
 
-        tree = [...(sortedFolders as any), ...sortedProjects]
+        tree = [...sortedFolders, ...sortedProjects]
 
         // update parents (if folders are missing)
         tree = tree.map((a) => ({ ...a, parent: !$folders[a.parent] || $folders[a.parent].deleted ? "/" : a.parent }))
@@ -72,7 +71,7 @@
         tree = folderSorted
     }
 
-    let folderSorted: Tree[] = []
+    let folderSorted = []
     function sortFolders(parent = "/", index = 0, path = "") {
         let filtered = tree.filter((a) => a.parent === parent).map((a) => ({ ...a, index, path }))
         filtered.forEach((folder) => {
@@ -108,7 +107,7 @@
     }
 
     // autoscroll
-    let listScrollElem: HTMLElement | undefined
+    let listScrollElem
     let listOffset = -1
     $: if (listScrollElem) {
         let time = tree.length * 0.5 + 20
@@ -118,7 +117,9 @@
             const activeProject = projectElements.findLast((a) => a?.classList.contains("isActive"))
             if (!activeProject) return
 
-            listOffset = Math.max(0, ((activeProject.closest(".projectItem") as HTMLElement)?.offsetTop || 0) + listScrollElem.offsetTop - ($drawer.height < 400 ? 120 : 20))
+            const activeProjectItem = activeProject.closest(".projectItem")
+            const activeOffset = activeProjectItem instanceof HTMLElement ? activeProjectItem.offsetTop : 0
+            listOffset = Math.max(0, activeOffset + listScrollElem.offsetTop - ($drawer.height < 400 ? 120 : 20))
         }, time)
     } else {
         listOffset = -1
@@ -131,7 +132,7 @@
     }
 
     // last used
-    let recentlyUsedList: any[] = []
+    let recentlyUsedList = []
     // listen for $projects updates in case it has been updated from sync
     $: if ($showRecentlyUsedProjects && $projects) lastUsed()
     else recentlyUsedList = []
@@ -144,7 +145,7 @@
     // most recently interacted with folder (to put new project inside)
     // if no project is opened this will also select an opened folder if any
     let interactedFolder = ""
-    let previouslyOpened: string[] = []
+    let previouslyOpened = []
     $: if ($openedFolders) checkInteraction()
     function checkInteraction() {
         if ($openedFolders.length > previouslyOpened.length) {
@@ -158,7 +159,7 @@
 
     // TEMPLATE
 
-    function createFromTemplate(e: any, id: string) {
+    function createFromTemplate(e, id) {
         // prevent extra single click on (template) double click
         let { ctrl, doubleClick, target } = e.detail
 
@@ -179,7 +180,7 @@
     }
 
     let editActive = false
-    function rename(value: string, id: string) {
+    function rename(value, id) {
         // if (editActive) return
 
         history({ id: "UPDATE", newData: { key: "name", data: value }, oldData: { id }, location: { page: "show", id: "project_template" } })
@@ -194,13 +195,13 @@
 
     // RECENTLY USED
 
-    function openRecentlyUsed(e: any, id: string) {
+    function openRecentlyUsed(e, id) {
         if (e.detail.target.closest(".edit") || e.detail.target.querySelector(".edit")) return
 
         openProject(id, !e.detail.alt)
     }
 
-    function getRootFolder(project: Project) {
+    function getRootFolder(project) {
         let folder = $folders[project.parent]
         if (!folder) return "/"
 
@@ -221,11 +222,11 @@
         sendMain(Main.IMPORT, { channel: "freeshow_project", format: { extensions, name } })
     }
 
-    let contentScrollElem: HTMLElement | undefined
+    let contentScrollElem
     let listScrollY = 0
     let isScrollbarVisible = true
-    let stopListScrollListener: (() => void) | undefined
-    let stopContentScrollListener: (() => void) | undefined
+    let stopListScrollListener
+    let stopContentScrollListener
     $: {
         stopListScrollListener?.()
         stopListScrollListener = listScrollElem ? startScrollListener(listScrollElem) : undefined
@@ -238,12 +239,12 @@
         listScrollY = 0
         isScrollbarVisible = false
     }
-    function startScrollListener(scrollElem: HTMLElement | undefined) {
+    function startScrollListener(scrollElem) {
         listScrollY = 0
         isScrollbarVisible = false
 
-        const dropAreaElem = scrollElem?.querySelector(".droparea") as HTMLElement | undefined
-        if (!dropAreaElem) return
+        const dropAreaElem = scrollElem?.querySelector(".droparea")
+        if (!(dropAreaElem instanceof HTMLElement)) return
         const elem = dropAreaElem
 
         elem.addEventListener("scroll", updateState)
@@ -277,7 +278,7 @@
         isDragging = false
     }
 
-    function mousedown(e: any) {
+    function mousedown(e) {
         if (!e.target.closest(".projectDropdown") && !e.target.closest(".header .right")) showProjectDropdown = false
         // if (!e.target.closest(".projectsOptions") && !e.target.closest(".header .right")) showProjectsOptions = false
         if (!e.target.closest(".addMenu") && !e.target.closest(".addButton")) addMenuOpen = false
@@ -285,7 +286,7 @@
 
     // options
 
-    function updateSpecial(value: any, key: string, allowEmpty = false) {
+    function updateSpecial(value, key, allowEmpty = false) {
         special.update((a) => {
             if (!allowEmpty && !value) delete a[key]
             else a[key] = value
@@ -298,7 +299,7 @@
 
     let projectReplacerTitle = getReplacerTitle()
     function getReplacerTitle() {
-        let titles: string[] = []
+        let titles = []
         projectReplacers.forEach((a) => {
             if (a.id === "D0") titles.push("")
             else titles.push(`• <b>${a.title}:</b> {${a.id}}`)

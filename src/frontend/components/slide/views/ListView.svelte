@@ -6,6 +6,8 @@
     export let list: List = { items: [] }
     export let disableTransition = false
 
+    $: items = list.items || []
+
     let currentItem = 0
     $: if (list.interval) startInterval()
     let timeout: NodeJS.Timeout | null = null
@@ -15,7 +17,7 @@
         timeout = setTimeout(
             () => {
                 currentItem++
-                if (currentItem >= list.items.length) currentItem = 0
+                if (currentItem >= items.length) currentItem = 0
 
                 timeout = null
                 if (list.interval) startInterval()
@@ -28,7 +30,7 @@
 </script>
 
 <ul style="list-style{list.style?.includes('disclosure') ? '-type:' : ': inside'} {list.style || 'disc'};">
-    {#each list.items as item, i}
+    {#each items as item, i}
         {#if list.interval}
             {#if currentItem === i}
                 <!-- svelte transition bug, can't change menus without -->

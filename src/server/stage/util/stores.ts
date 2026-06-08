@@ -8,6 +8,7 @@ import { __update, DeepKey, DeepNested, Inferred, Nested } from "../../common/ut
 import { DEFAULT_DICTIONARY } from "./dictionary"
 
 export let dictionary: Writable<Dictionary> = writable(clone(DEFAULT_DICTIONARY))
+export let language: Writable<string> = writable("ne")
 
 export let errors: Writable<string[]> = writable([])
 
@@ -53,6 +54,7 @@ export let progressData: Writable<any> = writable({})
 
 export const _ = {
     dictionary,
+    language,
     errors,
 
     isConnected,

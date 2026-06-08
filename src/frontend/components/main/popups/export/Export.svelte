@@ -2,7 +2,7 @@
     import { EXPORT } from "../../../../../types/Channels"
     import { Main } from "../../../../../types/IPC/Main"
     import type { Project } from "../../../../../types/Projects"
-    import { Show } from "../../../../../types/Show"
+    import type { Show } from "../../../../../types/Show"
     import { sendMain } from "../../../../IPC/main"
     import { activePopup, activeProject, projects, shows, showsCache, special } from "../../../../stores"
     import { wait } from "../../../../utils/common"
@@ -33,10 +33,10 @@
         project: ["show", "txt", "image"],
         all_shows: ["project", "pdf", "image"]
     }
-    function filterFormats(exportFormats) {
+    function filterFormats(exportFormats: any[]) {
         return clone(exportFormats)
-            .filter((a) => !(excludedFormats[exportType] || []).find((id) => id === a.id))
-            .map((a) => {
+            .filter((a: any) => !(excludedFormats[exportType] || []).find((id: string) => id === a.id))
+            .map((a: any) => {
                 a.name = translateText(a.name)
                 a.icon = `./import-logos/${formatIcons[a.id]}.webp`
                 return a

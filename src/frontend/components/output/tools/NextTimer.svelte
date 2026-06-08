@@ -26,7 +26,7 @@
             if (timer) updateTime(e.target.value, timer)
         })
     }
-    function updateTime(time, timer) {
+    function updateTime(time: number | string, timer: any) {
         if (!timer.paused) {
             autoPause = true
             timer.timer.pause()

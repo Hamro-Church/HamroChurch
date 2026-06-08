@@ -81,7 +81,8 @@
 
         if (!isActive) {
             // run actions - before starting overlay
-            if (Array.isArray($overlays[id]?.actions)) $overlays[id].actions.forEach((a) => runAction(a))
+            const overlay = $overlays[id]
+            if (Array.isArray(overlay?.actions)) overlay.actions.forEach((a) => runAction(a))
         }
 
         setOutput("overlays", id, true)

@@ -28,6 +28,7 @@
     let editOpened: boolean = false
     let textValue = ""
     let editSeedValue = ""
+    $: activeLayouts = $activeShow ? Object.entries($activeShow.layouts || {}) : []
 
     $: {
         const showId = $activeShow?.id || ""
@@ -233,10 +234,9 @@
 
             <div class="layouts">
                 <div style="display: flex;">
-                    {#if !groupsOpened && !editOpened}
-                        {#each Object.keys($activeShow.layouts || {}) as id}
-                            {@const layout = $activeShow.layouts[id]}
-                            <Button on:click={() => changeLayout(id)} active={$activeShow.settings?.activeLayout === id}>
+                    {#if !groupsOpened && !editOpened && $activeShow}
+                        {#each activeLayouts as [id, layout]}
+                            <Button on:click={() => changeLayout(id)} active={$activeShow?.settings?.activeLayout === id}>
                                 {layout.name}
                             </Button>
                         {/each}

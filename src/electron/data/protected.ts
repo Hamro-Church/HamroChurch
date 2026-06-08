@@ -49,7 +49,7 @@ export async function cleanupProtectedCache() {
     }
 
     // one-time sweep of the pre-migration temp location from older versions
-    await deleteFolderAsync(path.join(app.getPath("temp"), "freeshow-protected"))
+    await deleteFolderAsync(path.join(app.getPath("temp"), "hamrochurch-protected"))
 }
 
 const alg = "aes-256-cbc"
@@ -179,7 +179,7 @@ const decryptedCache = new Map<
 >()
 
 const CACHE_TTL = 1000 * 60 * 30 // 30 minutes
-const PROTOCOL_SCHEME = "freeshow-protected"
+const PROTOCOL_SCHEME = "hamrochurch-protected"
 
 export function registerProtectedProtocol() {
     protocol.handle(PROTOCOL_SCHEME, async (request) => {

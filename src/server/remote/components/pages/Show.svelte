@@ -186,7 +186,7 @@
         {:else}
             <div class="buttons">
                 {#if layouts.length > 1}
-                    {@const currentLayout = layouts.find((a) => a.id == $activeShow.settings?.activeLayout)}
+                    {@const currentLayout = layouts.find((a) => a.id == $activeShow?.settings?.activeLayout)}
                     <Dropdown value={currentLayout?.name || "—"} options={layouts} on:click={changeLayout} style="width: 100%;" up />
                 {/if}
 

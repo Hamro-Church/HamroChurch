@@ -1,6 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
     import type { Show } from "../../../../types/Show"
+    import { triggerClickOnEnterSpace } from "../../../common/util/click"
     import { send } from "../../util/socket"
     import { groupsCache } from "../../util/stores"
 
@@ -19,7 +20,7 @@
 
 <div class="groups">
     {#each groups as group}
-        <div class="group" style="--color: {group.color};" on:click={() => addGroup(group)}>
+        <div class="group" style="--color: {group.color};" on:click={() => addGroup(group)} on:keydown={triggerClickOnEnterSpace} role="button" tabindex="0">
             <p>{group.group || "—"}</p>
         </div>
     {/each}

@@ -12,13 +12,13 @@
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import { translateText } from "../../../utils/language"
 
-    let screens: any[] = []
+    let screens = []
 
     // enabled windows on top
     $: outputWindows = keysToID($outputs).sort((a, b) => (a.enabled === b.enabled ? 0 : a.enabled ? 1 : -1))
 
-    let minPosX: number | null = null
-    let minPosY: number | null = null
+    let minPosX = null
+    let minPosY = null
     let totalScreensWidth = 0
     let totalScreensHeight = 0
 
@@ -30,8 +30,8 @@
         // get min/max bounds
         minPosX = null
         minPosY = null
-        let maxPosX: null | number = null
-        let maxPosY: null | number = null
+        let maxPosX = null
+        let maxPosY = null
         clone(screens).forEach(({ bounds }) => {
             if (minPosX === null || bounds.x < minPosX) minPosX = bounds.x
             if (minPosY === null || bounds.y < minPosY) minPosY = bounds.y
@@ -69,7 +69,7 @@
         send(OUTPUT, ["IDENTIFY_SCREENS"], screens)
     }
 
-    function openOutput(outputId: string) {
+    function openOutput(outputId) {
         currentOutputSettings.set(outputId)
         settingsTab.set("display_settings")
         activePage.set("settings")

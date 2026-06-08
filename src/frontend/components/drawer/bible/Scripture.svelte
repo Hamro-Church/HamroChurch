@@ -1,12 +1,13 @@
 <script lang="ts">
-    import JSONBible from "json-bible"
-    import { ApiBible } from "json-bible/lib/api"
+    import type JSONBible from "json-bible"
+    import type { ApiBible } from "json-bible/lib/api"
     import type { Verse } from "json-bible/lib/Bible"
     import type { VerseReference } from "json-bible/lib/reference"
     import { onMount } from "svelte"
+    import { localizeNumberText, shouldUseNepaliLocale } from "../../../../common/nepali"
     import { sanitizeVerseText } from "../../../../common/scripture/sanitizeVerseText"
     import { defaultBibleBookNames } from "../../../converters/bebliaBible"
-    import { activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureHistoryUsed, scriptureMode, scriptures, scriptureSettings, selected } from "../../../stores"
+    import { activeEdit, activeScripture, activeTriggerFunction, customScriptureBooks, language, notFound, openScripture, outLocked, outputs, resized, scriptureHistory, scriptureHistoryUsed, scriptureMode, scriptures, scriptureSettings, selected } from "../../../stores"
     import { wait } from "../../../utils/common"
     import { translateText } from "../../../utils/language"
     import { clone } from "../../helpers/array"
@@ -27,7 +28,10 @@
 
     $: activeScriptureId = active || ""
     $: activeScriptures = [activeScriptureId]
-    $: if ($scriptures[activeScriptureId]?.collection?.versions) activeScriptures = $scriptures[activeScriptureId].collection.versions
+    $: {
+        const activeScriptureData = $scriptures[activeScriptureId]
+        if (activeScriptureData?.collection?.versions) activeScriptures = activeScriptureData.collection.versions
+    }
 
     $: previewBibleIndex = $scriptures[activeScriptureId]?.collection?.previewIndex || 0
     $: previewBibleId = activeScriptures[previewBibleIndex] || activeScriptures[0]
@@ -201,7 +205,8 @@
 
     // Check if any translation in collection supports splitting for verses
     function checkCollectionSplitSupport(): { [verseNumber: number]: number } {
-        if (!isCollection || !$scriptureSettings.splitLongVerses || !verses) return {}
+        const currentVerses = verses
+        if (!isCollection || !$scriptureSettings.splitLongVerses || !currentVerses) return {}
 
         const splitCounts: { [verseNumber: number]: number } = {}
 
@@ -209,7 +214,7 @@
             const chapterData = data[scriptureId]?.chapterData
             if (!chapterData) return
 
-            verses.forEach((verse) => {
+            currentVerses.forEach((verse) => {
                 try {
                     const verseObj = chapterData.getVerse(verse.number)
                     const fullText = verseObj.getHTML() || verseObj?.data?.text || ""
@@ -289,9 +294,25 @@
 
     function buildVerseLabel(id: number, subverse: number, endNumber: number, showSuffix: boolean) {
         const baseVisible = !subverse || subverse === 1 || showSuffix
-        const base = baseVisible ? `${id}${endNumber ? "-" + endNumber : ""}` : ""
+        const base = baseVisible ? localizeNumberText(`${id}${endNumber ? "-" + endNumber : ""}`, $language) : ""
         const suffix = showSuffix && subverse ? getVersePartLetter(subverse) : ""
         return { base, suffix }
+    }
+
+    function getDisplayBookName(book: { name?: string; number?: number | string } | undefined, index: number) {
+        const customName = $customScriptureBooks[previewBibleId]?.[index]
+        const englishName = defaultBibleBookNames[Number(book?.number) || index + 1] || ""
+
+        if (shouldUseNepaliLocale($language)) return customName || book?.name || englishName
+        return englishName || customName || book?.name || ""
+    }
+
+    function getLocalizedReferenceRange() {
+        return localizeNumberText(joinRange(sortScriptureSelection(activeReference.verses[0] || [])), $language)
+    }
+
+    function getLocalizedChapterReference() {
+        return activeReference.chapters.map((chapter) => localizeNumberText(chapter, $language)).join(",")
     }
 
     function toggleChapter(e: any, id: string) {
@@ -937,10 +958,13 @@
 
     $: reference = getReference({ data, activeReference })
     function getReference(_updater: any) {
-        const book = data[previewBibleId]?.bookData?.name || ""
+        const bookData = data[previewBibleId]?.bookData
+        const bookIndex = Math.max(Number(bookData?.number || activeReference.book || 1) - 1, 0)
+        const book = getDisplayBookName(bookData, bookIndex)
         const referenceDivider = $scriptureSettings.referenceDivider || ":"
-        const range = joinRange(sortScriptureSelection(activeReference.verses[0] || []))
-        const reference = `${book} ${activeReference.chapters}${referenceDivider}${range}`
+        const range = getLocalizedReferenceRange()
+        const chapterReference = getLocalizedChapterReference()
+        const reference = `${book} ${chapterReference}${referenceDivider}${range}`
         return reference
     }
 
@@ -1030,7 +1054,7 @@
                             {#each books as book, i}
                                 {@const id = book.number?.toString()}
                                 {@const color = booksData[i]?.category?.color || ""}
-                                {@const name = $scriptureMode === "grid" ? booksData[i]?.abbreviation : $customScriptureBooks[previewBibleId]?.[i] || book.name}
+                                {@const name = $scriptureMode === "grid" ? booksData[i]?.abbreviation || getDisplayBookName(book, i) : getDisplayBookName(book, i)}
                                 {@const isActive = activeReference.book?.toString() === id}
 
                                 <span {id} class={isApi || isCollection || !Object.values(defaultBibleBookNames).includes(book.name) ? "" : "context #bible_book_local"} class:isActive style="{color ? `border-${$scriptureMode === 'grid' ? 'bottom' : 'left'}: 2px solid ${color};` : ''}{$scriptureMode === 'grid' ? 'border-radius: 2px;' : ''}" on:click={() => openBook(id)} role="none">
@@ -1059,7 +1083,7 @@
                                     }}
                                     role="none"
                                 >
-                                    {chapter.number}
+                                    {localizeNumberText(chapter.number, $language)}
                                 </span>
                             {/each}
                         {:else}

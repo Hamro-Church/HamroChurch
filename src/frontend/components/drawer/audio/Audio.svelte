@@ -300,15 +300,16 @@
 
     function setSubSubTab(id: string) {
         if (!active) return
+        const activeTab = active
 
         drawerTabsData.update((a) => {
-            if (!a.audio) a.audio = { enabled: true, activeSubTab: active }
+            if (!a.audio) a.audio = { enabled: true, activeSubTab: activeTab }
             if (!a.audio.openedSubSubTab) a.audio.openedSubSubTab = {}
-            a.audio.openedSubSubTab[active] = id
+            a.audio.openedSubSubTab[activeTab] = id
             return a
         })
 
-        if (active === "inputs") inputsTab = id
+        if (activeTab === "inputs") inputsTab = id
     }
 </script>
 

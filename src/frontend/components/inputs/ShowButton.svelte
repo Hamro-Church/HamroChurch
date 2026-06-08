@@ -116,6 +116,7 @@
         }
 
         if (pos !== null) {
+            const projectIndex = pos
             newShow.index = pos
             if (type === "audio") newShow.name = show.name
             else if (type === "show") {
@@ -123,7 +124,7 @@
                 setTimeout(async () => {
                     // preload show (so the layout can be changed)
                     await loadShows([id])
-                    if ($showsCache[id]) swichProjectItem(pos, id)
+                    if ($showsCache[id]) swichProjectItem(projectIndex, id)
                 })
             }
         }

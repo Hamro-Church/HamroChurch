@@ -2,6 +2,7 @@
     import Button from "../../../common/components/Button.svelte"
     import Center from "../../../common/components/Center.svelte"
     import Icon from "../../../common/components/Icon.svelte"
+    import { triggerClickOnEnterSpace } from "../../../common/util/click"
     import { translate } from "../../util/helpers"
     import { GetLayout, getNextSlide, nextSlide } from "../../util/output"
     import { send } from "../../util/socket"
@@ -36,7 +37,7 @@
         {#if $outputMode === "lyrics"}
             <Lyrics />
         {:else}
-            <div on:click={click} class="outSlides">
+            <div on:click={click} on:keydown={triggerClickOnEnterSpace} role="button" tabindex="0" class="outSlides">
                 <Slide outSlide={slideNum} {transition} />
                 {#if $outLayout && nextSlide(layout, slideNum) && getNextSlide($outShow, slideNum, $outLayout)}
                     <Slide outSlide={nextSlide(layout, slideNum) || 0} {transition} />

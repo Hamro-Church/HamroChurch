@@ -69,13 +69,15 @@
 
         let stageId = $activeStage.id
         if (!stageId) return
+        const stageShow = $stageShows[stageId]
+        if (!stageShow) return
 
         const itemKeys = getItemKeys()
-        const activeItems = $activeStage.items?.length ? $activeStage.items : Object.keys($stageShows[stageId].items)
+        const activeItems = $activeStage.items?.length ? $activeStage.items : Object.keys(stageShow.items)
         let textStyles: { [key: string]: string } = {}
         let itemStyles: { [key: string]: string } = {}
         activeItems.forEach((key) => {
-            let item = $stageShows[stageId].items[key]
+            let item = stageShow.items[key]
             const styles = getStyles(item.style)
 
             let textStyle = ""
@@ -132,6 +134,8 @@
         let activeItems = $activeStage.items
 
         if (!stageId || !activeItems.length) return
+        const stageShow = $stageShows[stageId]
+        if (!stageShow) return
 
         if (e.key === "Escape") {
             // give time so output don't clear
@@ -152,7 +156,7 @@
         let itemStyles: { [key: string]: string } = {}
 
         activeItems.forEach((itemId) => {
-            let item = $stageShows[stageId]?.items?.[itemId] || {}
+            let item = stageShow.items?.[itemId] || {}
             let style = item.style
             // if (Array.isArray(style)) style = style[0]
             console.log(style)

@@ -58,30 +58,30 @@
                     icon="play"
                     size={10}
                     on:click={() => {
-                        if (!$outLocked) setOutput("background", { id: show.id, type: show.type })
+                        if (show && !$outLocked) setOutput("background", { id: show.id, type: show.type })
                     }}
                 >
-                    <Camera id={show.id} groupId={show.data?.groupId} class="media" />
+                    <Camera id={show?.id || ""} groupId={show?.data?.groupId} class="media" />
                 </HoverButton>
             {:else if show.type === "screen"}
                 <HoverButton
                     icon="play"
                     size={10}
                     on:click={() => {
-                        if (!$outLocked) setOutput("background", { id: show.id, type: show.type })
+                        if (show && !$outLocked) setOutput("background", { id: show.id, type: show.type })
                     }}
                 >
-                    <Capture screen={{ id: show.id, name: show.name || "" }} streams={[]} background />
+                    <Capture screen={{ id: show?.id || "", name: show?.name || "" }} streams={[]} background />
                 </HoverButton>
             {:else if show.type === "ndi"}
                 <HoverButton
                     icon="play"
                     size={10}
                     on:click={() => {
-                        if (!$outLocked) setOutput("background", { id: show.id, type: show.type })
+                        if (show && !$outLocked) setOutput("background", { id: show.id, type: show.type })
                     }}
                 >
-                    <NdiStream screen={{ id: show.id, name: show.name || "" }} background />
+                    <NdiStream screen={{ id: show?.id || "", name: show?.name || "" }} background />
                 </HoverButton>
             {:else if show.type === "folder"}
                 {#key show.id}

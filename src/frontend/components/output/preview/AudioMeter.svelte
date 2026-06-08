@@ -1,6 +1,7 @@
 <script lang="ts">
     import { AudioAnalyserMerger } from "../../../audio/audioAnalyserMerger"
     import { activeDrawerTab, activePage, audioChannels, drawer } from "../../../stores"
+    import { triggerClickOnEnterSpace } from "../../../utils/clickable"
     import { DEFAULT_DRAWER_HEIGHT } from "../../../utils/common"
 
     function getDBValue(dB: any) {
@@ -24,7 +25,7 @@
     const compressionFactor = threshold / newRange
     const expansionFactor = (1 - newRange) / (1 - threshold)
 
-    function transformRange(value) {
+    function transformRange(value: number) {
         if (value <= threshold) {
             return value / compressionFactor
         } else {
@@ -42,7 +43,7 @@
 </script>
 
 <!-- on:keydown={triggerClickOnEnterSpace} role="button" tabindex="0" aria-label="Open audio mixer" -->
-<div class="main" on:click={openAudioMix}>
+<div class="main" on:click={openAudioMix} on:keydown={triggerClickOnEnterSpace} role="button" tabindex="0" aria-label="Open audio mixer">
     <!-- <span class="left">
             <div style="height: {100 - ($audioChannels.volume?.left || 0)}%" />
         </span>

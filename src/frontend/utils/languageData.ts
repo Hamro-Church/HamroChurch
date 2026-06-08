@@ -1,6 +1,7 @@
 export const languages = {
     // language_identifier: "Language name in original language", // Language name in English
     en: "English", // English
+    ne: "नेपाली", // Nepali
     en_GB: "English (British)", // English (British)
     en_ZM: "English (Zambia)", // English (Zambia)
     no: "Norsk", // Norwegian
@@ -39,6 +40,7 @@ export const languages = {
 export const replace = {
     // language_identifier: ["browser language/region code"],
     en: ["en", "en-US", "en-AU"],
+    ne: ["ne", "ne-NP"],
     en_GB: ["en-GB"],
     en_ZM: ["en-ZM"],
     no: ["no", "nb", "nn"],
@@ -73,6 +75,7 @@ export const replace = {
 
 export const languageFlags = {
     en: "🇺🇸",
+    ne: "🇳🇵",
     en_GB: "🇬🇧",
     en_ZM: "🇿🇲",
     no: "🇳🇴",

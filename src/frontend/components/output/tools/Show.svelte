@@ -24,18 +24,19 @@
     $: length = ref?.length || 0
 
     function openShow() {
-        if (!slide || slide.id === "temp") return
+        const currentSlide = slide
+        if (!currentSlide || currentSlide.id === "temp") return
 
-        if (slide?.layout && $showsCache[slide.id]) {
+        if (currentSlide.layout && $showsCache[currentSlide.id]) {
             showsCache.update((a) => {
-                if (!a[slide.id].settings) a[slide.id].settings = { activeLayout: "", template: null }
-                a[slide.id].settings.activeLayout = slide.layout!
+                if (!a[currentSlide.id].settings) a[currentSlide.id].settings = { activeLayout: "", template: null }
+                if (currentSlide.layout) a[currentSlide.id].settings.activeLayout = currentSlide.layout
                 return a
             })
         }
 
-        if ($focusMode) activeFocus.set({ id: slide?.id, type: slide?.type || "show" })
-        else activeShow.set({ id: slide?.id, type: slide?.type || "show" })
+        if ($focusMode) activeFocus.set({ id: currentSlide.id, type: currentSlide.type || "show" })
+        else activeShow.set({ id: currentSlide.id, type: currentSlide.type || "show" })
     }
 
     $: currentIndex = slide?.type === "ppt" ? $presentationData.stat?.position : (slide?.page || slide?.index || 0) + 1

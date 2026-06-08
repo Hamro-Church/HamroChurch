@@ -52,7 +52,7 @@ export const defaultSettings: { [key in SaveListSettings]: any } = {
     mediaOptions: { columns: 5, mode: "grid" },
     drawerTabsData: {},
     drawer: { height: 300, stored: null },
-    language: null,
+    language: "ne",
     labelsDisabled: false,
     groupNumbers: true,
     fullColors: false,

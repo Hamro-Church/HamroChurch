@@ -43,24 +43,24 @@
         if (show) {
             let refs = _show().layouts().ref()
             refs.forEach((slides) => {
-                layoutBackgrounds.push(...slides.map((a) => a.data.background).filter((a) => a !== undefined))
+                layoutBackgrounds.push(...slides.map((a) => a.data.background).filter((a): a is string => a !== undefined))
                 layoutAudio.push(
                     ...slides
                         .map((a) => a.data.audio)
-                        .filter((a) => a !== undefined)
                         .flat()
+                        .filter((a): a is string => a !== undefined)
                 )
                 layoutMics.push(
                     ...slides
                         .map((a) => a.data.mics)
-                        .filter((a) => a !== undefined)
                         .flat()
+                        .filter((a): a is { id: string; name: string } => a !== undefined)
                 )
                 layoutActions.push(
                     ...slides
                         .map((a) => a.data.actions?.slideActions)
-                        .filter((a) => a !== undefined)
                         .flat()
+                        .filter((a): a is SlideAction => a !== undefined)
                 )
             })
         }

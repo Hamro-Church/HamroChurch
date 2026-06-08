@@ -1,7 +1,7 @@
 import { get } from "svelte/store"
 import type { Variable } from "../../../types/Main"
 import type { Condition, ConditionValue, Item, LayoutRef } from "../../../types/Show"
-import { StageItem, StageLayout } from "../../../types/Stage"
+import type { StageItem, StageLayout } from "../../../types/Stage"
 import { keysToID, sortByName } from "../../common/util/helpers"
 import { getCurrentTimerValue } from "../../common/util/time"
 import { getDynamicValue, getLayoutRef, replaceDynamicValues } from "../helpers/show"
@@ -50,7 +50,7 @@ export function getStageTextLayoutOffset(showRef: LayoutRef[], slideOffset: numb
 
 /////
 
-export function shouldItemBeShown(item: Item, allItems: Item[] = [], { outputId, type }: any = { type: "stage" }, _updater: any = null) {
+export function shouldItemBeShown(item: Item | StageItem, allItems: Item[] = [], { outputId, type }: any = { type: "stage" }, _updater: any = null) {
     // check bindings
     if (item.bindings?.length && !item.bindings.includes(outputId)) return false
 

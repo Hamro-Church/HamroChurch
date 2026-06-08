@@ -332,12 +332,12 @@ export const dataFolderNames = {
     cloud: "Cloud"
 }
 
-// Documents/FreeShow
+// Documents/Hamro Church
 export function getDefaultDataFolderRoot() {
     const documentsPath = getMediaFolderPath("documents")
     if (!documentsPath) return appDataPath
 
-    const appFolderName = "FreeShow"
+    const appFolderName = "Hamro Church"
     const fullPath = path.join(documentsPath, appFolderName)
 
     try {

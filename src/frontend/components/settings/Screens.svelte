@@ -32,9 +32,10 @@
     // find matching screen
     $: if (!currentScreen.screen && screens.length) {
         let match = screens.find((screen) => JSON.stringify(screen.bounds) === JSON.stringify(currentScreen.bounds))
-        if (match?.id) {
+        if (match?.id && screenId) {
+            const currentScreenId = screenId
             outputs.update((a: any) => {
-                a[screenId!].screen = match.id.toString()
+                a[currentScreenId].screen = match.id.toString()
                 return a
             })
         }
@@ -111,25 +112,26 @@
 
     function changeOutputScreen(e: any) {
         if (!currentScreen || !screenId) return
+        const currentScreenId = screenId
 
-        let alreadySelected = $outputs[screenId]?.screen === e.detail.id.toString()
+        let alreadySelected = $outputs[currentScreenId]?.screen === e.detail.id.toString()
 
         let bounds = e.detail.bounds
         outputs.update((a) => {
-            if (!a[screenId]) return a
+            if (!a[currentScreenId]) return a
 
-            a[screenId].bounds = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }
-            a[screenId].screen = e.detail.id.toString()
+            a[currentScreenId].bounds = { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }
+            a[currentScreenId].screen = e.detail.id.toString()
             // a[screenId].kiosk = true
 
             return a
         })
 
         setTimeout(() => {
-            toggleOutputs([screenId], { state: true })
+            toggleOutputs([currentScreenId], { state: true })
             // send(OUTPUT, ["TOGGLE_KIOSK"], { id: screenId, enabled: true })
             // setTimeout(() => {
-            send(OUTPUT, ["UPDATE_BOUNDS"], { id: screenId, ...currentScreen })
+            send(OUTPUT, ["UPDATE_BOUNDS"], { id: currentScreenId, ...currentScreen })
             // }, 100)
         }, 100)
 
@@ -141,11 +143,12 @@
 
     function lockScreen() {
         if (!screenId) return
+        const currentScreenId = screenId
 
         outputs.update((a) => {
-            if (!a[screenId]) return a
+            if (!a[currentScreenId]) return a
 
-            a[screenId].boundsLocked = !a[screenId].boundsLocked
+            a[currentScreenId].boundsLocked = !a[currentScreenId].boundsLocked
             return a
         })
     }
@@ -160,14 +163,15 @@
     $: cropping = clone((currentScreen.cropping === undefined && currentScreen.style ? $styles[currentScreen.style]?.cropping : currentScreen.cropping) || {})
     function updateCropping(value: string | number, side: string) {
         if (!screenId) return
+        const currentScreenId = screenId
 
         outputs.update((a) => {
-            if (!a[screenId].cropping) {
-                if (currentScreen.style && $styles[currentScreen.style]?.cropping) a[screenId].cropping = clone($styles[currentScreen.style].cropping)
-                else a[screenId].cropping = { top: 0, right: 0, bottom: 0, left: 0 }
+            if (!a[currentScreenId].cropping) {
+                if (currentScreen.style && $styles[currentScreen.style]?.cropping) a[currentScreenId].cropping = clone($styles[currentScreen.style].cropping)
+                else a[currentScreenId].cropping = { top: 0, right: 0, bottom: 0, left: 0 }
             }
 
-            a[screenId].cropping![side] = Number(value)
+            a[currentScreenId].cropping![side] = Number(value)
             return a
         })
     }
@@ -183,10 +187,11 @@
     $: blending = currentScreen.blending || {}
     function updateBlending(value: string | number, side: string) {
         if (!screenId) return
+        const currentScreenId = screenId
 
         outputs.update((a) => {
-            if (!a[screenId].blending) a[screenId].blending = { left: 0, right: 0, rotate: 90, opacity: 50, centered: false, offset: 0 }
-            a[screenId].blending![side] = Number(value)
+            if (!a[currentScreenId].blending) a[currentScreenId].blending = { left: 0, right: 0, rotate: 90, opacity: 50, centered: false, offset: 0 }
+            a[currentScreenId].blending![side] = Number(value)
             return a
         })
     }

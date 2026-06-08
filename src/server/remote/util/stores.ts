@@ -10,6 +10,7 @@ import type { Project, ProjectShowRef } from "./../../../types/Projects"
 import { DEFAULT_DICTIONARY } from "./dictionary"
 
 export let dictionary: Writable<Dictionary> = writable(clone(DEFAULT_DICTIONARY))
+export let language: Writable<string> = writable("ne")
 
 export let errors: Writable<string[]> = writable([])
 
@@ -117,6 +118,7 @@ export let mixer: Writable<any> = writable(null)
 
 export const _ = {
     dictionary,
+    language,
     errors,
     password,
     isConnected,

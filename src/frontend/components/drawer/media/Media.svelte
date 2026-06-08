@@ -67,21 +67,26 @@
 
     function setSubSubTab(id: string) {
         if (!active) return
+        const activeTab = active
 
         drawerTabsData.update((a) => {
-            if (!a.media) a.media = { enabled: true, activeSubTab: active }
+            if (!a.media) a.media = { enabled: true, activeSubTab: activeTab }
             if (!a.media.openedSubSubTab) a.media.openedSubSubTab = {}
-            a.media.openedSubSubTab[active] = id
+            a.media.openedSubSubTab[activeTab] = id
             return a
         })
 
-        if (active === "inputs") inputsTab = id
-        else if (active === "online") onlineTab = id
+        if (activeTab === "inputs") inputsTab = id
+        else if (activeTab === "online") onlineTab = id
     }
 
     // Content providers with libraries, and are currently connected
     let contentProviders: { providerId: ContentProviderId; displayName: string; hasContentLibrary: boolean }[] = []
     $: if ($providerConnections) getProviders()
+
+    function getFolderPreviewPaths(filePaths: string[]) {
+        return filePaths.map((filePath) => (allRelevantFiles.find((a) => a.path === filePath) as any)?.thumbnailPath).filter(Boolean).slice(0, 4)
+    }
     function getProviders() {
         requestMain(Main.GET_CONTENT_PROVIDERS).then((allProviders) => {
             if (!allProviders) return
@@ -576,10 +581,7 @@
                                     name={item.name}
                                     path={item.path}
                                     mode={$mediaOptions.mode}
-                                    previewPaths={item.files
-                                        .map((path) => allRelevantFiles.find((a) => a.path === path)?.thumbnailPath)
-                                        .filter(Boolean)
-                                        .slice(0, 4)}
+                                    previewPaths={getFolderPreviewPaths(item.files)}
                                     folderFilesCount={countFolderMediaItems(item.path, allRelevantFiles)}
                                     on:open={(e) => (path = e.detail)}
                                 />

@@ -1,7 +1,8 @@
 import type { Dictionary } from "../../../types/Settings"
+import { formatLocalizedDate, localizeNumberText, shouldUseNepaliLocale } from "../../../common/nepali"
 import { clone } from "../../common/util/helpers"
 import { _get, _set } from "./stores"
-import { dictionary } from "./stores"
+import { dictionary, language } from "./stores"
 import { get } from "svelte/store"
 
 export function translate(key: string, d: Dictionary = _get("dictionary")) {
@@ -57,15 +58,18 @@ export function formatRelativeDate(timestamp: number): string {
     const diff = now.getTime() - date.getTime()
     const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
-    if (days === 0) return "Today"
-    if (days === 1) return "Yesterday"
-    if (days < 7) return `${days} days ago`
+    const locale = get(language)
+    if (shouldUseNepaliLocale(locale)) {
+        if (days === 0) return "आज"
+        if (days === 1) return "हिजो"
+        if (days < 7) return `${localizeNumberText(days, locale)} दिन अघि`
+    } else {
+        if (days === 0) return "Today"
+        if (days === 1) return "Yesterday"
+        if (days < 7) return `${days} days ago`
+    }
 
-    return date.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined
-    })
+    return formatLocalizedDate(date, locale, true)
 }
 
 /** Format date to full date string matching frontend format: "Monday 6. February, 2021" */
@@ -86,7 +90,7 @@ export function dateToString(date: string | number | Date, full = false, d: Dict
         const monthIndex = date.getMonth()
         let month = d.month?.[monthIndex + 1] || ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][monthIndex]
 
-        return weekday + " " + String(day) + ". " + String(month) + ", " + String(year)
+        return formatLocalizedDate(date, get(language), true)
     }
 
     // Short format: DD.MM.YY
@@ -94,7 +98,7 @@ export function dateToString(date: string | number | Date, full = false, d: Dict
     if (month < 10) month = "0" + String(month)
     if (day < 10) day = "0" + String(day)
     year = year.toString().slice(-2)
-    return [day, month, year].join(".")
+    return localizeNumberText([day, month, year].join("."), get(language))
 }
 
 /** Format seconds to time string (H:MM:SS or M:SS) */
@@ -103,8 +107,8 @@ export function formatTime(seconds: number): string {
     const h = Math.floor(seconds / 3600)
     const m = Math.floor((seconds % 3600) / 60)
     const s = seconds % 60
-    if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-    return `${m}:${s.toString().padStart(2, "0")}`
+    if (h > 0) return localizeNumberText(`${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`, get(language))
+    return localizeNumberText(`${m}:${s.toString().padStart(2, "0")}`, get(language))
 }
 
 // Performance utilities for mobile/tablet optimization

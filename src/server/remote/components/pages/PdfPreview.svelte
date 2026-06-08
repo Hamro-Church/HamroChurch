@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte"
+    import { triggerClickOnEnterSpace } from "../../../common/util/click"
     import Loader from "../../../common/components/Loader.svelte"
     import { send } from "../../util/socket"
     import { outData, pdfPages } from "../../util/stores"
@@ -36,7 +37,7 @@
     {:else if pages}
         {#each pages as page, i}
             <div class="main" class:active={activePage === i} style="width: {100 / (pages.length > 1 && tablet ? 3 : pages.length > 1 ? 2 : 1)}%;">
-                <div class="slide" tabindex={0} on:click={() => outputPdf(i)}>
+                <div class="slide" tabindex="0" role="button" on:click={() => outputPdf(i)} on:keydown={triggerClickOnEnterSpace}>
                     <img src={page} alt="" />
                 </div>
             </div>

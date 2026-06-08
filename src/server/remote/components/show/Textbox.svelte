@@ -46,7 +46,7 @@
             return
         }
 
-        const textArray = Array.isArray(item?.lines?.[0]?.text) ? item.lines[0].text : []
+        const textArray = Array.isArray(item?.lines?.[0]?.text) ? item.lines?.[0]?.text || [] : []
         const itemText = textArray.filter((a) => !a.customType?.includes("disableTemplate")) || []
         let itemFontSize = Number(getStyles(itemText[0]?.style, true)?.["font-size"] || "") || 100
 

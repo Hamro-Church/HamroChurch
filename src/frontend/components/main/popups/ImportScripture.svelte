@@ -46,7 +46,7 @@
                 // eng <> en
                 if (lang.includes(langCode)) match = true
                 else {
-                    langCode = replace[langCode] ? langCode : Object.entries(replace).find(([_id, r]) => r.includes(langCode))?.[0] || ""
+                    langCode = Object.prototype.hasOwnProperty.call(replace, langCode) ? langCode : Object.entries(replace).find(([_id, r]) => r.includes(langCode))?.[0] || ""
                     if (lang.includes(langCode)) match = true
                 }
 
@@ -58,7 +58,7 @@
             bibles = newSorted
             recommended = recommended
         } catch (err) {
-            error = err
+            error = err instanceof Error ? err.message : String(err)
         }
     }
 
@@ -88,8 +88,8 @@
             return
         }
 
-        searchedBibles = bibles.filter((a) => value.split(" ").find((value) => a.name.toLowerCase().includes(value)))
-        searchedRecommendedBibles = clone(recommended).filter((a) => value.split(" ").find((value) => a.name.toLowerCase().includes(value)))
+        searchedBibles = bibles.filter((a) => value.split(" ").find((term: string) => a.name.toLowerCase().includes(term)))
+        searchedRecommendedBibles = clone(recommended).filter((a) => value.split(" ").find((term: string) => a.name.toLowerCase().includes(term)))
     }
 
     let importType = ""
@@ -175,7 +175,7 @@
         </li>
         <li>
             <span style="font-size: 0.9em;font-weight: bold;">JSON</span>
-            <span style="font-size: 0.8em;opacity: 0.8;margin-left: 10px;">FreeShow</span>
+            <span style="font-size: 0.8em;opacity: 0.8;margin-left: 10px;">Hamro Church</span>
         </li>
     </ul>
 

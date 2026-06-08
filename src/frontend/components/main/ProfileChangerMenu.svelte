@@ -6,7 +6,8 @@
     import MaterialButton from "../inputs/MaterialButton.svelte"
 
     const isAdmin = !$activeProfile
-    const currentProfile = isAdmin ? "" : $profiles[$activeProfile]?.name || ""
+    const activeProfileId = $activeProfile
+    const currentProfile = isAdmin || !activeProfileId ? "" : $profiles[activeProfileId]?.name || ""
 </script>
 
 <div class="profile-changer-menu" transition:slide>

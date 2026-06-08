@@ -46,6 +46,7 @@ export const receiver = {
         } else setError(data)
     },
     LANGUAGE: (data: any) => {
+        if (data?.lang) _set("language", data.lang)
         _.dictionary.update((a) => {
             Object.keys(a).forEach((i) => {
                 Object.keys(a[i] || {}).forEach((j) => {

@@ -6,6 +6,7 @@ import type { Dictionary } from "../../types/Settings"
 import { sortByName } from "../components/helpers/array"
 import { sendMain } from "../IPC/main"
 import { dictionary, language, localeDirection } from "../stores"
+import { localizeNumberText } from "../../common/nepali"
 import { isMainWindow } from "./common"
 import { languageFlags, languages, replace } from "./languageData"
 import { send } from "./request"
@@ -84,13 +85,14 @@ export function translateText(text: string, _updater: any = null) {
     if (typeof text !== "string" || !text) return ""
 
     const dict = get(dictionary)
+    const locale = get(language)
 
     return text.replace(/\$?([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)/g, (match, key1, key2) => {
         if (dict[key1] && dict[key1][key2]) {
-            return dict[key1][key2]
+            return localizeNumberText(dict[key1][key2], locale)
         }
 
-        return match
+        return localizeNumberText(match, locale)
     })
 }
 

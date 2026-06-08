@@ -3,7 +3,7 @@ import type { Show } from "../../../types/Show"
 import type { StageLayout } from "../../../types/Stage"
 import { openLayout, setError } from "./helpers"
 import { send } from "./socket"
-import { _, _set, _update, activeTimers, events, outputSlideCache, progressData, stream, timeFormat, timers, variables } from "./stores"
+import { _, _set, _update, activeTimers, events, language, outputSlideCache, progressData, stream, timeFormat, timers, variables } from "./stores"
 
 export type ReceiverKey = keyof typeof receiver
 export const receiver = {
@@ -73,6 +73,17 @@ export const receiver = {
     DATA: (data: any) => {
         if (data.timeFormat) timeFormat.set(data.timeFormat)
     },
+    LANGUAGE: (data: any) => {
+        if (data?.lang) language.set(data.lang)
+        _.dictionary.update((a) => {
+            Object.keys(a).forEach((i) => {
+                Object.keys(a[i] || {}).forEach((j) => {
+                    if (data.strings[i]?.[j] && a[i]) a[i]![j] = data.strings[i][j]
+                })
+            })
+            return a
+        })
+    },
 
     REQUEST_STREAM: (data: any) => {
         stream.update((a) => {
@@ -92,17 +103,6 @@ export const receiver = {
         setError(data)
         _set("selectedLayout", "")
     },
-    LANGUAGE: (data: any) => {
-        _.dictionary.update((a) => {
-            Object.keys(a).forEach((i) => {
-                Object.keys(a[i] || {}).forEach((j) => {
-                    if (data.strings[i]?.[j] && a[i]) a[i]![j] = data.strings[i][j]
-                })
-            })
-            return a
-        })
-    }
-
     /////
 
     // "API:get_thumbnail": (data: any) => {

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import { getGroupName } from "../../../common/util/show"
+    import { triggerClickOnEnterSpace } from "../../../common/util/click"
     import { activeShow, mediaCache } from "../../util/stores"
     import Textbox from "./Textbox.svelte"
     import Zoomed from "./Zoomed.svelte"
@@ -60,7 +61,7 @@
 <!-- class:right={overIndex === index && (!selected.length || index > selected[0])}
 class:left={overIndex === index && (!selected.length || index <= selected[0])} -->
 <div class="main" style="width: {100 / columns}%">
-    <div class="slide context #slide" class:disabled={layoutSlide.disabled} class:active style="background-color: {color};" tabindex={0} data-index={index} on:click>
+    <div class="slide context #slide" class:disabled={layoutSlide.disabled} class:active style="background-color: {color};" tabindex="0" role="button" data-index={index} on:click on:keydown={triggerClickOnEnterSpace}>
         {#if shouldRenderItems}
             <Zoomed resolution={newResolution} background={slide.settings?.color || (slide.items.length ? "black" : "transparent")} bind:ratio>
                 <!-- class:ghost={!background} -->

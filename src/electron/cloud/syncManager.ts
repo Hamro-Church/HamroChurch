@@ -60,7 +60,7 @@ async function deleteLocalFiles() {
 
 const DEBUG_MODE = false && !isProd
 
-const EXTRACT_LOCATION = path.join(app.getPath("temp"), "freeshow-cloud")
+const EXTRACT_LOCATION = path.join(app.getPath("temp"), "hamrochurch-cloud")
 const MERGE_INDIVIDUAL = ["OVERLAYS", "PROJECTS", "STAGE", "TEMPLATES"] // "EVENTS", "THEMES"
 
 const STALE_MERGE_GUARD_MS = 1000 * 60 * 60 * 24 * 30 // 30 days

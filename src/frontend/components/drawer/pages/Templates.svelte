@@ -124,7 +124,7 @@
                     id: "slideStyle",
                     oldData,
                     newData,
-                    location: { page: "edit", show: $activeShow, slide: slideId }
+                    location: { page: "edit", show: $activeShow || undefined, slide: slideId }
                 })
             })
 

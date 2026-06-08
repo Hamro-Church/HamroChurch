@@ -21,7 +21,7 @@
     import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
 
-    function updateSpecial(value, key) {
+    function updateSpecial(value: any, key: string) {
         special.update((a) => {
             if (!value) delete a[key]
             else a[key] = value
@@ -143,14 +143,14 @@
         })
     }
 
-    function toggleData(checked: boolean, key, invert = false) {
+    function toggleData(checked: boolean, key: string, invert = false) {
         driveData.update((a) => {
             a[key] = invert ? !checked : checked
             return a
         })
     }
 
-    function updateAutosave(e) {
+    function updateAutosave(e: any) {
         autosave.set(e.detail)
         startAutosave()
     }
@@ -318,14 +318,14 @@
             <!-- changing team directly without toggling "Enable sync" off/on -->
             <MaterialToggleSwitch label="cloud.read_only" title="cloud.readonly_tip" checked={$cloudSyncData.cloudMethod === "read_only"} defaultValue={false} on:change={(e) => updateCloudData("cloudMethod", e.detail ? "read_only" : "merge")} />
 
-            <!-- Documents/FreeShow/Media -->
+            <!-- Documents/Hamro Church/Media -->
             <!-- This should only be needed if no custom media management is already existing -->
             <!-- Custom drives should work without as long as the path location is the same -->
             <!-- Files in this folder will automatically be checked to find missing files -->
             <MaterialToggleSwitch label="media.media_sync_folder" title="media.media_sync_folder_tip" style="width: 100%;" checked={$special.cloudSyncMediaFolder} defaultValue={false} on:change={toggleMediaFolder} />
 
             {#if $special.cloudSyncMediaFolder}
-                <MaterialFolderPicker label="media.media_sync_folder" value={mediaFolderPath} on:change={updateMediaFolderPath} allowEmpty={!mediaFolderPath.endsWith("Documents\\FreeShow\\Media") && !mediaFolderPath.endsWith("Documents/FreeShow/Media")} />
+                <MaterialFolderPicker label="media.media_sync_folder" value={mediaFolderPath} on:change={updateMediaFolderPath} allowEmpty={!mediaFolderPath.endsWith("Documents\\Hamro Church\\Media") && !mediaFolderPath.endsWith("Documents/Hamro Church/Media")} />
             {/if}
 
             <!-- <MaterialButton variant="outlined" icon="delete" on:click={deleteCloudData} red white>Delete cloud data</MaterialButton> -->

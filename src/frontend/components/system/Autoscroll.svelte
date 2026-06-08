@@ -35,27 +35,29 @@
         if (elem.querySelector(".droparea")) elem = elem.querySelector(".droparea")
         if (elem?.querySelector(".droparea")) elem = elem.querySelector(".droparea")
 
-        if (!elem) return
+        if (!(elem instanceof HTMLElement)) return
         elem.setAttribute("style", (elem.getAttribute("style") || "") + ";scroll-behavior: smooth;")
 
         // don't scroll if already in view
         // if (offset > elem.scrollTop && offset < elem.scrollTop + elem.clientHeight) return
 
+        const scrollTarget = elem
+
         t = setTimeout(() => {
             if (!t) return
-            elem.scrollTo(0, offset)
+            scrollTarget.scrollTo(0, offset)
             t = null
         }, timeout)
 
         // make sure its scrolled
-        if (index > 5 || offset === elem.scrollTop) return
+        if (index > 5 || offset === scrollTarget.scrollTop) return
 
         index++
         if (st) return
 
         st = setTimeout(() => {
             if (!st) return
-            if (offset !== elem.scrollTop) scroll(index)
+            if (offset !== scrollTarget.scrollTop) scroll(index)
             st = null
         }, timeout + 400)
     }

@@ -20,7 +20,7 @@
 
     let fullscreen = false
     let fullscreenId = ""
-    function toggleFullscreen(e: any) {
+    function toggleFullscreen(e) {
         // open output style settings
         if (e.target.closest(".icons")) {
             if (e.target.closest(".muted")) {
@@ -60,12 +60,12 @@
         }, 500)
     }
 
-    let resolution: any = {}
+    let resolution = {}
     function currentResolution() {
         resolution = getOutputResolution(fullscreenId, $outputs, true)
     }
 
-    function toFraction(x: number, tolerance = 0) {
+    function toFraction(x, tolerance = 0) {
         if (x === 0) return "0/1"
         if (x < 0) x = -x
         if (!tolerance) tolerance = 0.0001
@@ -100,28 +100,28 @@
 
     // drag-and-drop: bind slide to output
     const SLIDE_DROP_IDS = new Set(["slide"])
-    let dragOverOutputId: string | null = null
-    function isDroppable(outputId: string) {
+    let dragOverOutputId = null
+    function isDroppable(outputId) {
         return !$outputs[outputId]?.stageOutput
     }
-    function handleDragOver(e: DragEvent, outputId: string) {
+    function handleDragOver(e, outputId) {
         if (!SLIDE_DROP_IDS.has($selected.id || "") || !isDroppable(outputId)) return
         e.preventDefault()
         dragOverOutputId = outputId
     }
-    function handleDragLeave(e: DragEvent, outputId: string) {
-        const related = e.relatedTarget as HTMLElement | null
-        if (related?.closest(`#${outputId}`)) return
+    function handleDragLeave(e, outputId) {
+        const related = e.relatedTarget
+        if (related instanceof HTMLElement && related.closest(`#${outputId}`)) return
         if (dragOverOutputId === outputId) dragOverOutputId = null
     }
-    function handleDrop(e: DragEvent, outputId: string) {
+    function handleDrop(e, outputId) {
         dragOverOutputId = null
         if (!SLIDE_DROP_IDS.has($selected.id || "") || !isDroppable(outputId)) return
         e.preventDefault()
         e.stopPropagation()
 
         const ref = getLayoutRef()
-        const indexes: number[] = $selected.data.map(({ index }: { index: number }) => index).filter((i: number) => i !== undefined)
+        const indexes = $selected.data.map(({ index }) => index).filter((i) => i !== undefined)
         if (!indexes.length || !ref.length) return
 
         bindSlidesToOutput(indexes, outputId)

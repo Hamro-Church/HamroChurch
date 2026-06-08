@@ -243,7 +243,7 @@
         const activeIndex = openedSections.indexOf(id)
         if (activeIndex < 0) {
             if (sections[id].expandAutoValue) {
-                Object.entries(sections[id].expandAutoValue).forEach(([key, value]) => {
+                Object.entries(sections[id].expandAutoValue || {}).forEach(([key, value]) => {
                     const input = clone(sections[id].inputs.flat().find((a) => a.id === key || a.key === key))
                     if (!input) return
 

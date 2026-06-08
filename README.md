@@ -1,79 +1,72 @@
-<p align='center'>
- <a href='https://freeshow.app/'>
-  <img src='https://github.com/ChurchApps/FreeShow/assets/17619496/02ac9807-1f47-47fc-b895-b35f857c2b57' width=150 />
- </a>
-</p>
+# Hamro Church
 
-<h1 align='center'>
-  FreeShow
-</h1>
+Hamro Church is a bilingual Nepali/English church presentation application for worship services, scripture projection, song lyrics, media playback, stage display, remote control, and multi-output presentations.
 
-<p align='center'>
-  FreeShow is a free software with a user-friendly interface that offers powerful features for creating and editing slideshows. 
-</p>
+## Current Focus
 
-<p align='center'>
-  <a href="https://github.com/ChurchApps/freeshow/releases"><img alt="Download" src="https://img.shields.io/github/downloads/ChurchApps/FreeShow/total?style=for-the-badge" /></a>
-  &nbsp;
-  <a href="https://github.com/ChurchApps/freeshow/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/licence-GPL-blue.svg?style=for-the-badge" /></a>
-  &nbsp;
-  <a href="https://github.com/ChurchApps/FreeShow/"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/ChurchApps/FreeShow?style=for-the-badge" /></a>
-</p>
-<br />
+- Full desktop presentation workflow with preview, stage, controller, remote, and output-stream views
+- Nepali-first localization with English fallback
+- Nepali Bible migration and local scripture support
+- Nepali hymn import and slide generation
+- Bikram Sambat display formatting and Nepali numerals in key UI surfaces
 
-## Get Started Using FreeShow
+## Development Setup
 
-[![](https://markdown-videos.vercel.app/youtube/9_1lUNcrU1w)](https://youtu.be/9_1lUNcrU1w)
+1. Install Node.js.
+2. Install Python 3.12 and `setuptools`.
+3. On Windows, install Visual Studio Build Tools with C++ desktop components and the Windows SDK.
+4. On Linux, install `libfontconfig1-dev`.
+5. From the repository root, run `npm install`.
 
-## Preview
+## Common Commands
 
-<div style="display: flex;gap: 10px;">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/0e5e832d-9bb8-4c64-98cc-04f0ce3f966e">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/c1d71b2f-d873-4125-9f04-339e234e55f9">
-</div>
-<div style="display: flex;gap: 10px;margin-top: 10px;">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/39c344fd-5c22-4019-9cae-c6307364d580">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/b1275bfc-e966-4813-962e-a7350ba6a84a">
-</div>
+- `npm start`
+  Starts the desktop app in development mode.
 
-## Short description
+- `npm run build:frontend:prod`
+  Builds the frontend bundle into `public/build`.
 
-FreeShow is a free and open-source presentation program that makes it easy to show text on a big screen. It supports stage display, remote control, media, and many other advanced features. It is open-sourced meaning anyone can contribute.
+- `npm run build:servers:prod`
+  Builds the remote, stage, controller, and output-stream bundles into `build/electron`.
 
-FreeShow exists because the creator found that other similar programs were either expensive or complex to use. He wanted to create a program that is easy to use and affordable for everyone, from small churches to large venues. FreeShow is now used by people all over the world.
+- `npm run build:electron:prod`
+  Compiles the Electron TypeScript code.
 
-## Support Us
+- `npm run build`
+  Runs the full production build chain.
 
-The only reason this program is free is because of the generous support from users. If you want to support us to keep this free, please head over to [ChurchApps](https://churchapps.org/partner) or [sponsor us on GitHub](https://github.com/sponsors/ChurchApps/). Thank you so much!
+- `npm run test:svelte`
+  Runs `svelte-check` for Svelte and TypeScript validation.
 
-## Join the Community
+- `npm run pack`
+  Creates an unpacked desktop build for manual packaging verification.
 
-We have a great community for end-users on [Facebook](https://www.facebook.com/groups/freeshowapp). It's a good way to ask questions, get tips and follow new updates. Come join us!
+## Manual Verification
 
-## Report an issue or request a feature
+Use this checklist after `npm start` or a successful production build:
 
-If you notice a bug, or need a feature. Please create an [issue on GitHub](https://github.com/ChurchApps/freeshow/issues).
+1. Confirm the shell branding shows Hamro Church in splash, about, and window titles.
+2. Open scripture and verify local Bible content loads and inserts into slides.
+3. Open imported hymn content and verify Nepali text renders and splits into slides.
+4. Check preview, stage, remote, controller, and output-stream views.
+5. Verify Nepali number/date formatting in supported UI surfaces.
 
-## Give feedback
+## Content Maintenance
 
-Feedback is welcome! Please [open a discussion here](https://github.com/orgs/ChurchApps/discussions/categories/freeshow) or send a mail to [dev@freeshow.app](mailto:dev@freeshow.app).
+### Add or Update Hymns
 
-## Help translate
+Update the migrated hymn source JSON and regenerate the imported hymn shows through the application migration/import workflow.
 
-Head over to [FreeShow on Transifex](https://app.transifex.com/nettbiter/freeshow/) to request a language.
+### Update the Nepali Bible
 
-## Help the development
+Replace the migrated Bible source database and rerun the application migration so the local Bible files are regenerated.
 
-You are welcome to contribute to the code!
+### Extend Translations
 
-1. Clone the code in this repo
-2. Install [Node.js](https://nodejs.org/en/download/)
-3. Install [Python 3.12](https://www.python.org/downloads/), and the [`setuptools`](https://pypi.org/project/setuptools/) package
-4. On Windows, download [Visual Studio](https://visualstudio.microsoft.com/downloads/) and install "Desktop development with C++", also select the "Windows 10 SDK"
-5. On Linux, install the following library: `sudo apt-get install libfontconfig1-dev`
-6. In the terminal, run: `npm install`
-7. To start the app, run: `npm start`
+Edit the language files under `public/lang` and rerun `npm run test:svelte` plus `npm run build`.
 
-## Join us on Slack
+## Build Outputs
 
-If you would like to get involved contributing in any way, head over to our [Slack Channel](https://join.slack.com/t/livechurchsolutions/shared_invite/zt-i88etpo5-ZZhYsQwQLVclW12DKtVflg) and introduce yourself. We'd love to hear from you.
+- Frontend bundle: `public/build`
+- Electron/server build artifacts: `build/electron`
+- Packaged app output: produced by `npm run pack` or release packaging commands

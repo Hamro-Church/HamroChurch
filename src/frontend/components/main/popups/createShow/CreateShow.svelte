@@ -182,7 +182,7 @@
         }
     }
 
-    function getName(values) {
+    function getName(values: { name?: string; text: string }) {
         if (values.name) return values.name
         // WIP get from "title" metadata
         if (values.text.trim().length) return trimNameFromString(values.text)

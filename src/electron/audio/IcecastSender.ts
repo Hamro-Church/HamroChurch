@@ -58,7 +58,7 @@ export class IcecastSender {
             headers: {
                 Authorization: `Basic ${auth}`,
                 "Content-Type": "audio/ogg; codecs=opus",
-                "Ice-Name": "FreeShow Audio Stream",
+                "Ice-Name": "Hamro Church Audio Stream",
                 "Ice-Public": "0",
                 "Transfer-Encoding": "chunked"
             }
@@ -71,8 +71,8 @@ export class IcecastSender {
         // BOS Header pages
         // OpusHead: ver 1, channels 2, preskip 312, 48000Hz, gain 0, map 0
         const head = Buffer.from("4f707573486561640102380180bb0000000000", "hex")
-        // OpusTags: vendor len 8, "FreeShow"
-        const tags = Buffer.from("4f70757354616773080000004672656553686f7700000000", "hex")
+        // OpusTags: vendor len 12, "Hamro Church"
+        const tags = Buffer.from("4f707573546167730c00000048616d726f2043687572636800000000", "hex")
         this.writeOggPage(head, 2, BigInt(0)) // BOS flag
         this.writeOggPage(tags, 0, BigInt(0))
     }

@@ -3,7 +3,7 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
     import { uid } from "uid"
-    import { OutData } from "../../../types/Output"
+    import type { OutData } from "../../../types/Output"
     import type { Styles } from "../../../types/Settings"
     import type { AnimationData, Item, LayoutRef, OutBackground, OutSlide, Slide, SlideData, Template, Overlays as TOverlays } from "../../../types/Show"
     import { allOutputs, colorbars, currentWindow, drawSettings, drawTool, effects, media, outputs, overlays, showsCache, styles, templates, transitionData } from "../../stores"
@@ -213,9 +213,10 @@
     $: currentLineId = slide?.id
     const updateLinesTime = $currentWindow === "output" ? 50 : 10
     $: if (currentLineId) {
+        const lineId = currentLineId
         // don't update until all outputs has updated their "line" value
         setTimeout(() => {
-            lines[currentLineId] = getOutputLines(slide!, currentStyle.lines) // , currentSlide
+            lines[lineId] = getOutputLines(slide!, currentStyle.lines) // , currentSlide
         }, updateLinesTime)
     }
 

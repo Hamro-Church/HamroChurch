@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Show } from "../../../../../types/Show"
+    import type { Show } from "../../../../../types/Show"
     import { translateText } from "../../../../utils/language"
     import Pdf from "../../../export/Pdf.svelte"
     import T from "../../../helpers/T.svelte"
@@ -109,7 +109,7 @@
             <!-- <div class="label">{translateText("export.preview")}</div> -->
 
             <div class="paper" bind:this={paper}>
-                <Pdf shows={previewShow ? [previewShow] : []} options={pdfOptions} />
+                <Pdf shows={previewShow ? [{ ...previewShow, id: previewShow.id || "preview" }] : []} options={pdfOptions} />
             </div>
         </div>
         <div style="display: flex;flex-direction: column;height: 100%;background-color: var(--primary-darkest);">

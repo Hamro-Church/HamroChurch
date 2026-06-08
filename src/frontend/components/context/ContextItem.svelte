@@ -207,8 +207,8 @@
         delete_all: () => {
             if (!contextElem?.classList.value.includes("#event")) return
 
-            let group = $events[contextElem.id].group
-            if (group && Object.entries($events).find(([id, event]) => id !== contextElem.id && event.group === group)) return
+            let group = contextElem?.id ? $events[contextElem.id]?.group : null
+            if (group && Object.entries($events).find(([id, event]) => id !== contextElem?.id && event.group === group)) return
 
             disabled = true
         },

@@ -36,7 +36,7 @@
 
         error = ""
 
-        const cameraStream = await cameraManager.getCameraStream(cam.id, cam.group, { preview: true })
+        const cameraStream = await cameraManager.getCameraStream(cam.id, cam.group)
         if (isDestroyed) return
 
         if (typeof cameraStream === "string") {

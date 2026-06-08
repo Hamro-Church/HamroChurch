@@ -23,8 +23,8 @@
 
 <div style="text-align: center;">
     <div class="logo">
-        <img style="height: 35px;" src="./import-logos/freeshow.webp" alt="FreeShow-logo" draggable={false} />
-        <h1 style="color: var(--text);font-size: 1.7em;">FreeShow</h1>
+        <img style="height: 35px;" src="./icon.png" alt="Hamro Church logo" draggable={false} />
+        <h1 style="color: var(--text);font-size: 1.7em;">Hamro Church</h1>
     </div>
 
     <p style="font-size: 0.8em;margin-top: 2px;">
@@ -45,15 +45,15 @@
     <div class="text">
         <div>
             • <T id="about.more" />
-            <Link url="https://churchapps.org/">ChurchApps</Link>
+            <Link url="https://freeshow.app/docs">Documentation</Link>
         </div>
         <div>
             • <T id="about.report" />
-            <Link url="https://github.com/ChurchApps/FreeShow/issues">GitHub Issues</Link>
+            <Link url="https://github.com/ChurchApps/FreeShow/issues">Issue tracker</Link>
         </div>
         <div>
-            • <T id="about.translate" />
-            <Link url="https://app.transifex.com/nettbiter/freeshow/">Transifex</Link>
+            • Source code
+            <Link url="https://github.com/ChurchApps/FreeShow">GitHub</Link>
         </div>
         <!-- <div>
             • <T id="about.mail" />
@@ -77,7 +77,7 @@
         </div>
     </div>
 
-    <div style="text-align: center;font-size: 0.7em;opacity: 0.5;margin-top: 12px;"><T id="about.made" /> Kristoffer Vassbø (2021)</div>
+    <div style="text-align: center;font-size: 0.7em;opacity: 0.5;margin-top: 12px;"><T id="about.made" /> Hamro Church</div>
 </div>
 
 <style>

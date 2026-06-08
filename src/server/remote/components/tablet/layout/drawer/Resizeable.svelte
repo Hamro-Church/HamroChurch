@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte"
+    import { triggerClickOnEnterSpace } from "../../../../../common/util/click"
     import { resized } from "../../../../util/stores"
     import Icon from "../../../../../common/components/Icon.svelte"
 
@@ -161,7 +162,7 @@
 
 <svelte:window on:mouseup={mouseup} on:mousemove={mousemove} />
 
-<div {id} style="{side === 'left' || side === 'right' ? 'width' : 'height'}: {width}px; --handle-width: {handleWidth}px" class="panel bar_{side}" class:zero={width <= handleWidth} on:pointerdown={pointerdown} on:mousedown={mousedown} on:click={click}>
+<div {id} style="{side === 'left' || side === 'right' ? 'width' : 'height'}: {width}px; --handle-width: {handleWidth}px" class="panel bar_{side}" class:zero={width <= handleWidth} on:pointerdown={pointerdown} on:mousedown={mousedown} on:click={click} on:keydown={triggerClickOnEnterSpace} role="button" tabindex="0">
     {#if width <= handleWidth}
         <Icon id="arrow_right" size={1.3} white />
     {/if}

@@ -2,7 +2,7 @@
     import { createEventDispatcher, onDestroy, onMount } from "svelte"
     import { fade } from "svelte/transition"
     import type { ProjectShowRef, Tree } from "../../../types/Projects"
-    import { ShowType } from "../../../types/Show"
+    import type { ShowType } from "../../../types/Show"
     import { addProjectItem, addToProject, updateRecentlyAddedFiles } from "../../converters/project"
     import { actions, activeFocus, activePopup, activeProject, activeShow, contextActive, drawer, drawerTabsData, editingProjectTemplate, focusMode, fullColors, playerVideos, popupData, projects, projectTemplates, projectView, recentFiles, selected, shows, special } from "../../stores"
     import { triggerFunction } from "../../utils/common"
@@ -42,10 +42,12 @@
             if (!scrollElem) return
             const projectElements = [...(scrollElem.querySelectorAll(".listSection") || [])].map((a) => a?.querySelectorAll("button") || [])
             const flattened = projectElements.flatMap((item) => Array.from(item))
-            const activeProjectItem = flattened.findLast((a) => a?.classList.contains("isActive"))
+            const activeProjectItem = [...flattened].reverse().find((a) => a?.classList.contains("isActive"))
             if (!activeProjectItem) return
 
-            offset = Math.max(0, ((activeProjectItem.closest("#show") as HTMLElement)?.offsetTop || 0) + scrollElem.offsetTop - ($drawer.height < 400 ? 120 : 20))
+            const activeShowElem = activeProjectItem.closest("#show")
+            const activeOffset = activeShowElem instanceof HTMLElement ? activeShowElem.offsetTop : 0
+            offset = Math.max(0, activeOffset + scrollElem.offsetTop - ($drawer.height < 400 ? 120 : 20))
         }, time)
     }
 

@@ -146,7 +146,7 @@ export function getThumbnailFolderPath() {
     } catch (err) {
         // fallback to temp directory if app data path is not accessible
         // temp folder is periodically deleted on macOS
-        folderPath = path.join(app.getPath("temp"), "freeshow-cache")
+        folderPath = path.join(app.getPath("temp"), "hamrochurch-cache")
         if (!doesPathExist(folderPath)) makeDir(folderPath)
     }
 

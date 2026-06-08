@@ -16,6 +16,7 @@
     $: name = active?.name || ""
     $: isMic = active?.data?.isMic
     $: playing = $playingAudio[path] || {}
+    $: mediaVolume = $media[path]?.volume
     $: paused = playing.paused !== false
 
     let currentTime = 0
@@ -224,8 +225,8 @@
                 on:click={() => {
                     let loop = !$media[path]?.loop
                     media.update((a) => {
-                        if (!a[path]) a[path] = {}
-                        a[path].loop = loop
+                        const mediaEntry = a[path] || (a[path] = {})
+                        mediaEntry.loop = loop
 
                         return a
                     })
@@ -235,8 +236,8 @@
             </MaterialButton>
         {/if}
 
-        {#if $media[path]?.volume !== undefined && $media[path]?.volume < 1}
-            <p style="align-self: center;text-align: center;min-width: 50px;padding: 0 5px;opacity: 0.7;font-size: 0.9em;">{Math.floor(($media[path]?.volume || 1) * 100)}%</p>
+        {#if mediaVolume !== undefined && mediaVolume < 1}
+            <p style="align-self: center;text-align: center;min-width: 50px;padding: 0 5px;opacity: 0.7;font-size: 0.9em;">{Math.floor((mediaVolume || 1) * 100)}%</p>
         {/if}
     </div>
 </div>

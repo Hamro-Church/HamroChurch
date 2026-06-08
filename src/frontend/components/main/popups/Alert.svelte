@@ -2,6 +2,7 @@
     import { Main } from "../../../../types/IPC/Main"
     import { sendMain } from "../../../IPC/main"
     import { activePopup, alertMessage } from "../../../stores"
+    import { triggerClickOnEnterSpace } from "../../../utils/clickable"
     import { translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
     import Link from "../../inputs/Link.svelte"
@@ -39,7 +40,7 @@
         <Loader />
     </div>
 {:else}
-    <p on:click={click}>
+    <p on:click={click} on:keydown={triggerClickOnEnterSpace} role="button" tabindex="0">
         {#key msg}
             {#if msg.includes("captions#")}
                 {translateText("captions.info")}

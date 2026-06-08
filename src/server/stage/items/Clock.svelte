@@ -1,8 +1,9 @@
 <script lang="ts">
     import dayjs from "dayjs"
     import localizedFormat from "dayjs/plugin/localizedFormat"
+    import { formatLocalizedDate, formatLocalizedTime, shouldUseNepaliLocale, toNepaliDigits } from "../../../common/nepali"
     import { onDestroy } from "svelte"
-    import { timeFormat } from "../util/stores"
+    import { language, timeFormat } from "../util/stores"
     import AnalogClock from "./AnalogClock.svelte"
 
     // Initialize plugins
@@ -37,12 +38,14 @@
 
     function formatTime(date: Date): string {
         const is12Hour = $timeFormat === "12"
-        const format = is12Hour ? (seconds ? "h:mm:ss A" : "h:mm A") : seconds ? "HH:mm:ss" : "HH:mm"
-        return dayjs(date).format(format)
+        return formatLocalizedTime(date, $language, is12Hour, seconds)
     }
 
     function formatDateTime(date: Date, format: string) {
         if (format === "none") return ""
+        if (format === "LL" || format === "ll" || format === "DD/MM/YYYY" || format === "MM/DD/YYYY" || format === "YYYY-MM-DD") {
+            return formatLocalizedDate(date, $language, true)
+        }
 
         // any custom formats?
         // format = format.split(" ").map((a) => (customFormats[a] ? customFormats[a]() : a)).join(" ")
@@ -66,7 +69,7 @@
         // }
 
         // .locale($language)
-        return dayjs(date).format(format)
+        return shouldUseNepaliLocale($language) ? toNepaliDigits(dayjs(date).format(format)) : dayjs(date).format(format)
     }
 
     $: formattedDate = dateFormat !== "none" ? formatDateTime(d, dateFormat) : ""

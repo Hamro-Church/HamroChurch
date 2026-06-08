@@ -1,7 +1,7 @@
 <script lang="ts">
     import { tick } from "svelte"
     import { Main } from "../../../../types/IPC/Main"
-    import { Popups } from "../../../../types/Main"
+    import type { Popups } from "../../../../types/Main"
     import { importFromClipboard } from "../../../converters/importHelpers"
     import { sendMain } from "../../../IPC/main"
     import { activePopup, alertMessage, popupData } from "../../../stores"
@@ -16,11 +16,11 @@
     popupData.set({})
 
     const freeshow_formats = [
-        { name: "formats.show", title: "FreeShow Song/Presentation File", icon: "slide", extensions: ["show", "json"], id: "freeshow" },
-        { name: "formats.project", title: "FreeShow Project File", icon: "project", extensions: ["project", "shows", "json", "zip"], id: "freeshow_project" }, // , "fsproject", "fsp"
-        { name: "formats.template", title: "FreeShow Template File", icon: "templates", extensions: ["fstemplate", "fst", "template", "json", "zip"], id: "freeshow_template" },
-        { name: "formats.action", title: "FreeShow Action File", icon: "actions", extensions: ["fsaction", "action", "json"], id: "freeshow_action" },
-        { name: "formats.theme", title: "FreeShow Theme File", icon: "theme", extensions: ["fstheme", "theme", "json"], id: "freeshow_theme" }
+        { name: "formats.show", title: "Hamro Church Song/Presentation File", icon: "slide", extensions: ["show", "json"], id: "freeshow" },
+        { name: "formats.project", title: "Hamro Church Project File", icon: "project", extensions: ["project", "shows", "json", "zip"], id: "freeshow_project" },
+        { name: "formats.template", title: "Hamro Church Template File", icon: "templates", extensions: ["fstemplate", "fst", "template", "json", "zip"], id: "freeshow_template" },
+        { name: "formats.action", title: "Hamro Church Action File", icon: "actions", extensions: ["fsaction", "action", "json"], id: "freeshow_action" },
+        { name: "formats.theme", title: "Hamro Church Theme File", icon: "theme", extensions: ["fstheme", "theme", "json"], id: "freeshow_theme" }
     ]
 
     const freeshow_primary_formats = freeshow_formats.filter((format) => ["freeshow", "freeshow_project"].includes(format.id))
