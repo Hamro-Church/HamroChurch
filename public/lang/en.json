@@ -38,7 +38,7 @@
     "tabs": {
         "shows": "Shows",
         "shows_info": "Manage presentations and project content.",
-        "hymns": "Hymns",
+        "hymns": "Hymns / भजन",
         "hymns_info": "Browse Nepali hymns, filter categories, and insert lyrics into slides.",
         "media": "Media",
         "audio": "Audio",
@@ -52,6 +52,8 @@
     "hymns": {
         "search_label": "Search Nepali or English",
         "search_placeholder": "Search by title, number, or lyrics",
+        "search_placeholder_ne": "भजन खोज्नुहोस्",
+        "search_placeholder_en": "Search hymns",
         "search_focus_tip": "Focus hymn search [Ctrl+F]",
         "all": "All",
         "bhajan": "Bhajan",
@@ -66,8 +68,8 @@
         "favorites": "Favorites",
         "favorites_only": "Favorites only",
         "typing": "Typing",
-        "typing_ne": "Nepali",
-        "typing_en": "English",
+        "typing_ne": "नेपाली",
+        "typing_en": "EN",
         "typing_help": "Nepali mode accepts operating system Nepali keyboard input.",
         "count": "hymns",
         "source": "Hymn source",

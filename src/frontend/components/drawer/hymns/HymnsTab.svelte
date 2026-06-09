@@ -4,6 +4,7 @@
     import HymnList from "./HymnList.svelte"
     import HymnSearchBar from "./HymnSearchBar.svelte"
     import HymnViewer from "./HymnViewer.svelte"
+    import TypingLanguageToggle from "./TypingLanguageToggle.svelte"
     import { hymnLoadError, hymnLoading, initializeHymnsPreferences, insertSelectedHymnIntoSlides, loadHymns } from "./hymns"
     import Loader from "../../main/Loader.svelte"
     import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
@@ -51,12 +52,19 @@
     {:else if $hymnLoadError}
         <div class="state error"><T id="hymns.load_error" />: {$hymnLoadError}</div>
     {:else}
-        <div class="mainPane">
-            <div class="resultsPane">
-                <HymnList {favoritesOnly} />
+        <div class="contentPane">
+            <div class="mainPane">
+                <div class="resultsPane">
+                    <HymnList {favoritesOnly} />
+                </div>
+                <div class="viewerPane">
+                    <HymnViewer />
+                </div>
             </div>
-            <div class="viewerPane">
-                <HymnViewer />
+
+            <div class="bottomBar">
+                <p class="typingHint"><T id="hymns.typing_help" /></p>
+                <TypingLanguageToggle compact />
             </div>
         </div>
     {/if}
@@ -88,6 +96,13 @@
         flex: 1;
     }
 
+    .contentPane {
+        min-height: 0;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+    }
+
     .resultsPane {
         min-height: 0;
         border-right: 1px solid var(--primary-lighter);
@@ -105,6 +120,23 @@
         padding: 2rem;
     }
 
+    .bottomBar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.8rem;
+        padding: 0.7rem 1rem;
+        border-top: 1px solid var(--primary-lighter);
+        background: color-mix(in srgb, var(--primary-darkest) 90%, var(--secondary) 10%);
+    }
+
+    .typingHint {
+        margin: 0;
+        font-size: 0.78rem;
+        opacity: 0.7;
+        margin-right: auto;
+    }
+
     .error {
         color: #ffb4a8;
     }
@@ -118,6 +150,14 @@
             border-right: none;
             border-bottom: 1px solid var(--primary-lighter);
             max-height: 40vh;
+        }
+
+        .bottomBar {
+            flex-wrap: wrap;
+        }
+
+        .typingHint {
+            width: 100%;
         }
     }
 </style>

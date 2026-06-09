@@ -1,8 +1,8 @@
 <script lang="ts">
     import { createEventDispatcher, onDestroy, onMount } from "svelte"
-    import TypingLanguageToggle from "./TypingLanguageToggle.svelte"
     import { hymnSearchValue, hymnTypingLanguage } from "./hymns"
     import T from "../../helpers/T.svelte"
+    import { translateText } from "../../../utils/language"
 
     const dispatch = createEventDispatcher<{ input: string }>()
 
@@ -11,6 +11,7 @@
     let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
     $: value = $hymnSearchValue
+    $: placeholder = translateText($hymnTypingLanguage === "ne" ? "hymns.search_placeholder_ne" : "hymns.search_placeholder_en")
 
     function emitSearch(nextValue: string) {
         hymnSearchValue.set(nextValue)
@@ -57,7 +58,7 @@
             class="searchInput"
             bind:value
             on:input={onInput}
-            placeholder={$hymnTypingLanguage === "ne" ? "भजन खोज्नुहोस्" : "Search hymns"}
+            placeholder={placeholder}
             inputmode="text"
             autocapitalize="off"
             autocomplete="off"
@@ -67,10 +68,7 @@
             <button class="clear" on:click={clearSearch} aria-label="Clear hymn search">×</button>
         {/if}
     </div>
-    <div class="footer">
-        <p class="hint"><T id="hymns.typing_help" /></p>
-        <TypingLanguageToggle compact />
-    </div>
+    <p class="hint"><T id="hymns.typing_help" /></p>
 </div>
 
 <style>
@@ -123,13 +121,6 @@
         font-size: 1.5rem;
         line-height: 1;
         cursor: pointer;
-    }
-
-    .footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.8rem;
     }
 
     .hint {

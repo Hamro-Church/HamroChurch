@@ -162,19 +162,27 @@ function getLocalStorageSafe() {
     }
 }
 
+function getSessionStorageSafe() {
+    try {
+        return window.sessionStorage
+    } catch {
+        return null
+    }
+}
+
 export function initializeHymnsPreferences() {
-    const storage = getLocalStorageSafe()
+    const sessionStorage = getSessionStorageSafe()
+    const localStorage = getLocalStorageSafe()
     const defaultLanguage: HymnTypingLanguage = shouldUseNepaliLocale(get(language)) ? "ne" : "en"
 
-    if (!storage) {
+    if (!sessionStorage) {
         hymnTypingLanguage.set(defaultLanguage)
-        return
+    } else {
+        const savedTypingLanguage = sessionStorage.getItem(TYPING_LANGUAGE_KEY)
+        hymnTypingLanguage.set(savedTypingLanguage === "en" || savedTypingLanguage === "ne" ? savedTypingLanguage : defaultLanguage)
     }
 
-    const savedTypingLanguage = storage.getItem(TYPING_LANGUAGE_KEY)
-    hymnTypingLanguage.set(savedTypingLanguage === "en" || savedTypingLanguage === "ne" ? savedTypingLanguage : defaultLanguage)
-
-    const savedFavorites = storage.getItem(FAVORITES_KEY)
+    const savedFavorites = localStorage?.getItem(FAVORITES_KEY)
     if (!savedFavorites) return
 
     try {
@@ -187,7 +195,7 @@ export function initializeHymnsPreferences() {
 
 export function setTypingLanguage(value: HymnTypingLanguage) {
     hymnTypingLanguage.set(value)
-    const storage = getLocalStorageSafe()
+    const storage = getSessionStorageSafe()
     if (storage) storage.setItem(TYPING_LANGUAGE_KEY, value)
 }
 

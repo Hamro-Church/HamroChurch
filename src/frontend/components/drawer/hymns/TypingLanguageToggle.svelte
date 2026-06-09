@@ -11,8 +11,8 @@
 
 <div class="toggle" class:compact>
     <span class="label"><T id="hymns.typing" /></span>
-    <button class:active={$hymnTypingLanguage === "ne"} on:click={() => selectLanguage("ne")}>नेपाली</button>
-    <button class:active={$hymnTypingLanguage === "en"} on:click={() => selectLanguage("en")}>EN</button>
+    <button class:active={$hymnTypingLanguage === "ne"} on:click={() => selectLanguage("ne")}><T id="hymns.typing_ne" /></button>
+    <button class:active={$hymnTypingLanguage === "en"} on:click={() => selectLanguage("en")}><T id="hymns.typing_en" /></button>
 </div>
 
 <style>
