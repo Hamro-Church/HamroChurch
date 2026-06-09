@@ -139,6 +139,11 @@
     async function keydown(e: KeyboardEvent) {
         if ((e.ctrlKey || e.metaKey) && e.key === "f") {
             if ($activePopup === "show" || shouldOpenReplace()) return
+            if ($activeDrawerTab === "hymns") {
+                e.preventDefault()
+                window.dispatchEvent(new CustomEvent("hamro-hymns-focus-search"))
+                return
+            }
             focusSearch()
 
             // change to "Show" and "All" when searching when drawer is closed

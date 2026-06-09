@@ -55,7 +55,7 @@
 
         // choose specific categories with colon or space syntax
         // SearchCategory ids with a few excluded, including singular forms
-        let categoryMatch = value.match(/^(settings?|stage|overlays?|projects?|actions?|faq|shows?|media|audio|bible)[:| ]\s*/i)
+        let categoryMatch = value.match(/^(settings?|stage|overlays?|projects?|actions?|faq|shows?|media|audio|bible|hymns?)[:| ]\s*/i)
         if (categoryMatch) {
             let matchedCategory = categoryMatch[1].toLowerCase()
 

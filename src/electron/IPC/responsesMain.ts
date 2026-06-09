@@ -161,6 +161,7 @@ export const mainResponses: MainResponses = {
     [Main.BUNDLE_MEDIA_FILES]: (data) => bundleMediaFiles(data),
     [Main.MEDIA_FOLDER_COPY]: (data) => addToMediaFolder(data.paths),
     [Main.READ_BIBLES_FOLDER]: () => readBiblesFolder(),
+    [Main.READ_HYMNS]: () => readHamroHymns(),
     [Main.FILE_INFO]: (data) => getFileInfo(data),
     [Main.READ_FOLDER]: (data) => readFolderContent(data),
     [Main.READ_FILE]: (data) => ({ content: readFile(data.path) }),
@@ -288,6 +289,26 @@ function readBiblesFolder() {
         const filePath = path.join(bibleFolder, name)
         return { path: filePath, name: name.replace(/\.fsb$/i, "") }
     })
+}
+
+function readHamroHymns() {
+    const root = getDataFolderRoot()
+    const candidates = [
+        path.join(root, "nepali_hymns.json"),
+        path.join(root, "data", "nepali_hymns.json"),
+        path.join(root, "imports", "nepali_hymns.json"),
+        path.join(root, "imports", "Hymns", "nepali_hymns.json"),
+        path.join(root, "imports", "Hamro Church", "nepali_hymns.json"),
+        path.join(root, "import", "nepali_hymns.json"),
+        path.join("C:\\Mandali Show", "church-presentation-app", "data", "nepali_hymns.json")
+    ]
+
+    for (const candidate of candidates) {
+        const content = readFile(candidate)
+        if (content) return { path: candidate, content }
+    }
+
+    return { path: null, content: null }
 }
 
 // SHOW
