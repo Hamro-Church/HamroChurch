@@ -6,7 +6,7 @@ import type { SyncProviderId } from "../../electron/cloud/syncManager"
 import type { ContentFile, ContentLibraryCategory, ContentProviderId, MediaLicense } from "../../electron/contentProviders/base/types"
 import type { _store } from "../../electron/data/store"
 import type { TimecodeMode } from "../../electron/timecode/timecode"
-import type { ErrorLog, FileFolder, LessonsData, LyricSearchResult, MainFilePaths, Media, OS, SpotifyState, Subtitle } from "../Main"
+import type { AppUpdateDownloadResult, AppUpdateInfo, ErrorLog, FileFolder, LessonsData, LyricSearchResult, MainFilePaths, Media, OS, SpotifyState, Subtitle } from "../Main"
 import type { Output } from "../Output"
 import type { Folders, Projects } from "../Projects"
 import type { Dictionary, Resolution, Themes } from "../Settings"
@@ -64,6 +64,8 @@ export enum Main {
     ////
     SHOWS = "SHOWS",
     AUTO_UPDATE = "AUTO_UPDATE",
+    CHECK_FOR_UPDATES = "CHECK_FOR_UPDATES",
+    DOWNLOAD_UPDATE = "DOWNLOAD_UPDATE",
     URL = "URL",
     LANGUAGE = "LANGUAGE",
     GET_PATHS = "GET_PATHS",
@@ -189,6 +191,8 @@ export interface MainSendPayloads {
     [Main.DELETE_SHOWS]: { shows: { id: string; name: string }[] }
     [Main.DELETE_SHOWS_NI]: { shows: TrimmedShows }
     [Main.GET_EMPTY_SHOWS]: { cached: Shows }
+    [Main.CHECK_FOR_UPDATES]?: { manual?: boolean; includeBeta?: boolean }
+    [Main.DOWNLOAD_UPDATE]?: { includeBeta?: boolean }
     [Main.OUTPUT]: "true" | "false"
     [Main.DOES_MEDIA_EXIST]: { path: string; creationTime?: number; noCache?: boolean }
     [Main.GET_THUMBNAIL]: { input: string; size: number }
@@ -303,6 +307,8 @@ export interface MainReturnPayloads {
     [Main.DELETE_SHOWS]: { deleted: string[] }
     [Main.DELETE_SHOWS_NI]: { deleted: string[] } | undefined
     [Main.GET_EMPTY_SHOWS]: Promise<{ id: string; name: string }[] | undefined>
+    [Main.CHECK_FOR_UPDATES]: Promise<AppUpdateInfo>
+    [Main.DOWNLOAD_UPDATE]: Promise<AppUpdateDownloadResult>
     [Main.FULL_SHOWS_LIST]: string[]
     [Main.GET_SCREENS]: Promise<{ name: string; id: string }[]>
     [Main.GET_WINDOWS]: Promise<{ name: string; id: string }[]>

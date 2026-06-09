@@ -1,44 +1,70 @@
 import { get } from "svelte/store"
-import { activePopup, alertUpdates, isDev, popupData, special } from "./../stores"
+import { Main } from "../../types/IPC/Main"
+import type { AppUpdateDownloadResult, AppUpdateInfo } from "../../types/Main"
+import { requestMain, sendMain } from "../IPC/main"
+import { activePopup, alertUpdates, isDev, popupData, special, version } from "./../stores"
+import { newToast } from "./common"
 
-interface UpdateData {
-    latestVersion: string
-    changelog: string
-    hasUpdate: boolean
+const RELEASES_PAGE_URL = "https://github.com/Hamro-Church/HamroChurch/releases"
+
+function includeBetaUpdates() {
+    const currentVersion = get(version)
+    return currentVersion.includes("-beta") || get(special).betaVersionAlert
 }
 
-export async function getUpdateData(currentVersion: string, includeBeta: boolean): Promise<UpdateData> {
-    const response = await fetch("https://api.github.com/repos/Hamro-Church/HamroChurch/releases")
-    const data = await response.json()
-
-    const latestAll = data.filter((a: any) => a.draft === false)[0]
-    const latestRelease = data.filter((a: any) => a.draft === false && a.prerelease === false)[0]
-
-    const latestVersionAll = latestAll?.tag_name?.slice(1) || ""
-    const latestVersionStable = latestRelease?.tag_name?.slice(1) || latestVersionAll
-    const latestVersion = includeBeta ? latestVersionAll : latestVersionStable
-    const changelog = includeBeta ? latestAll?.body || "" : latestRelease?.body || latestAll?.body || ""
+function fallbackResult(error?: string): AppUpdateInfo {
+    const currentVersion = get(version)
 
     return {
-        latestVersion,
-        changelog,
-        hasUpdate: !!latestVersion && currentVersion !== latestVersion
+        checked: true,
+        hasUpdate: false,
+        currentVersion,
+        latestVersion: currentVersion,
+        releaseNotes: "",
+        releaseUrl: RELEASES_PAGE_URL,
+        error
     }
 }
 
-export function checkForUpdates(currentVersion: string) {
-    if (get(isDev) || get(alertUpdates) === false) return
-    const includeBeta = currentVersion.includes("-beta") || get(special).betaVersionAlert
+export async function getUpdateData(manual = false): Promise<AppUpdateInfo> {
+    const result = await requestMain(Main.CHECK_FOR_UPDATES, { manual, includeBeta: includeBetaUpdates() }, undefined, manual ? 30000 : 20000)
+    return result || fallbackResult("Timed out while checking for updates.")
+}
 
-    getUpdateData(currentVersion, includeBeta)
-        .then(({ latestVersion, changelog, hasUpdate }) => {
-            if (get(activePopup) !== null) return
-            if (!hasUpdate) return
+export async function downloadAndInstallUpdate(): Promise<AppUpdateDownloadResult> {
+    const result = await requestMain(Main.DOWNLOAD_UPDATE, { includeBeta: includeBetaUpdates() }, undefined, 10 * 60 * 1000)
+    return result || { success: false, launched: false, error: "Timed out while downloading the update." }
+}
 
-            popupData.set({ changelog, latestVersion })
+export function openReleasePage(url?: string) {
+    sendMain(Main.URL, url || RELEASES_PAGE_URL)
+}
+
+export function checkForUpdates(_currentVersion: string) {
+    if (get(isDev) || get(alertUpdates) === false || get(special).autoUpdates === false) return
+
+    getUpdateData(false)
+        .then((updateData) => {
+            if (updateData.error) {
+                console.warn(updateData.error)
+                return
+            }
+
+            if (get(activePopup) !== null || !updateData.hasUpdate) return
+
+            popupData.set(updateData)
             activePopup.set("new_update")
         })
         .catch((error) => {
             console.warn(error)
         })
+}
+
+export function notifyManualUpdateResult(updateData: AppUpdateInfo) {
+    if (updateData.error) {
+        newToast("updates.unable_to_check")
+        return
+    }
+
+    if (!updateData.hasUpdate) newToast("updates.latest")
 }

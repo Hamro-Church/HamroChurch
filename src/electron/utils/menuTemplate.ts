@@ -66,6 +66,7 @@ export function template(strings: Dictionary): any {
         submenu: [
             { label: strings.main?.quick_search || "Quick search", click: () => mc("quick_search") },
             { label: strings.popup?.shortcuts || "Shortcuts", click: () => mc("shortcuts") },
+            { label: strings.about?.check_updates || "Check for updates", click: () => mc("check_updates") },
             { type: "separator" },
             { label: strings.main?.docs || "Docs", click: () => openURL("https://hamrocms.com/docs") },
             { label: "Visit Website", click: () => openURL("https://hamrocms.com") },

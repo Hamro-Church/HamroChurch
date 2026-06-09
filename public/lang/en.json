@@ -93,7 +93,7 @@
         "cropping_tip": "Fine adjust the window content position by cropping the sides"
     },
     "about": {
-        "check_updates": "Look for updates",
+        "check_updates": "Check for updates",
         "made": "Made in Norway by",
         "more": "Please check out more of our applications at",
         "report": "To report an issue or request a feature, go to",
@@ -103,10 +103,23 @@
         "assets": "Assets used",
         "libraries": "Libraries used",
         "thanks": "Thanks to",
-        "new_update": "New update available",
+        "new_update": "New version available",
         "download_latest": "Download the latest version",
-        "download_auto": "You have auto update enabled, please wait a few minutes for the update to be downloaded and installed automatically, then restart the application.",
+        "download_auto": "Automatic update checks are enabled. When a release is found you can download and install it from inside the app.",
         "changes": "What's new"
+    },
+    "updates": {
+        "check_now": "Check now",
+        "current_version": "Current version",
+        "latest_version": "Latest version",
+        "download_install": "Download & Install",
+        "later": "Later",
+        "latest": "You are using the latest version",
+        "unable_to_check": "Unable to check for updates",
+        "install_failed": "Unable to download or install the update",
+        "automatic_checks_enabled": "Automatic update checks are enabled.",
+        "open_release": "Open release page",
+        "asset_missing": "No installer was published for this platform yet."
     },
     "tooltip": {
         "project": "Create a new project where you can add and arrange shows.",
@@ -1389,7 +1402,7 @@
         "active_style": "Use style",
         "alert_updates": "Alert when a new update is available",
         "alert_updates_beta": "Alert when a new beta version is available",
-        "auto_updates": "Auto updates",
+        "auto_updates": "Automatic update checks",
         "disable_labels": "Disable labels",
         "group_numbers": "Group numbers",
         "auto_group_numbers": "Auto assign group numbers",

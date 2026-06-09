@@ -214,6 +214,7 @@ const clickActions = {
     // view
     // help
     docs: () => sendMain(Main.URL, "https://hamrocms.com/docs"),
+    check_updates: () => activePopup.set("update_manager"),
     shortcuts: () => activePopup.set("shortcuts"),
     about: () => activePopup.set("about"),
     quick_search: () => quickSearchActive.set(true),

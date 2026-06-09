@@ -10,6 +10,35 @@ export interface Config {
     disableHardwareAcceleration: boolean | null
     autoErrorReporting?: boolean
     mediaFolderPath?: string
+    lastUpdateCheck?: number
+}
+
+export interface AppUpdateAsset {
+    name: string
+    url: string
+    contentType?: string
+    digest?: string | null
+}
+
+export interface AppUpdateInfo {
+    checked: boolean
+    skipped?: boolean
+    hasUpdate: boolean
+    currentVersion: string
+    latestVersion: string
+    releaseNotes: string
+    releaseUrl: string
+    publishedAt?: string
+    asset?: AppUpdateAsset | null
+    error?: string
+    checkedAt?: number
+}
+
+export interface AppUpdateDownloadResult {
+    success: boolean
+    launched: boolean
+    filePath?: string
+    error?: string
 }
 
 export interface OS {

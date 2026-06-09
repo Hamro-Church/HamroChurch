@@ -33,7 +33,7 @@ import { closeMidiInPorts, getMidiInputs, getMidiOutputs, receiveMidi, sendMidi 
 import { deleteShows, deleteShowsNotIndexed, getAllShows, getEmptyShows, refreshAllShows } from "../utils/shows"
 import { correctSpelling } from "../utils/spellcheck"
 import { executeSpotifyCommand, getSpotifyState } from "../utils/spotify"
-import checkForUpdates from "../utils/updater"
+import { checkForUpdates, downloadAndInstallUpdate } from "../updater"
 
 export const mainResponses: MainResponses = {
     // DEV
@@ -78,7 +78,9 @@ export const mainResponses: MainResponses = {
     [Main.SHOW]: (data) => loadShow(data),
     // MAIN
     [Main.SHOWS]: (() => loadShowsAsync()) as any,
-    [Main.AUTO_UPDATE]: () => checkForUpdates(),
+    [Main.AUTO_UPDATE]: () => checkForUpdates({ manual: false }),
+    [Main.CHECK_FOR_UPDATES]: (data) => checkForUpdates(data),
+    [Main.DOWNLOAD_UPDATE]: (data) => downloadAndInstallUpdate(data),
     [Main.URL]: (data) => openURL(data),
     [Main.LANGUAGE]: (data) => setGlobalMenu(data.strings),
     [Main.GET_PATHS]: () => getPaths(),

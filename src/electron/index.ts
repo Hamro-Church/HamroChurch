@@ -17,6 +17,7 @@ import { receiveMain, sendMain } from "./IPC/main"
 import { autoErrorReport } from "./IPC/responsesMain"
 import { receiveNDI } from "./ndi/talk"
 import { OutputHelper } from "./output/OutputHelper"
+import { initializeUpdater } from "./updater"
 import { callClose, exitApp, saveAndClose } from "./utils/close"
 import { isDraggableAreaVisible, isWithinDisplayBounds, mainWindowInitialize, openDevTools, parseCommandLineArgs, waitForBundle } from "./utils/init"
 import { template } from "./utils/menuTemplate"
@@ -109,6 +110,7 @@ async function startApp() {
     setTimeout(createLoading)
 
     await setupStores()
+    initializeUpdater()
     await runHamroChurchMigration()
 
     registerProtectedProtocol()
