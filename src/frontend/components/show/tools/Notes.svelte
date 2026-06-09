@@ -1,5 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
+    import { nepaliTypingInput } from "../../helpers/inputActions"
     import { translateText } from "../../../utils/language"
 
     export let value: string
@@ -29,7 +30,7 @@
 </script>
 
 <div class="paper">
-    <textarea placeholder={placeholder || translateText("empty.text...")} class="edit {$$props.class}" name="" id="" cols="1" rows={lines} style={$$props.style || ""} bind:value on:input={input} on:change={change} on:keydown {disabled} {autofocus} />
+    <textarea placeholder={placeholder || translateText("empty.text...")} class="edit {$$props.class}" name="" id="" cols="1" rows={lines} style={$$props.style || ""} bind:value use:nepaliTypingInput on:input={input} on:change={change} on:keydown {disabled} {autofocus} />
 </div>
 
 <style>

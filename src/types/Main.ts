@@ -411,6 +411,7 @@ export type Popups =
     | "reset_all"
     | "alert"
     | "new_update"
+    | "nepali_typing_tips"
     | "history"
     | "action_history"
     | "manage_emitters"

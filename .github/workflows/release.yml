@@ -2,9 +2,21 @@ name: Release
 
 on:
   push:
+    branches:
+      - "main"
     tags:
       - "v*"
   workflow_dispatch:
+
+env:
+  FTP_HOST: ${{ secrets.FTP_HOST }}
+  FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+  FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+  FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_USER: ${{ secrets.SSH_USER }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
 permissions:
   contents: write
@@ -15,6 +27,7 @@ concurrency:
 
 jobs:
   build:
+    if: startsWith(github.ref, 'refs/tags/v')
     name: Build ${{ matrix.platform.name }}
     runs-on: ${{ matrix.platform.os }}
     strategy:
@@ -106,6 +119,7 @@ jobs:
           retention-days: 14
 
   publish_release:
+    if: startsWith(github.ref, 'refs/tags/v')
     name: Publish GitHub Release
     needs: build
     runs-on: ubuntu-latest
@@ -125,3 +139,74 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             release-assets/**/*
+
+  verify_website:
+    if: github.ref == 'refs/heads/main'
+    name: Verify Website Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Verify website path exists
+        run: |
+          test -d project/website
+          test -f project/website/index.html
+
+  deploy_via_ftp:
+    if: github.ref == 'refs/heads/main' && env.FTP_HOST != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' && env.FTP_REMOTE_DIR != '' && env.SSH_HOST == ''
+    name: Deploy Website via FTP
+    needs: verify_website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Sync website over FTP
+        run: |
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_HOST" -e "set ssl:verify-certificate no; set ftp:passive-mode on; mirror --reverse --delete --verbose project/website/ \"$FTP_REMOTE_DIR\"; bye"
+
+  deploy_via_rsync:
+    if: github.ref == 'refs/heads/main' && env.SSH_HOST != '' && env.SSH_USER != '' && env.SSH_PRIVATE_KEY != '' && env.REMOTE_PATH != ''
+    name: Deploy Website via rsync over SSH
+    needs: verify_website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Install rsync and OpenSSH client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client
+
+      - name: Configure SSH access
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Sync website over rsync
+        run: |
+          rsync -az --delete project/website/ "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
+
+  no_deploy_target:
+    if: github.ref == 'refs/heads/main' && !(env.FTP_HOST != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' && env.FTP_REMOTE_DIR != '') && !(env.SSH_HOST != '' && env.SSH_USER != '' && env.SSH_PRIVATE_KEY != '' && env.REMOTE_PATH != '')
+    name: Skip Website Deploy
+    needs: verify_website
+    runs-on: ubuntu-latest
+    steps:
+      - name: No deployment secrets configured
+        run: echo "No FTP or SSH deployment secrets were configured, so website deployment was skipped."

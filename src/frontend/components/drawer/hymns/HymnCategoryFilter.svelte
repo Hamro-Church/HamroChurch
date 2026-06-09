@@ -1,90 +1,61 @@
 <script lang="ts">
-    import { getCategoryCounts, hymnItems, hymnSelectedCategories, toggleCategory, type HymnCategoryId } from "./hymns"
+    import { language } from "../../../stores"
+    import { getActiveCategoryId, getCategoryCounts, getHymnCategoryDisplay, hymnItems, hymnSelectedCategories, toggleCategory, type HymnCategoryId } from "./hymns"
     import T from "../../helpers/T.svelte"
-
-    let collapsed = false
 
     $: counts = getCategoryCounts($hymnItems)
 
-    const categoryOrder: { id: HymnCategoryId; icon: string; label: string }[] = [
-        { id: "all", icon: "●", label: "hymns.all" },
-        { id: "bhajan", icon: "🎵", label: "hymns.bhajan" },
-        { id: "chorus", icon: "🎶", label: "hymns.chorus" },
-        { id: "children", icon: "🧒", label: "hymns.children" },
-        { id: "new", icon: "✨", label: "hymns.new" }
+    const categoryOrder: { id: HymnCategoryId; icon: string }[] = [
+        { id: "all", icon: "●" },
+        { id: "bhajan", icon: "◫" },
+        { id: "chorus", icon: "◫" },
+        { id: "children", icon: "◫" },
+        { id: "new", icon: "◫" }
     ]
 
     function isChecked(id: HymnCategoryId) {
-        return $hymnSelectedCategories.includes(id)
+        return getActiveCategoryId($hymnSelectedCategories) === id
     }
 </script>
 
 <div class="sidebar">
-    <div class="header">
-        <div>
-            <h3><T id="tabs.hymns" /></h3>
-            <p>{counts.all} <T id="hymns.count" /></p>
-        </div>
-        <button class="collapse" on:click={() => (collapsed = !collapsed)} aria-label={collapsed ? "Expand hymn filters" : "Collapse hymn filters"}>
-            <T id={collapsed ? "hymns.expand" : "hymns.collapse"} />
-        </button>
+    <button class="item allItem" class:active={isChecked("all")} on:click={() => toggleCategory("all")}>
+        <span class="icon">●</span>
+        <span class="label">{getHymnCategoryDisplay("all", $language)}</span>
+        <span class="count">{counts.all}</span>
+    </button>
+
+    <div class="sectionLabel">
+        <T id="hymns.categories_heading" />
     </div>
 
-    {#if !collapsed}
-        <div class="filters">
-            {#each categoryOrder as category}
-                <label class="item">
-                    <input type="checkbox" checked={isChecked(category.id)} on:change={() => toggleCategory(category.id)} />
-                    <span class="icon">{category.icon}</span>
-                    <span class="label"><T id={category.label} /></span>
-                    <span class="count">{counts[category.id]}</span>
-                </label>
-            {/each}
-        </div>
-    {/if}
+    <div class="filters">
+        {#each categoryOrder.filter((category) => category.id !== "all") as category}
+            <button class="item" class:active={isChecked(category.id)} on:click={() => toggleCategory(category.id)}>
+                <span class="icon">{category.icon}</span>
+                <span class="label">{getHymnCategoryDisplay(category.id, $language)}</span>
+                <span class="count">{counts[category.id]}</span>
+            </button>
+        {/each}
+    </div>
 </div>
 
 <style>
     .sidebar {
         display: flex;
         flex-direction: column;
-        gap: 0.8rem;
-        padding: 0.75rem 0 0.85rem;
+        gap: 0.35rem;
+        padding: 0.65rem 0 0.85rem;
         background: var(--primary-darker);
         height: 100%;
     }
 
-    .header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding: 0 1rem;
-    }
-
-    .header h3,
-    .header p {
-        margin: 0;
-    }
-
-    .header h3 {
-        font-size: 1rem;
-        color: var(--text);
-    }
-
-    .header p {
+    .sectionLabel {
+        padding: 0.25rem 1rem 0.1rem;
         font-size: 0.78rem;
         opacity: 0.7;
-    }
-
-    .collapse {
-        border: none;
-        background: transparent;
-        color: var(--secondary);
-        font: inherit;
-        font-size: 0.78rem;
-        cursor: pointer;
-        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
     .filters {
@@ -97,43 +68,48 @@
 
     .item {
         display: grid;
-        grid-template-columns: 1rem 1.4rem 1fr auto;
+        grid-template-columns: 1rem 1fr auto;
         align-items: center;
         gap: 0.65rem;
         padding: 0.7rem 1rem;
         color: var(--text);
         cursor: pointer;
         border-left: 3px solid transparent;
+        border: none;
+        background: transparent;
+        text-align: left;
     }
 
-    .item:hover {
+    .item:hover,
+    .item.active {
         background: var(--hover);
     }
 
-    .item:has(input:checked) {
+    .item.active {
         background: color-mix(in srgb, var(--secondary) 14%, var(--primary-darker) 86%);
         border-left-color: var(--secondary);
     }
 
-    .item input {
-        margin: 0;
-        accent-color: var(--secondary);
-    }
-
     .icon {
-        font-size: 1rem;
+        font-size: 0.95rem;
         line-height: 1;
+        opacity: 0.8;
     }
 
     .label {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
+        line-height: 1.25;
     }
 
     .count {
         font-size: 0.8rem;
         opacity: 0.65;
+    }
+
+    .allItem {
+        margin-bottom: 0.25rem;
     }
 </style>

@@ -2,6 +2,7 @@
     import { createEventDispatcher } from "svelte"
     import { translateText } from "../../utils/language"
     import Icon from "../helpers/Icon.svelte"
+    import { nepaliTypingInput } from "../helpers/inputActions"
     import MaterialButton from "./MaterialButton.svelte"
     import { dictionary } from "../../stores"
     import { pasteText } from "../helpers/caretHelper"
@@ -82,7 +83,7 @@
     {#if type === "password" && !showText}
         <input bind:value type="password" {id} {placeholder} {disabled} {autofocus} use:select use:blurOnEnter class="input edit" on:input={input} on:change={change} on:keydown />
     {:else}
-        <input bind:value type="text" {id} {placeholder} {disabled} {autofocus} use:select use:blurOnEnter class="input edit" on:input={input} on:change={change} on:keydown />
+        <input bind:value type="text" {id} {placeholder} {disabled} {autofocus} use:select use:blurOnEnter use:nepaliTypingInput class="input edit" on:input={input} on:change={change} on:keydown />
     {/if}
 
     <label for={id}>{@html translateText(label, $dictionary)}</label>

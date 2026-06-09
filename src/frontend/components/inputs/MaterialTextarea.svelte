@@ -1,6 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
     import { translateText } from "../../utils/language"
+    import { nepaliTypingInput } from "../helpers/inputActions"
 
     export let value = ""
     export let label: string
@@ -34,7 +35,7 @@
 
 <div class="textfield {center ? 'centered' : ''} {disabled ? 'disabled' : ''} {$$props.class || ''}">
     <div class="background" />
-    <textarea bind:value {id} {placeholder} {disabled} {autofocus} use:select class="input edit" on:input={input} on:change={change} {rows} />
+    <textarea bind:value {id} {placeholder} {disabled} {autofocus} use:select use:nepaliTypingInput class="input edit" on:input={input} on:change={change} {rows} />
     <label for={id}>{translateText(label)}</label>
     <span class="underline" />
 </div>

@@ -6,6 +6,7 @@
     import AudioInfo from "./AudioInfo.svelte"
     import CalendarInfo from "./CalendarInfo.svelte"
     import FunctionsInfo from "./FunctionsInfo.svelte"
+    import HymnInfo from "./HymnInfo.svelte"
     import MediaInfo from "./MediaInfo.svelte"
     import ScriptureInfo from "./ScriptureInfo.svelte"
     import ShowInfo from "./ShowInfo.svelte"
@@ -17,6 +18,8 @@
 <div class="main {id !== 'shows' || $activeShow !== null ? 'context #drawer_info' : ''}">
     {#if !$forceClock && id === "shows" && $activeShow !== null && ($activeShow.type === undefined || $activeShow.type === "show")}
         <ShowInfo />
+    {:else if !$forceClock && id === "hymns"}
+        <HymnInfo />
     {:else if !$forceClock && id === "media"}
         <MediaInfo />
     {:else if !$forceClock && id === "audio"}

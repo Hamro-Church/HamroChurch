@@ -1,16 +1,16 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte"
-    import { activeDrawerTab } from "../../../stores"
+    import { activeDrawerTab, language } from "../../../stores"
     import HymnList from "./HymnList.svelte"
     import HymnSearchBar from "./HymnSearchBar.svelte"
-    import HymnViewer from "./HymnViewer.svelte"
-    import TypingLanguageToggle from "./TypingLanguageToggle.svelte"
-    import { hymnLoadError, hymnLoading, initializeHymnsPreferences, insertSelectedHymnIntoSlides, loadHymns } from "./hymns"
+    import { getActiveCategoryId, getCategoryCounts, getHymnCategoryDisplay, hymnItems, hymnLoadError, hymnLoading, hymnSelectedCategories, initializeHymnsPreferences, insertSelectedHymnIntoSlides, loadHymns } from "./hymns"
     import Loader from "../../main/Loader.svelte"
     import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
     import T from "../../helpers/T.svelte"
 
     let favoritesOnly = false
+    $: counts = getCategoryCounts($hymnItems)
+    $: activeCategory = getActiveCategoryId($hymnSelectedCategories)
 
     function handleKeydown(event: KeyboardEvent) {
         if ($activeDrawerTab !== "hymns") return
@@ -45,6 +45,7 @@
 
     <div class="toolbar">
         <MaterialCheckbox label="hymns.favorites_only" checked={favoritesOnly} on:change={(e) => (favoritesOnly = e.detail)} />
+        <div class="activeBadge">{getHymnCategoryDisplay(activeCategory, $language)} <span>{counts[activeCategory]}</span></div>
     </div>
 
     {#if $hymnLoading}
@@ -52,20 +53,8 @@
     {:else if $hymnLoadError}
         <div class="state error"><T id="hymns.load_error" />: {$hymnLoadError}</div>
     {:else}
-        <div class="contentPane">
-            <div class="mainPane">
-                <div class="resultsPane">
-                    <HymnList {favoritesOnly} />
-                </div>
-                <div class="viewerPane">
-                    <HymnViewer />
-                </div>
-            </div>
-
-            <div class="bottomBar">
-                <p class="typingHint"><T id="hymns.typing_help" /></p>
-                <TypingLanguageToggle compact />
-            </div>
+        <div class="resultsPane">
+            <HymnList {favoritesOnly} />
         </div>
     {/if}
 </div>
@@ -89,27 +78,9 @@
         background: color-mix(in srgb, var(--primary-darker) 94%, var(--secondary) 6%);
     }
 
-    .mainPane {
-        display: grid;
-        grid-template-columns: minmax(320px, 0.9fr) minmax(360px, 1.1fr);
-        min-height: 0;
-        flex: 1;
-    }
-
-    .contentPane {
-        min-height: 0;
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-    }
-
     .resultsPane {
         min-height: 0;
-        border-right: 1px solid var(--primary-lighter);
-    }
-
-    .viewerPane {
-        min-height: 0;
+        flex: 1;
     }
 
     .state {
@@ -120,44 +91,24 @@
         padding: 2rem;
     }
 
-    .bottomBar {
-        display: flex;
+    .activeBadge {
+        display: inline-flex;
         align-items: center;
-        justify-content: flex-end;
-        gap: 0.8rem;
-        padding: 0.7rem 1rem;
-        border-top: 1px solid var(--primary-lighter);
-        background: color-mix(in srgb, var(--primary-darkest) 90%, var(--secondary) 10%);
+        gap: 0.55rem;
+        padding: 0.45rem 0.8rem;
+        border: 1px solid color-mix(in srgb, var(--secondary) 35%, var(--primary-lighter) 65%);
+        border-radius: 999px;
+        font-size: 0.82rem;
+        color: var(--text);
+        background: color-mix(in srgb, var(--primary-darkest) 80%, black 20%);
     }
 
-    .typingHint {
-        margin: 0;
-        font-size: 0.78rem;
-        opacity: 0.7;
-        margin-right: auto;
+    .activeBadge span {
+        color: var(--secondary);
+        font-weight: 700;
     }
 
     .error {
         color: #ffb4a8;
-    }
-
-    @media (max-width: 1180px) {
-        .mainPane {
-            grid-template-columns: 1fr;
-        }
-
-        .resultsPane {
-            border-right: none;
-            border-bottom: 1px solid var(--primary-lighter);
-            max-height: 40vh;
-        }
-
-        .bottomBar {
-            flex-wrap: wrap;
-        }
-
-        .typingHint {
-            width: 100%;
-        }
     }
 </style>

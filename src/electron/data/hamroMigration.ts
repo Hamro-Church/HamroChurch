@@ -89,6 +89,7 @@ export async function runHamroChurchMigration() {
     if (!doesPathExist(SOURCE_DATA_ROOT) || !doesPathExist(SOURCE_LIBRARY_DB)) return
 
     const settings = getStore("SETTINGS")
+    await ensureNepaliBiblePresent()
     if ((settings as any)?.hamroMigrationVersion >= MIGRATION_VERSION) return
 
     const importedRoot = createFolder(path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME))
@@ -98,15 +99,29 @@ export async function runHamroChurchMigration() {
     await copyIfPresent(SOURCE_HYMNS_JSON, path.join(importedRoot, "nepali_hymns.json"))
     await migrateHymnShows(SOURCE_HYMNS_JSON)
 
-    const bible = await buildNepaliBibleFromSqlite(SOURCE_LIBRARY_DB)
-    if (bible) {
-        const scripturesFolder = getDataFolderPath("scriptures")
-        const biblePath = path.join(scripturesFolder, `${NEPALI_BIBLE_FILE_NAME}.fsb`)
-        writeFile(biblePath, JSON.stringify([uid(), bible]))
-    }
+    await ensureNepaliBiblePresent()
 
     const nextSettings = { ...settings, hamroMigrationVersion: MIGRATION_VERSION }
     if (_store.SETTINGS) await safeStoreSet(_store.SETTINGS, nextSettings, "SETTINGS")
+}
+
+async function ensureNepaliBiblePresent() {
+    const scripturesFolder = getDataFolderPath("scriptures")
+    const biblePath = path.join(scripturesFolder, `${NEPALI_BIBLE_FILE_NAME}.fsb`)
+    if (doesPathExist(biblePath)) return true
+
+    const fallbackSources = [SOURCE_LIBRARY_DB, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "library.sqlite")]
+    const sourcePath = fallbackSources.find((candidate) => doesPathExist(candidate))
+    if (!sourcePath) {
+        console.warn(`Nepali Bible source not found. Expected library.sqlite in ${SOURCE_DATA_ROOT}.`)
+        return false
+    }
+
+    const bible = await buildNepaliBibleFromSqlite(sourcePath)
+    if (!bible) return false
+
+    writeFile(biblePath, JSON.stringify([uid(), bible]))
+    return true
 }
 
 async function copyIfPresent(sourcePath: string, destPath: string) {

@@ -10,6 +10,7 @@
     import Loader from "./components/main/Loader.svelte"
     import ProgressPanel from "./components/main/ProgressPanel.svelte"
     import MenuBar from "./components/main/MenuBar.svelte"
+    import NepaliTypingControls from "./components/main/NepaliTypingControls.svelte"
     import Popup from "./components/main/Popup.svelte"
     import ProfileSelector from "./components/main/ProfileSelector.svelte"
     import Recorder from "./components/main/Recorder.svelte"
@@ -82,6 +83,7 @@
             <MainOutput />
         {:else if $loaded}
             <Popup />
+            <NepaliTypingControls />
             <QuickSearch />
             <Toast />
             <StatusIndicator />

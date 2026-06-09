@@ -54,6 +54,7 @@ import MaxLines from "../components/main/popups/MaxLines.svelte"
 import MediaFit from "../components/main/popups/MediaFit.svelte"
 import MetadataDisplay from "../components/main/popups/MetadataDisplay.svelte"
 import NewUpdate from "../components/main/popups/NewUpdate.svelte"
+import NepaliTypingTips from "../components/main/popups/NepaliTypingTips.svelte"
 import NextTimer from "../components/main/popups/NextTimer.svelte"
 import NowPlaying from "../components/main/popups/NowPlaying.svelte"
 import OutputSelector from "../components/main/popups/OutputSelector.svelte"
@@ -143,6 +144,7 @@ export const popups: { [key in Popups]: ComponentType } = {
     reset_all: ResetAll,
     alert: Alert,
     new_update: NewUpdate,
+    nepali_typing_tips: NepaliTypingTips,
     history: History,
     action_history: ActionHistory,
     manage_emitters: Emitters,

@@ -1,13 +1,17 @@
-name: Deploy Website
+name: Deploy Website Manual
 
 on:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "website/**"
-      - ".github/workflows/deploy-website.yml"
   workflow_dispatch:
+
+env:
+  FTP_HOST: ${{ secrets.FTP_HOST }}
+  FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+  FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+  FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_USER: ${{ secrets.SSH_USER }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
 
 permissions:
   contents: read
@@ -34,13 +38,8 @@ jobs:
   deploy_via_ftp:
     name: Deploy Website via FTP
     needs: verify_website
-    if: ${{ secrets.FTP_HOST != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' && secrets.FTP_REMOTE_DIR != '' && secrets.SSH_HOST == '' }}
+    if: ${{ env.FTP_HOST != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' && env.FTP_REMOTE_DIR != '' && env.SSH_HOST == '' }}
     runs-on: ubuntu-latest
-    env:
-      FTP_HOST: ${{ secrets.FTP_HOST }}
-      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-      FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -59,13 +58,8 @@ jobs:
   deploy_via_rsync:
     name: Deploy Website via rsync over SSH
     needs: verify_website
-    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' && secrets.REMOTE_PATH != '' }}
+    if: ${{ env.SSH_HOST != '' && env.SSH_USER != '' && env.SSH_PRIVATE_KEY != '' && env.REMOTE_PATH != '' }}
     runs-on: ubuntu-latest
-    env:
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
@@ -91,7 +85,7 @@ jobs:
   no_deploy_target:
     name: Skip Website Deploy
     needs: verify_website
-    if: ${{ !(secrets.FTP_HOST != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' && secrets.FTP_REMOTE_DIR != '') && !(secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' && secrets.REMOTE_PATH != '') }}
+    if: ${{ !(env.FTP_HOST != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' && env.FTP_REMOTE_DIR != '') && !(env.SSH_HOST != '' && env.SSH_USER != '' && env.SSH_PRIVATE_KEY != '' && env.REMOTE_PATH != '') }}
     runs-on: ubuntu-latest
     steps:
       - name: No deployment secrets configured

@@ -11,7 +11,7 @@
     import { keysToID } from "../helpers/array"
     import { history } from "../helpers/history"
     import Icon from "../helpers/Icon.svelte"
-    import { selectTextOnFocus } from "../helpers/inputActions"
+    import { nepaliTypingInput, selectTextOnFocus } from "../helpers/inputActions"
     import { setOutput } from "../helpers/output"
     import { loadShows } from "../helpers/setShow"
     import { getLayoutRef } from "../helpers/show"
@@ -240,7 +240,7 @@
             {/each}
         </span>
 
-        <input bind:this={searchElem} class:hidden={!searchActive && !searchValue.length} class="search edit drawer_search" type="text" placeholder={translateText("main.search...", $dictionary)} bind:value={searchValue} on:input={search} use:selectTextOnFocus />
+        <input bind:this={searchElem} class:hidden={!searchActive && !searchValue.length} class="search edit drawer_search" type="text" placeholder={translateText("main.search...", $dictionary)} bind:value={searchValue} on:input={search} use:selectTextOnFocus use:nepaliTypingInput />
         {#if !searchActive && !searchValue.length}
             <Button class="search" style="border-bottom: 2px solid var(--secondary);" on:click={() => (searchActive = true)} title={translateText("tabs.search_tip [Ctrl+F]")} bold={false}>
                 <Icon id="search" size={1.4} white right={!$labelsDisabled && !$focusMode} />

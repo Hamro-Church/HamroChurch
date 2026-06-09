@@ -1,6 +1,7 @@
 import { get, writable } from "svelte/store"
 import { uid } from "uid"
 import { fromNepaliDigits, shouldUseNepaliLocale, toNepaliDigits } from "../../../../common/nepali"
+import { romanizeNepali } from "../../../../lib/nepaliTyping"
 import type { Show } from "../../../../types/Show"
 import { ShowObj } from "../../../classes/Show"
 import { createCategory } from "../../../converters/importHelpers"
@@ -43,6 +44,7 @@ export type HymnRecord = {
     sourcePage: string
     title: string
     titleEn: string
+    transliteration: string
     categoryRaw: string
     categoryId: HymnCategoryId
     number: string
@@ -51,8 +53,12 @@ export type HymnRecord = {
     authors: string
     rawDetails: string
     firstLine: string
+    slidesCount: number
+    wordCount: number
+    repeatChorus: boolean
     searchTitle: string
     searchTitleEn: string
+    searchTransliteration: string
     searchLyrics: string
     searchNumber: string
 }
@@ -68,6 +74,8 @@ export const hymnSelectedId = writable("")
 export const hymnSelectedCategories = writable<HymnCategoryId[]>(["all"])
 export const hymnTypingLanguage = writable<HymnTypingLanguage>("ne")
 export const hymnFavoriteIds = writable<string[]>([])
+export const hymnSourcePath = writable("")
+export const hymnSourceDates = writable<{ created: number | null; modified: number | null }>({ created: null, modified: null })
 
 const categoryKeyMap: Record<Exclude<HymnCategoryId, "all">, string> = {
     bhajan: "hymns.bhajan",
@@ -79,6 +87,19 @@ const categoryKeyMap: Record<Exclude<HymnCategoryId, "all">, string> = {
 export function getHymnCategoryLabel(categoryId: HymnCategoryId, _locale = get(language)) {
     if (categoryId === "all") return translateText("hymns.all")
     return translateText(categoryKeyMap[categoryId])
+}
+
+export function getHymnCategoryDisplay(categoryId: HymnCategoryId, locale = get(language)) {
+    const labels: Record<HymnCategoryId, { en: string; ne: string }> = {
+        all: { en: "All Hymns", ne: "सबै भजन" },
+        bhajan: { en: "Bhajan", ne: "भजन" },
+        chorus: { en: "Chorus", ne: "कोरस" },
+        children: { en: "Bal Sangati", ne: "बाल सङ्गित" },
+        new: { en: "New Songs", ne: "नयाँ गीत" }
+    }
+
+    const entry = labels[categoryId]
+    return shouldUseNepaliLocale(locale) ? `${entry.ne} / ${entry.en}` : `${entry.en} / ${entry.ne}`
 }
 
 function escapeRegExp(value: string) {
@@ -209,13 +230,7 @@ export function toggleFavorite(id: string) {
 }
 
 export function toggleCategory(categoryId: HymnCategoryId) {
-    hymnSelectedCategories.update((current) => {
-        if (categoryId === "all") return ["all"]
-
-        let next = current.filter((value) => value !== "all")
-        next = next.includes(categoryId) ? next.filter((value) => value !== categoryId) : [...next, categoryId]
-        return next.length ? next : ["all"]
-    })
+    hymnSelectedCategories.set([categoryId])
 }
 
 export function getCategoryCounts(items: HymnRecord[]) {
@@ -226,9 +241,13 @@ export function getCategoryCounts(items: HymnRecord[]) {
     return counts
 }
 
-export function formatHymnNumber(value: string, typingLanguage = get(hymnTypingLanguage)) {
+export function getActiveCategoryId(categories = get(hymnSelectedCategories)) {
+    return categories[0] || "all"
+}
+
+export function formatHymnNumber(value: string, typingLanguage: HymnTypingLanguage | string = get(language)) {
     if (!value) return "—"
-    return typingLanguage === "ne" ? toNepaliDigits(value) : value
+    return typingLanguage === "ne" || shouldUseNepaliLocale(typingLanguage) ? toNepaliDigits(value) : value
 }
 
 export async function loadHymns() {
@@ -239,6 +258,14 @@ export async function loadHymns() {
         const result = await requestMain(Main.READ_HYMNS)
         const content = result?.content || ""
         if (!content) throw new Error("No hymn data found")
+
+        hymnSourcePath.set(result?.path || "")
+        if (result?.path) {
+            const fileInfo = await requestMain(Main.FILE_INFO, result.path)
+            hymnSourceDates.set({ created: fileInfo?.stat?.birthtimeMs || null, modified: fileInfo?.stat?.mtimeMs || null })
+        } else {
+            hymnSourceDates.set({ created: null, modified: null })
+        }
 
         const parsed = JSON.parse(content) as RawHymnPayload
         const items: HymnRecord[] = []
@@ -254,6 +281,10 @@ export async function loadHymns() {
                 const categoryId = mapCategoryId(song.category || category.name || "")
                 const number = extractSongNumber(song.sourceRefs || [], song.sourceKey || "")
                 const firstLine = verses[0]?.split("\n").map((line) => line.trim()).find(Boolean) || title
+                const transliteration = normalizeWhitespace(titleEn || romanizeNepali(title))
+                const slidesCount = verses.length
+                const wordCount = lyrics.split(/\s+/).filter(Boolean).length
+                const repeatChorus = verses.some((verse) => inferSlideGroup(verse) === "chorus") && verses.length > 1
 
                 items.push({
                     id: song.sourceKey || `hymn-${index}-${uid(4)}`,
@@ -261,6 +292,7 @@ export async function loadHymns() {
                     sourcePage: String(song.sourcePage || ""),
                     title,
                     titleEn,
+                    transliteration,
                     categoryRaw: String(song.category || category.name || ""),
                     categoryId,
                     number,
@@ -269,8 +301,12 @@ export async function loadHymns() {
                     authors: normalizeWhitespace(String(song.authors || "")),
                     rawDetails: normalizeWhitespace(String(song.rawDetails || "")),
                     firstLine,
+                    slidesCount,
+                    wordCount,
+                    repeatChorus,
                     searchTitle: normalizeSearchText(title),
                     searchTitleEn: normalizeSearchText(titleEn),
+                    searchTransliteration: normalizeSearchText(transliteration),
                     searchLyrics: normalizeSearchText(lyrics),
                     searchNumber: normalizeSearchText(number)
                 })
@@ -283,6 +319,8 @@ export async function loadHymns() {
         hymnLoadError.set(error instanceof Error ? error.message : String(error))
         hymnItems.set([])
         hymnSelectedId.set("")
+        hymnSourcePath.set("")
+        hymnSourceDates.set({ created: null, modified: null })
     } finally {
         hymnLoading.set(false)
     }
@@ -295,7 +333,7 @@ export function getFilteredHymns(query: string, selectedCategories: HymnCategory
         if (favoritesOnly && !favoriteIds.includes(item.id)) return false
         if (!selectedCategories.includes("all") && !selectedCategories.includes(item.categoryId)) return false
         if (!normalizedQuery) return true
-        return item.searchTitle.includes(normalizedQuery) || item.searchTitleEn.includes(normalizedQuery) || item.searchNumber.includes(normalizedQuery) || item.searchLyrics.includes(normalizedQuery)
+        return item.searchTitle.includes(normalizedQuery) || item.searchTitleEn.includes(normalizedQuery) || item.searchTransliteration.includes(normalizedQuery) || item.searchNumber.includes(normalizedQuery) || item.searchLyrics.includes(normalizedQuery)
     })
 
     if (!normalizedQuery) return filtered

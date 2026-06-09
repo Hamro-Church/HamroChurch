@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { nepaliTypingInput } from "../helpers/inputActions"
+
     export let id = ""
     export let type = "text"
     export let value: string
@@ -17,7 +19,7 @@
 </script>
 
 <!-- svelte-ignore a11y-autofocus -->
-<input {id} {type} class="edit" {value} {placeholder} {style} class:center class:light {disabled} {autofocus} use:select on:input on:change on:keydown />
+<input {id} {type} class="edit" {value} {placeholder} {style} class:center class:light {disabled} {autofocus} use:select use:nepaliTypingInput on:input on:change on:keydown />
 
 <style>
     input {

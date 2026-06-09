@@ -1,6 +1,8 @@
 <script lang="ts">
     import { createEventDispatcher, onDestroy, onMount } from "svelte"
-    import { hymnSearchValue, hymnTypingLanguage } from "./hymns"
+    import { nepaliTypingInput } from "../../helpers/inputActions"
+    import { hymnSearchValue } from "./hymns"
+    import { nepaliTypingEnabled } from "../../../stores"
     import T from "../../helpers/T.svelte"
     import { translateText } from "../../../utils/language"
 
@@ -11,7 +13,7 @@
     let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
     $: value = $hymnSearchValue
-    $: placeholder = translateText($hymnTypingLanguage === "ne" ? "hymns.search_placeholder_ne" : "hymns.search_placeholder_en")
+    $: placeholder = translateText($nepaliTypingEnabled ? "hymns.search_placeholder_ne" : "hymns.search_placeholder_en")
 
     function emitSearch(nextValue: string) {
         hymnSearchValue.set(nextValue)
@@ -58,6 +60,7 @@
             class="searchInput"
             bind:value
             on:input={onInput}
+            use:nepaliTypingInput
             placeholder={placeholder}
             inputmode="text"
             autocapitalize="off"
