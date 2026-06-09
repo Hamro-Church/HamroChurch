@@ -1,0 +1,98 @@
+name: Deploy Website
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "website/**"
+      - ".github/workflows/deploy-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-deploy
+  cancel-in-progress: true
+
+jobs:
+  verify_website:
+    name: Verify Website Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Verify website path exists
+        run: |
+          test -d project/website
+          test -f project/website/index.html
+
+  deploy_via_ftp:
+    name: Deploy Website via FTP
+    needs: verify_website
+    if: ${{ secrets.FTP_HOST != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' && secrets.FTP_REMOTE_DIR != '' && secrets.SSH_HOST == '' }}
+    runs-on: ubuntu-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Sync website over FTP
+        run: |
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_HOST" -e "set ssl:verify-certificate no; set ftp:passive-mode on; mirror --reverse --delete --verbose project/website/ \"$FTP_REMOTE_DIR\"; bye"
+
+  deploy_via_rsync:
+    name: Deploy Website via rsync over SSH
+    needs: verify_website
+    if: ${{ secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' && secrets.REMOTE_PATH != '' }}
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Install rsync and OpenSSH client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync openssh-client
+
+      - name: Configure SSH access
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Sync website over rsync
+        run: |
+          rsync -az --delete project/website/ "$SSH_USER@$SSH_HOST:$REMOTE_PATH"
+
+  no_deploy_target:
+    name: Skip Website Deploy
+    needs: verify_website
+    if: ${{ !(secrets.FTP_HOST != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' && secrets.FTP_REMOTE_DIR != '') && !(secrets.SSH_HOST != '' && secrets.SSH_USER != '' && secrets.SSH_PRIVATE_KEY != '' && secrets.REMOTE_PATH != '') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: No deployment secrets configured
+        run: echo "No FTP or SSH deployment secrets were configured, so website deployment was skipped."

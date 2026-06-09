@@ -1,148 +1,127 @@
 name: Release
+
 on:
   push:
-    branches:
-      - "main"
+    tags:
+      - "v*"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  publish_windows:
-    name: "Publish Windows"
-    runs-on: windows-latest
+  build:
+    name: Build ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+        platform:
+          - name: Windows
+            os: windows-latest
+            artifact_name: release-windows
+            asset_globs: |
+              project/dist/*.exe
+              project/dist/*.exe.blockmap
+              project/dist/latest*.yml
+          - name: macOS
+            os: macos-latest
+            artifact_name: release-macos
+            asset_globs: |
+              project/dist/*.dmg
+              project/dist/*.zip
+              project/dist/latest*.yml
+              project/dist/*.blockmap
+          - name: Linux
+            os: ubuntu-latest
+            artifact_name: release-linux
+            asset_globs: |
+              project/dist/*.AppImage
+              project/dist/*.deb
+              project/dist/*.rpm
+              project/dist/latest*.yml
+              project/dist/*.blockmap
 
     steps:
-      - name: Check out Git repository
+      - name: Check out Git repository into a no-space path
         uses: actions/checkout@v4
+        with:
+          path: project
+          fetch-depth: 0
 
-      - name: Install Node.js and NPM
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: project/.nvmrc
+          cache: npm
+          cache-dependency-path: project/package-lock.json
 
-      - name: Install dependencies
-        # npm ci is better, but requires package-lock.json file
-        run: npm install
-
-      - name: Build and release app
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        run: npm run release
-
-  publish_linux:
-    name: "Publish Linux x64"
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-
-      - name: Install Node.js and NPM
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install libraries
-        run:
-          |
-          sudo apt-get update
-          sudo apt-get install -y libfontconfig1-dev uuid-dev libltc-dev --fix-missing
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build and release app
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release
-
-  # This needs it's own build
-  # Keep the Electron dist output in place for the release upload step.
-  publish_linux_arm:
-    name: "Publish Linux arm64"
-    runs-on: ubuntu-24.04-arm
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-
-      - name: Install Node.js and NPM
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install libraries
-        run:
-          |
-          sudo apt-get update
-          sudo apt-get install -y libfontconfig1-dev uuid-dev libltc-dev --fix-missing
-
-      # WIDEVINE
-      # - name: Use stock Electron on ARM64
-      #   run: npm run replace-electron
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install FPM
-        run:
-          |
-          sudo apt-get install ruby ruby-dev build-essential
-          sudo gem install --no-document fpm
-
-      # wait because this will only publish if the draft exists
-      - name: Sleep for 1.5 minute
-        run: sleep 90s
-        shell: bash
-
-      - name: Build and release app
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          USE_SYSTEM_FPM: true
-        run: npm run release:arm64
-
-  publish_mac:
-    name: "Publish MacOS"
-    runs-on: macos-latest
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
-
-      - name: Install Node.js and NPM
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      # Change Python version: https://github.com/nodejs/node-gyp/issues/2869
-      - name: Install Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
-      # This probably does not make any difference.
-      - name: Install node-gyp
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfontconfig1-dev uuid-dev libltc-dev ruby ruby-dev build-essential
+          sudo gem install --no-document fpm
+
+      - name: Install node-gyp on macOS
+        if: runner.os == 'macOS'
         run: npm install -g node-gyp
 
       - name: Install dependencies
+        working-directory: project
         run: npm install
 
-      - name: Install dmg-license
-        run: npm i dmg-license
+      - name: Restore the NDI SDK for grandiose on Windows
+        if: runner.os == 'Windows'
+        working-directory: project
+        run: node .\node_modules\grandiose\ndi.js
 
-      # for some reason the build command don't continue after the rollup build
-      - name: Sleep for 3 minutes
-        run: sleep 180
-        shell: bash
+      - name: Install dmg-license on macOS
+        if: runner.os == 'macOS'
+        working-directory: project
+        run: npm install dmg-license
 
-      - name: Build and release app
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLEID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLEIDPASS }}
-          APPLE_TEAM_ID: ${{ secrets.APPLETEAMID }}
-        run: npm run release
+      - name: Build production bundles
+        working-directory: project
+        run: npm run build
+
+      - name: Build release artifacts
+        working-directory: project
+        run: npx electron-builder --config config/building/electron-builder.yaml --publish never
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform.artifact_name }}
+          path: ${{ matrix.platform.asset_globs }}
+          if-no-files-found: error
+          retention-days: 14
+
+  publish_release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create or update GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/**/*
