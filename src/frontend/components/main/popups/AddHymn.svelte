@@ -1,22 +1,29 @@
 <script lang="ts">
+    import { onDestroy } from "svelte"
+    import { get } from "svelte/store"
     import { Main } from "../../../../types/IPC/Main"
     import { requestMain } from "../../../IPC/main"
     import { activePopup } from "../../../stores"
-    import { hymnSelectedId, loadHymns } from "../../drawer/hymns/hymns"
+    import { hymnEditTarget, hymnSelectedId, loadHymns } from "../../drawer/hymns/hymns"
+    import { newToast } from "../../../utils/common"
     import T from "../../helpers/T.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialDropdown from "../../inputs/MaterialDropdown.svelte"
     import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialTextarea from "../../inputs/MaterialTextarea.svelte"
 
-    let title = ""
-    let titleEn = ""
-    let lyrics = ""
-    let number = ""
-    let authors = ""
+    const editTarget = get(hymnEditTarget)
+    const isEditing = !!editTarget
+    const editId = editTarget?.id || ""
+
+    let title = editTarget?.title || ""
+    let titleEn = editTarget?.titleEn || ""
+    let lyrics = editTarget?.lyrics || ""
+    let number = editTarget?.number || ""
+    let authors = editTarget?.authors || ""
     let saving = false
     let errorMessage = ""
-    let categoryId: "bhajan" | "chorus" | "children" | "new" = "bhajan"
+    let categoryId: "bhajan" | "chorus" | "children" | "new" = editTarget && editTarget.categoryId !== "all" ? editTarget.categoryId : "bhajan"
 
     const categoryOptions = [
         { value: "bhajan", label: "Bhajan / भजन" },
@@ -34,6 +41,7 @@
         saving = true
         errorMessage = ""
         const result = await requestMain(Main.SAVE_HYMN, {
+            id: editId || undefined,
             title,
             titleEn,
             lyrics,
@@ -50,8 +58,11 @@
 
         await loadHymns()
         if (result.id) hymnSelectedId.set(result.id)
+        if (isEditing) newToast("hymns.updated")
         activePopup.set(null)
     }
+
+    onDestroy(() => hymnEditTarget.set(null))
 </script>
 
 <div class="form">
@@ -68,7 +79,7 @@
 
     <div class="actions">
         <MaterialButton variant="contained" icon="save" on:click={saveHymn} disabled={saving}>
-            <T id="actions.save" />
+            <T id={isEditing ? "hymns.update" : "actions.save"} />
         </MaterialButton>
     </div>
 </div>

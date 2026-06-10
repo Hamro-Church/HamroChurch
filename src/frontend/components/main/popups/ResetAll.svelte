@@ -38,6 +38,9 @@
             customTriggers: { reset: true }
         } as SaveData)
 
+        // restore the original bundled hymns and Nepali Bible (discards user-added/edited hymns)
+        sendMain(Main.RESET_HYMNS, undefined)
+
         // WIP reset error log / other config files
         // all content in FreeShow/ folder, including Shows/Scripture files are not deleted
         // media cache is not deleted

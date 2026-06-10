@@ -14,6 +14,7 @@ import { ContentProviderRegistry } from "../contentProviders"
 import { ChurchAppsChat } from "../contentProviders/churchApps/ChurchAppsChat"
 import { deleteBackup, getBackups, restoreFiles } from "../data/backup"
 import { getLocalIPs } from "../data/bonjour"
+import { reseedHamroChurchData } from "../data/hamroMigration"
 import { checkIfMediaDownloaded, downloadLessonsMedia, downloadMedia } from "../data/downloadMedia"
 import { importShow } from "../data/import"
 import { save } from "../data/save"
@@ -165,6 +166,7 @@ export const mainResponses: MainResponses = {
     [Main.READ_BIBLES_FOLDER]: () => readBiblesFolder(),
     [Main.READ_HYMNS]: () => readHamroHymns(),
     [Main.SAVE_HYMN]: (data) => saveHamroHymn(data),
+    [Main.RESET_HYMNS]: () => resetHamroData(),
     [Main.FILE_INFO]: (data) => getFileInfo(data),
     [Main.READ_FOLDER]: (data) => readFolderContent(data),
     [Main.READ_FILE]: (data) => ({ content: readFile(data.path) }),
@@ -314,7 +316,7 @@ function readHamroHymns() {
     return { path: null, content: null }
 }
 
-function saveHamroHymn(data: { title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }) {
+function saveHamroHymn(data: { id?: string; title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }) {
     try {
         const dataFolder = createFolder(path.join(getDataFolderRoot(), "data"))
         const targetPath = path.join(dataFolder, "nepali_hymns.json")
@@ -345,15 +347,17 @@ function saveHamroHymn(data: { title: string; titleEn?: string; lyrics: string; 
         }
         if (!Array.isArray(category.songs)) category.songs = []
 
-        const hymnId = `manual-${Date.now()}`
+        const editId = String(data.id || "").trim()
+        const hymnId = editId || `manual-${Date.now()}`
         const normalizedLyrics = String(data.lyrics || "").replace(/\r\n/g, "\n").trim()
         const slides = normalizedLyrics
             .split(/\n\s*\n/)
             .map((entry) => entry.trim())
             .filter(Boolean)
 
-        const sourceRefs = data.number ? [`manual:s${String(data.number).trim()}`] : []
-        category.songs.push({
+        const trimmedNumber = String(data.number || "").trim()
+        const sourceRefs = trimmedNumber ? [`manual:s${trimmedNumber}`] : []
+        const songRecord = {
             sourceKey: hymnId,
             sourcePage: "",
             title: String(data.title || "").trim(),
@@ -365,11 +369,29 @@ function saveHamroHymn(data: { title: string; titleEn?: string; lyrics: string; 
             slides,
             authors: String(data.authors || "").trim(),
             hasLyrics: true,
-            rawDetails: data.number ? `Added manually (${String(data.number).trim()})` : "Added manually"
-        })
+            rawDetails: editId ? (trimmedNumber ? `Edited (${trimmedNumber})` : "Edited manually") : trimmedNumber ? `Added manually (${trimmedNumber})` : "Added manually"
+        }
+
+        // When editing, drop the previous copy from every category before re-adding it.
+        if (editId) {
+            for (const entry of payload.categories) {
+                if (Array.isArray(entry.songs)) entry.songs = entry.songs.filter((song: any) => String(song.sourceKey || "") !== editId)
+            }
+        }
+
+        category.songs.push(songRecord)
 
         writeFile(targetPath, JSON.stringify(payload, null, 2))
         return { success: true, path: targetPath, id: hymnId }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+}
+
+async function resetHamroData() {
+    try {
+        await reseedHamroChurchData()
+        return { success: true }
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
     }

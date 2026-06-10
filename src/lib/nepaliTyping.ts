@@ -398,23 +398,100 @@ export function toUnicode(input: string): string {
     return buffer
 }
 
+const ROMAN_CONSONANTS: Record<string, string> = {
+    "क": "k", "ख": "kh", "ग": "g", "घ": "gh", "ङ": "ng",
+    "च": "ch", "छ": "chh", "ज": "j", "झ": "jh", "ञ": "ny",
+    "ट": "t", "ठ": "th", "ड": "d", "ढ": "dh", "ण": "n",
+    "त": "t", "थ": "th", "द": "d", "ध": "dh", "न": "n",
+    "प": "p", "फ": "ph", "ब": "b", "भ": "bh", "म": "m",
+    "य": "y", "र": "r", "ल": "l", "व": "w", "श": "sh",
+    "ष": "sh", "स": "s", "ह": "h",
+    "क़": "q", "ख़": "kh", "ग़": "g", "ज़": "z", "ड़": "r",
+    "ढ़": "rh", "फ़": "f", "य़": "y"
+}
+
+const ROMAN_INDEPENDENT_VOWELS: Record<string, string> = {
+    "अ": "a", "आ": "aa", "इ": "i", "ई": "ee", "उ": "u", "ऊ": "oo",
+    "ऋ": "ri", "ॠ": "ri", "ए": "e", "ऐ": "ai", "ओ": "o", "औ": "au",
+    "ऍ": "e", "ऑ": "o"
+}
+
+const ROMAN_MATRAS: Record<string, string> = {
+    "ा": "aa", "ि": "i", "ी": "ee", "ु": "u", "ू": "oo", "ृ": "ri",
+    "ॄ": "ri", "े": "e", "ै": "ai", "ो": "o", "ौ": "au", "ॅ": "e", "ॉ": "o"
+}
+
+const ROMAN_DIGITS: Record<string, string> = {
+    "०": "0", "१": "1", "२": "2", "३": "3", "४": "4",
+    "५": "5", "६": "6", "७": "7", "८": "8", "९": "9"
+}
+
+// Schwa-aware Devanagari -> Roman transliteration.
+// Consonants carry an inherent "a" unless followed by a halant (conjunct) or a matra (explicit vowel).
 export function romanizeNepali(text: string): string {
     if (!text) return ""
 
+    const HAL = "्"
+    const chars = Array.from(text)
     let result = ""
-    let index = 0
 
-    while (index < text.length) {
-        const pair = text.slice(index, index + 2)
-        if (devanagariToRoman[pair]) {
-            result += devanagariToRoman[pair]
-            index += 2
+    for (let index = 0; index < chars.length; index++) {
+        const char = chars[index]
+
+        if (ROMAN_CONSONANTS[char] !== undefined) {
+            result += ROMAN_CONSONANTS[char]
+            const next = chars[index + 1]
+
+            if (next === HAL) {
+                index++ // conjunct: drop inherent vowel, skip the halant
+                continue
+            }
+            if (next !== undefined && ROMAN_MATRAS[next] !== undefined) {
+                result += ROMAN_MATRAS[next]
+                index++
+                continue
+            }
+
+            result += "a" // inherent schwa
             continue
         }
 
-        const char = text[index]
-        result += devanagariToRoman[char] || char
-        index += 1
+        if (ROMAN_INDEPENDENT_VOWELS[char] !== undefined) {
+            result += ROMAN_INDEPENDENT_VOWELS[char]
+            continue
+        }
+        if (ROMAN_MATRAS[char] !== undefined) {
+            result += ROMAN_MATRAS[char]
+            continue
+        }
+        if (char === "ं" || char === "ँ") {
+            result += "n"
+            continue
+        }
+        if (char === "ः") {
+            result += "h"
+            continue
+        }
+        if (char === HAL) continue
+        if (ROMAN_DIGITS[char] !== undefined) {
+            result += ROMAN_DIGITS[char]
+            continue
+        }
+        if (char === "।" || char === "॥") {
+            result += " "
+            continue
+        }
+        if (/\s/.test(char)) {
+            result += " "
+            continue
+        }
+
+        const fallback = devanagariToRoman[char]
+        if (fallback) {
+            result += fallback
+            continue
+        }
+        if (char.charCodeAt(0) < 128) result += char
     }
 
     return result.replace(/\s+/g, " ").trim()

@@ -8,11 +8,14 @@
 
     const dispatch = createEventDispatcher<{ input: string }>()
 
-    let value = ""
+    let value = $hymnSearchValue
+    let isFocused = false
     let searchInput: HTMLInputElement | null = null
     let debounceTimeout: ReturnType<typeof setTimeout> | null = null
 
-    $: value = $hymnSearchValue
+    // Only mirror the store into the field when the user is not actively editing,
+    // so typing and deleting are never overwritten mid-edit.
+    $: if (!isFocused && value !== $hymnSearchValue) value = $hymnSearchValue
     $: placeholder = translateText($nepaliTypingEnabled ? "hymns.search_placeholder_ne" : "hymns.search_placeholder_en")
 
     function emitSearch(nextValue: string) {
@@ -60,6 +63,8 @@
             class="searchInput"
             bind:value
             on:input={onInput}
+            on:focus={() => (isFocused = true)}
+            on:blur={() => (isFocused = false)}
             use:nepaliTypingInput
             placeholder={placeholder}
             inputmode="text"
@@ -71,7 +76,6 @@
             <button class="clear" on:click={clearSearch} aria-label="Clear hymn search">×</button>
         {/if}
     </div>
-    <p class="hint"><T id="hymns.typing_help" /></p>
 </div>
 
 <style>
@@ -124,11 +128,5 @@
         font-size: 1.5rem;
         line-height: 1;
         cursor: pointer;
-    }
-
-    .hint {
-        margin: 0;
-        font-size: 0.78rem;
-        opacity: 0.68;
     }
 </style>

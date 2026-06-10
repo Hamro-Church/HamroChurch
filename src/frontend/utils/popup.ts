@@ -87,6 +87,7 @@ export const popups: { [key in Popups]: ComponentType } = {
     initialize: Initialize,
     confirm: Confirm,
     add_hymn: AddHymn,
+    edit_hymn: AddHymn,
     custom_text: CustomText,
     import: Import,
     songbeamer_import: SongbeamerImport,

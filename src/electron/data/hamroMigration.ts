@@ -124,10 +124,35 @@ async function seedBundledChurchData() {
     const sourceRoot = candidateRoots.find((candidate) => doesPathExist(candidate))
     if (!sourceRoot) return false
 
-    await copyIfPresent(path.join(sourceRoot, "library.sqlite"), path.join(dataFolder, "library.sqlite"))
-    await copyIfPresent(path.join(sourceRoot, "library-cache.json"), path.join(dataFolder, "library-cache.json"))
-    await copyIfPresent(path.join(sourceRoot, "nepali_hymns.json"), path.join(dataFolder, "nepali_hymns.json"))
-    await copyIfPresent(path.join(sourceRoot, "nnrv_bible.sql"), path.join(dataFolder, "nnrv_bible.sql"))
+    // Seed only when the file is missing so the user's added/edited hymns are never overwritten on restart.
+    await copyIfMissing(path.join(sourceRoot, "library.sqlite"), path.join(dataFolder, "library.sqlite"))
+    await copyIfMissing(path.join(sourceRoot, "library-cache.json"), path.join(dataFolder, "library-cache.json"))
+    await copyIfMissing(path.join(sourceRoot, "nepali_hymns.json"), path.join(dataFolder, "nepali_hymns.json"))
+    await copyIfMissing(path.join(sourceRoot, "nnrv_bible.sql"), path.join(dataFolder, "nnrv_bible.sql"))
+    return true
+}
+
+// Restore the original bundled hymns and Nepali Bible, discarding any user additions/edits.
+export async function reseedHamroChurchData() {
+    const dataFolder = createFolder(path.join(getDataFolderRoot(), "data"))
+    const candidateRoots = [path.join(process.resourcesPath || "", "bundled-data"), path.join(process.cwd(), "bundled-data")].filter(Boolean)
+    const sourceRoot = candidateRoots.find((candidate) => doesPathExist(candidate))
+
+    if (sourceRoot) {
+        await copyIfPresent(path.join(sourceRoot, "nepali_hymns.json"), path.join(dataFolder, "nepali_hymns.json"))
+        await copyIfPresent(path.join(sourceRoot, "library-cache.json"), path.join(dataFolder, "library-cache.json"))
+        await copyIfPresent(path.join(sourceRoot, "library.sqlite"), path.join(dataFolder, "library.sqlite"))
+        await copyIfPresent(path.join(sourceRoot, "nnrv_bible.sql"), path.join(dataFolder, "nnrv_bible.sql"))
+    }
+
+    // Force the Nepali Bible to be rebuilt from the originals.
+    const biblePath = path.join(getDataFolderPath("scriptures"), `${NEPALI_BIBLE_FILE_NAME}.fsb`)
+    try {
+        if (doesPathExist(biblePath)) fs.rmSync(biblePath, { force: true })
+    } catch (error) {
+        console.error("Failed to remove existing Nepali Bible during reset:", error)
+    }
+    await ensureNepaliBiblePresent()
     return true
 }
 
@@ -136,10 +161,22 @@ async function ensureNepaliBiblePresent() {
     const biblePath = path.join(scripturesFolder, `${NEPALI_BIBLE_FILE_NAME}.fsb`)
     if (doesPathExist(biblePath)) return true
 
+    // 1) Prefer the bundled SQL dump: it needs no native module and works on every fresh install.
+    const sqlSources = [path.join(getDataFolderRoot(), "data", "nnrv_bible.sql"), path.join(process.resourcesPath || "", "bundled-data", "nnrv_bible.sql"), path.join(process.cwd(), "bundled-data", "nnrv_bible.sql")]
+    const sqlSource = sqlSources.find((candidate) => doesPathExist(candidate))
+    if (sqlSource) {
+        const bibleFromSql = buildNepaliBibleFromSqlText(sqlSource)
+        if (bibleFromSql) {
+            writeFile(biblePath, JSON.stringify([uid(), bibleFromSql]))
+            return true
+        }
+    }
+
+    // 2) Fallback to the SQLite database via better-sqlite3.
     const fallbackSources = [path.join(getDataFolderRoot(), "data", "library.sqlite"), SOURCE_LIBRARY_DB, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "library.sqlite")]
     const sourcePath = fallbackSources.find((candidate) => doesPathExist(candidate))
     if (!sourcePath) {
-        console.warn(`Nepali Bible source not found. Expected bundled library.sqlite or ${SOURCE_DATA_ROOT}.`)
+        console.warn(`Nepali Bible source not found. Expected bundled nnrv_bible.sql/library.sqlite or ${SOURCE_DATA_ROOT}.`)
         return false
     }
 
@@ -153,6 +190,11 @@ async function ensureNepaliBiblePresent() {
 async function copyIfPresent(sourcePath: string, destPath: string) {
     if (!doesPathExist(sourcePath) || sourcePath === destPath) return
     await copyFileAsync(sourcePath, destPath)
+}
+
+async function copyIfMissing(sourcePath: string, destPath: string) {
+    if (doesPathExist(destPath)) return
+    await copyIfPresent(sourcePath, destPath)
 }
 
 async function buildNepaliBibleFromSqlite(filePath: string): Promise<Bible | null> {
@@ -250,6 +292,156 @@ async function buildNepaliBibleFromSqlite(filePath: string): Promise<Bible | nul
 
 function normalizeScriptureText(text: string) {
     return text.replace(/\s+/g, " ").trim()
+}
+
+function parseSqlStringTuple(tupleContent: string): string[] {
+    const fields: string[] = []
+    let current = ""
+    let inString = false
+
+    for (let i = 0; i < tupleContent.length; i++) {
+        const char = tupleContent[i]
+        if (inString) {
+            if (char === "'") {
+                if (tupleContent[i + 1] === "'") {
+                    current += "'"
+                    i++
+                    continue
+                }
+                inString = false
+                continue
+            }
+            current += char
+            continue
+        }
+        if (char === "'") {
+            inString = true
+            continue
+        }
+        if (char === ",") {
+            fields.push(current.trim())
+            current = ""
+            continue
+        }
+        current += char
+    }
+
+    fields.push(current.trim())
+    return fields
+}
+
+function extractValuesTuple(statement: string): string | null {
+    const marker = "VALUES ("
+    const markerIndex = statement.indexOf(marker)
+    if (markerIndex < 0) return null
+
+    let depth = 1
+    let inString = false
+    const start = markerIndex + marker.length
+
+    for (let i = start; i < statement.length; i++) {
+        const char = statement[i]
+        if (inString) {
+            if (char === "'") {
+                if (statement[i + 1] === "'") {
+                    i++
+                    continue
+                }
+                inString = false
+            }
+            continue
+        }
+        if (char === "'") {
+            inString = true
+            continue
+        }
+        if (char === "(") {
+            depth++
+            continue
+        }
+        if (char === ")") {
+            depth--
+            if (depth === 0) return statement.slice(start, i)
+        }
+    }
+
+    return null
+}
+
+// Build the Nepali Bible directly from the bundled SQL dump without any native dependency.
+function buildNepaliBibleFromSqlText(filePath: string): Bible | null {
+    try {
+        const content = fs.readFileSync(filePath, { encoding: "utf-8" })
+        const lines = content.split(/\r?\n/)
+
+        const booksById = new Map<number, any>()
+        const chapterMap = new Map<string, any>()
+
+        for (const line of lines) {
+            const trimmed = line.trim()
+
+            if (trimmed.startsWith("INSERT INTO bible_books")) {
+                const tuple = extractValuesTuple(trimmed)
+                if (!tuple) continue
+                const fields = parseSqlStringTuple(tuple)
+                const id = Number.parseInt(fields[0], 10)
+                if (!Number.isFinite(id)) continue
+                booksById.set(id, {
+                    number: id,
+                    name: NEPALI_BOOK_NAMES[id] || String(fields[2] || ""),
+                    abbreviation: String(fields[3] || ""),
+                    chapters: [] as any[]
+                })
+                continue
+            }
+
+            if (trimmed.startsWith("INSERT INTO bible_verses")) {
+                const tuple = extractValuesTuple(trimmed)
+                if (!tuple) continue
+                const fields = parseSqlStringTuple(tuple)
+                const translationCode = String(fields[0] || "")
+                if (translationCode && translationCode !== NEPALI_BIBLE_CODE) continue
+
+                const bookId = Number.parseInt(fields[1], 10)
+                const chapterNumber = Number.parseInt(fields[2], 10)
+                const verseNumber = Number.parseInt(fields[3], 10)
+                if (!Number.isFinite(bookId) || !Number.isFinite(chapterNumber) || !Number.isFinite(verseNumber)) continue
+
+                let book = booksById.get(bookId)
+                if (!book) {
+                    book = { number: bookId, name: NEPALI_BOOK_NAMES[bookId] || "", abbreviation: "", chapters: [] as any[] }
+                    booksById.set(bookId, book)
+                }
+
+                const chapterKey = `${bookId}:${chapterNumber}`
+                let chapter = chapterMap.get(chapterKey)
+                if (!chapter) {
+                    chapter = { number: chapterNumber, verses: [] as any[] }
+                    chapterMap.set(chapterKey, chapter)
+                    book.chapters.push(chapter)
+                }
+
+                chapter.verses.push({ number: verseNumber, text: normalizeScriptureText(String(fields[4] || "")) })
+            }
+        }
+
+        const books = [...booksById.values()].filter((book) => book.chapters.length).sort((left, right) => left.number - right.number)
+        if (!books.length) return null
+
+        return {
+            name: NEPALI_BIBLE_FILE_NAME,
+            metadata: {
+                language: "ne",
+                abbreviation: NEPALI_BIBLE_CODE,
+                copyright: "नेपाली बाइबल (NNRV)",
+                source: "Hamro Church bundled data"
+            },
+            books
+        }
+    } catch (error) {
+        console.error("Failed to build Nepali Bible from SQL text:", error)
+        return null
+    }
 }
 
 async function migrateHymnShows(filePath: string) {

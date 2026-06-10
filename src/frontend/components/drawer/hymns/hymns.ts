@@ -77,6 +77,18 @@ export const hymnFavoriteIds = writable<string[]>([])
 export const hymnSourcePath = writable("")
 export const hymnSourceDates = writable<{ created: number | null; modified: number | null }>({ created: null, modified: null })
 
+export type HymnSortField = "number" | "name"
+export const hymnSort = writable<{ field: HymnSortField | null; direction: "asc" | "desc" }>({ field: null, direction: "asc" })
+export const hymnEditTarget = writable<HymnRecord | null>(null)
+
+export function toggleHymnSort(field: HymnSortField) {
+    hymnSort.update((current) => {
+        if (current.field !== field) return { field, direction: "asc" as const }
+        if (current.direction === "asc") return { field, direction: "desc" as const }
+        return { field: null, direction: "asc" as const }
+    })
+}
+
 const categoryKeyMap: Record<Exclude<HymnCategoryId, "all">, string> = {
     bhajan: "hymns.bhajan",
     chorus: "hymns.chorus",
@@ -156,6 +168,16 @@ function inferSlideGroup(text: string) {
     if (trimmed.startsWith("को.")) return "chorus"
     if (trimmed.includes("कोरस") || trimmed.includes("chorus")) return "chorus"
     return "verse"
+}
+
+function compareHymnNumbers(left: HymnRecord, right: HymnRecord): number {
+    const leftNumber = Number.parseInt(left.searchNumber, 10)
+    const rightNumber = Number.parseInt(right.searchNumber, 10)
+    const leftHas = Number.isFinite(leftNumber)
+    const rightHas = Number.isFinite(rightNumber)
+    if (leftHas && rightHas && leftNumber !== rightNumber) return leftNumber - rightNumber
+    if (leftHas !== rightHas) return leftHas ? -1 : 1
+    return left.title.localeCompare(right.title, "ne")
 }
 
 function scoreHymn(hymn: HymnRecord, query: string): number {
@@ -326,7 +348,7 @@ export async function loadHymns() {
     }
 }
 
-export function getFilteredHymns(query: string, selectedCategories: HymnCategoryId[], favoritesOnly = false, items = get(hymnItems), favoriteIds = get(hymnFavoriteIds)) {
+export function getFilteredHymns(query: string, selectedCategories: HymnCategoryId[], favoritesOnly = false, items = get(hymnItems), favoriteIds = get(hymnFavoriteIds), sort = get(hymnSort)) {
     const normalizedQuery = normalizeSearchText(query)
 
     const filtered = items.filter((item) => {
@@ -335,6 +357,12 @@ export function getFilteredHymns(query: string, selectedCategories: HymnCategory
         if (!normalizedQuery) return true
         return item.searchTitle.includes(normalizedQuery) || item.searchTitleEn.includes(normalizedQuery) || item.searchTransliteration.includes(normalizedQuery) || item.searchNumber.includes(normalizedQuery) || item.searchLyrics.includes(normalizedQuery)
     })
+
+    if (sort?.field) {
+        const direction = sort.direction === "desc" ? -1 : 1
+        const compare = sort.field === "number" ? compareHymnNumbers : (left: HymnRecord, right: HymnRecord) => left.title.localeCompare(right.title, "ne")
+        return filtered.sort((left, right) => compare(left, right) * direction)
+    }
 
     if (!normalizedQuery) return filtered
 

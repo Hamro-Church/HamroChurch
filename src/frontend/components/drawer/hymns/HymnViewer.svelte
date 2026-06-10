@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { language } from "../../../stores"
-    import { copySelectedHymnToClipboard, formatHymnNumber, getHymnCategoryLabel, hymnFavoriteIds, hymnItems, hymnSelectedId, hymnTypingLanguage, insertSelectedHymnIntoSlides, toggleFavorite } from "./hymns"
+    import { activePopup, language } from "../../../stores"
+    import { copySelectedHymnToClipboard, formatHymnNumber, getHymnCategoryLabel, hymnEditTarget, hymnFavoriteIds, hymnItems, hymnSelectedId, hymnTypingLanguage, insertSelectedHymnIntoSlides, toggleFavorite } from "./hymns"
     import T from "../../helpers/T.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import { shouldUseNepaliLocale } from "../../../../common/nepali"
@@ -10,6 +10,12 @@
     function handleFavorite() {
         if (!hymn) return
         toggleFavorite(hymn.id)
+    }
+
+    function editHymn() {
+        if (!hymn) return
+        hymnEditTarget.set(hymn)
+        activePopup.set("edit_hymn")
     }
 
     function getSectionLabel(verse: string, index: number) {
@@ -37,6 +43,9 @@
         <div class="actions">
             <MaterialButton variant="contained" icon="add" on:click={insertSelectedHymnIntoSlides}>
                 <T id="hymns.insert" />
+            </MaterialButton>
+            <MaterialButton variant="outlined" icon="edit" on:click={editHymn} white>
+                <T id="hymns.edit" />
             </MaterialButton>
             <MaterialButton variant="outlined" icon="copy" on:click={copySelectedHymnToClipboard} white>
                 <T id="hymns.copy" />

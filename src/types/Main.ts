@@ -353,6 +353,7 @@ export type Popups =
     | "initialize"
     | "confirm"
     | "add_hymn"
+    | "edit_hymn"
     | "custom_text"
     | "import"
     | "songbeamer_import"

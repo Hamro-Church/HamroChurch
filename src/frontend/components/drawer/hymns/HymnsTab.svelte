@@ -1,14 +1,44 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte"
     import { activeDrawerTab, activePopup, language } from "../../../stores"
+    import { Main } from "../../../../types/IPC/Main"
+    import { requestMain } from "../../../IPC/main"
+    import { newToast } from "../../../utils/common"
     import HymnList from "./HymnList.svelte"
     import HymnSearchBar from "./HymnSearchBar.svelte"
-    import { getActiveCategoryId, getCategoryCounts, getHymnCategoryDisplay, hymnItems, hymnLoadError, hymnLoading, hymnSelectedCategories, initializeHymnsPreferences, insertSelectedHymnIntoSlides, loadHymns } from "./hymns"
+    import { getActiveCategoryId, getCategoryCounts, getHymnCategoryDisplay, hymnEditTarget, hymnItems, hymnLoadError, hymnLoading, hymnSelectedCategories, initializeHymnsPreferences, insertSelectedHymnIntoSlides, loadHymns } from "./hymns"
     import Loader from "../../main/Loader.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import T from "../../helpers/T.svelte"
+
+    let confirmingReset = false
+    let resetting = false
+
     $: counts = getCategoryCounts($hymnItems)
     $: activeCategory = getActiveCategoryId($hymnSelectedCategories)
+
+    function openAddHymn() {
+        confirmingReset = false
+        hymnEditTarget.set(null)
+        activePopup.set("add_hymn")
+    }
+
+    async function resetHymns() {
+        if (!confirmingReset) {
+            confirmingReset = true
+            return
+        }
+        confirmingReset = false
+        resetting = true
+        const result = await requestMain(Main.RESET_HYMNS)
+        resetting = false
+        if (result?.success) {
+            await loadHymns()
+            newToast("hymns.reset_done")
+        } else {
+            newToast("hymns.load_error")
+        }
+    }
 
     function handleKeydown(event: KeyboardEvent) {
         if ($activeDrawerTab !== "hymns") return
@@ -42,9 +72,14 @@
     <HymnSearchBar />
 
     <div class="toolbar">
-        <MaterialButton variant="outlined" icon="add" on:click={() => activePopup.set("add_hymn")}>
-            <T id="hymns.add_new" />
-        </MaterialButton>
+        <div class="toolbarActions">
+            <MaterialButton variant="outlined" icon="add" on:click={openAddHymn}>
+                <T id="hymns.add_new" />
+            </MaterialButton>
+            <MaterialButton variant="outlined" icon="reset" on:click={resetHymns} disabled={resetting} title="hymns.reset_confirm" white red>
+                {#if confirmingReset}<T id="popup.continue" />?{:else}<T id="hymns.reset_original" />{/if}
+            </MaterialButton>
+        </div>
         <div class="activeBadge">{getHymnCategoryDisplay(activeCategory, $language)} <span>{counts[activeCategory]}</span></div>
     </div>
 
@@ -76,6 +111,13 @@
         padding: 0.7rem 1rem;
         border-bottom: 1px solid var(--primary-lighter);
         background: color-mix(in srgb, var(--primary-darker) 94%, var(--secondary) 6%);
+    }
+
+    .toolbarActions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
     .resultsPane {
