@@ -27,6 +27,13 @@ publish:
     releaseType: release
 
 extraResources:
+    - from: bundled-data/
+      to: bundled-data
+      filter:
+          - library.sqlite
+          - library-cache.json
+          - nepali_hymns.json
+          - nnrv_bible.sql
     - from: node_modules/slideshow/
       to: slideshow
       filter:

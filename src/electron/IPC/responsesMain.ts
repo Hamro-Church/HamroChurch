@@ -26,7 +26,7 @@ import { closeServers, startServers, updateServerData } from "../servers"
 import { processAudioData, timecodeStart, timecodeStop, updateTimecodeValue } from "../timecode/timecode"
 import { apiReturnData, emitOSC, startWebSocketAndRest, stopApiListener } from "../utils/api"
 import { closeMain } from "../utils/close"
-import { addToMediaFolder, bundleMediaFiles, getDataFolderPath, getDataFolderRoot, getFileInfo, getMediaCodec, getMediaSyncFolderPath, getMediaTracks, getPaths, getSimularPaths, loadFile, loadShowsAsync, locateMediaFile, openInSystem, readExifData, readFile, readFolder, readFolderContent, selectFiles, selectFilesDialog, selectFolder, setMediaSyncFolderPath, writeFile } from "../utils/files"
+import { addToMediaFolder, bundleMediaFiles, createFolder, getDataFolderPath, getDataFolderRoot, getFileInfo, getMediaCodec, getMediaSyncFolderPath, getMediaTracks, getPaths, getSimularPaths, loadFile, loadShowsAsync, locateMediaFile, openInSystem, readExifData, readFile, readFolder, readFolderContent, selectFiles, selectFilesDialog, selectFolder, setMediaSyncFolderPath, writeFile } from "../utils/files"
 import { getMachineId } from "../utils/helpers"
 import { LyricSearch } from "../utils/LyricSearch"
 import { closeMidiInPorts, getMidiInputs, getMidiOutputs, receiveMidi, sendMidi } from "../utils/midi"
@@ -164,6 +164,7 @@ export const mainResponses: MainResponses = {
     [Main.MEDIA_FOLDER_COPY]: (data) => addToMediaFolder(data.paths),
     [Main.READ_BIBLES_FOLDER]: () => readBiblesFolder(),
     [Main.READ_HYMNS]: () => readHamroHymns(),
+    [Main.SAVE_HYMN]: (data) => saveHamroHymn(data),
     [Main.FILE_INFO]: (data) => getFileInfo(data),
     [Main.READ_FOLDER]: (data) => readFolderContent(data),
     [Main.READ_FILE]: (data) => ({ content: readFile(data.path) }),
@@ -311,6 +312,67 @@ function readHamroHymns() {
     }
 
     return { path: null, content: null }
+}
+
+function saveHamroHymn(data: { title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }) {
+    try {
+        const dataFolder = createFolder(path.join(getDataFolderRoot(), "data"))
+        const targetPath = path.join(dataFolder, "nepali_hymns.json")
+
+        let payload: any = null
+        const existingContent = readFile(targetPath)
+        if (existingContent) {
+            payload = JSON.parse(existingContent)
+        } else {
+            const fallback = readHamroHymns()
+            payload = fallback.content ? JSON.parse(fallback.content) : { version: 2, source: { name: "Hamro Church" }, language: "ne", categories: [] }
+        }
+
+        if (!Array.isArray(payload.categories)) payload.categories = []
+
+        const categoryNameMap = {
+            bhajan: "Bhajan",
+            chorus: "Chorus",
+            children: "Bal Sangati",
+            new: "New Songs"
+        } as const
+
+        const categoryName = categoryNameMap[data.categoryId] || "Bhajan"
+        let category = payload.categories.find((entry: any) => String(entry.name || "").toLowerCase() === categoryName.toLowerCase())
+        if (!category) {
+            category = { name: categoryName, songs: [] }
+            payload.categories.push(category)
+        }
+        if (!Array.isArray(category.songs)) category.songs = []
+
+        const hymnId = `manual-${Date.now()}`
+        const normalizedLyrics = String(data.lyrics || "").replace(/\r\n/g, "\n").trim()
+        const slides = normalizedLyrics
+            .split(/\n\s*\n/)
+            .map((entry) => entry.trim())
+            .filter(Boolean)
+
+        const sourceRefs = data.number ? [`manual:s${String(data.number).trim()}`] : []
+        category.songs.push({
+            sourceKey: hymnId,
+            sourcePage: "",
+            title: String(data.title || "").trim(),
+            titleEn: String(data.titleEn || "").trim() || null,
+            category: categoryName,
+            language: "ne",
+            sourceRefs,
+            lyrics: normalizedLyrics,
+            slides,
+            authors: String(data.authors || "").trim(),
+            hasLyrics: true,
+            rawDetails: data.number ? `Added manually (${String(data.number).trim()})` : "Added manually"
+        })
+
+        writeFile(targetPath, JSON.stringify(payload, null, 2))
+        return { success: true, path: targetPath, id: hymnId }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
 }
 
 // SHOW

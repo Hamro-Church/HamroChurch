@@ -1,18 +1,17 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte"
     import { language } from "../../../stores"
-    import { formatHymnNumber, getFilteredHymns, getHymnCategoryLabel, highlightHymnText, hymnFavoriteIds, hymnItems, hymnSearchValue, hymnSelectedCategories, hymnSelectedId, type HymnRecord } from "./hymns"
+    import { formatHymnNumber, getFilteredHymns, getHymnCategoryLabel, highlightHymnText, hymnFavoriteIds, hymnItems, hymnSearchValue, hymnSelectedCategories, hymnSelectedId, insertSelectedHymnIntoSlides, type HymnRecord } from "./hymns"
     import T from "../../helpers/T.svelte"
-
-    export let favoritesOnly = false
 
     const dispatch = createEventDispatcher<{ select: HymnRecord }>()
 
-    $: filtered = getFilteredHymns($hymnSearchValue, $hymnSelectedCategories, favoritesOnly, $hymnItems, $hymnFavoriteIds)
+    $: filtered = getFilteredHymns($hymnSearchValue, $hymnSelectedCategories, false, $hymnItems, $hymnFavoriteIds)
 
     function selectHymn(hymn: HymnRecord) {
         hymnSelectedId.set(hymn.id)
         dispatch("select", hymn)
+        insertSelectedHymnIntoSlides()
     }
 </script>
 

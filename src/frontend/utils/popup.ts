@@ -1,6 +1,7 @@
 import type { ComponentType } from "svelte"
 import { get } from "svelte/store"
 import type { Popups } from "../../types/Main"
+import AddHymn from "../components/main/popups/AddHymn.svelte"
 import About from "../components/main/popups/About.svelte"
 import Action from "../components/main/popups/Action.svelte"
 import ActionHistory from "../components/main/popups/ActionHistory.svelte"
@@ -85,6 +86,7 @@ import { activePopup, popupData } from "../stores"
 export const popups: { [key in Popups]: ComponentType } = {
     initialize: Initialize,
     confirm: Confirm,
+    add_hymn: AddHymn,
     custom_text: CustomText,
     import: Import,
     songbeamer_import: SongbeamerImport,

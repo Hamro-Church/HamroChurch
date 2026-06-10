@@ -1,14 +1,12 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte"
-    import { activeDrawerTab, language } from "../../../stores"
+    import { activeDrawerTab, activePopup, language } from "../../../stores"
     import HymnList from "./HymnList.svelte"
     import HymnSearchBar from "./HymnSearchBar.svelte"
     import { getActiveCategoryId, getCategoryCounts, getHymnCategoryDisplay, hymnItems, hymnLoadError, hymnLoading, hymnSelectedCategories, initializeHymnsPreferences, insertSelectedHymnIntoSlides, loadHymns } from "./hymns"
     import Loader from "../../main/Loader.svelte"
-    import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
+    import MaterialButton from "../../inputs/MaterialButton.svelte"
     import T from "../../helpers/T.svelte"
-
-    let favoritesOnly = false
     $: counts = getCategoryCounts($hymnItems)
     $: activeCategory = getActiveCategoryId($hymnSelectedCategories)
 
@@ -44,7 +42,9 @@
     <HymnSearchBar />
 
     <div class="toolbar">
-        <MaterialCheckbox label="hymns.favorites_only" checked={favoritesOnly} on:change={(e) => (favoritesOnly = e.detail)} />
+        <MaterialButton variant="outlined" icon="add" on:click={() => activePopup.set("add_hymn")}>
+            <T id="hymns.add_new" />
+        </MaterialButton>
         <div class="activeBadge">{getHymnCategoryDisplay(activeCategory, $language)} <span>{counts[activeCategory]}</span></div>
     </div>
 
@@ -54,7 +54,7 @@
         <div class="state error"><T id="hymns.load_error" />: {$hymnLoadError}</div>
     {:else}
         <div class="resultsPane">
-            <HymnList {favoritesOnly} />
+            <HymnList />
         </div>
     {/if}
 </div>

@@ -22,4 +22,4 @@ finally {
     subst X: /d 2>$null
 }
 
-Write-Host 'Installer created at dist\HamroChurch-1.1.0-x64.exe'
+Write-Host 'Installer created at dist\HamroChurch-1.2.0-x64.exe'

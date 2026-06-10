@@ -2118,7 +2118,7 @@ export async function openActiveInRouteBible() {
     sendMain(Main.URL, routeBibleURL)
 }
 
-// buildRouteBibleUrl("John 3:16") = "https://route.bible/?q=John+3%3A16&utm_source=freeshow&utm_medium=link"
+// buildRouteBibleUrl("John 3:16") = "https://route.bible/?q=John+3%3A16&utm_source=hamrochurch&utm_medium=link"
 function buildRouteBibleUrl(referenceLabel: string, translation = "") {
     if (typeof referenceLabel !== "string") return ""
     referenceLabel = referenceLabel.trim()
@@ -2126,7 +2126,7 @@ function buildRouteBibleUrl(referenceLabel: string, translation = "") {
 
     const url = new URL("https://route.bible/")
     url.searchParams.set("q", referenceLabel)
-    url.searchParams.set("utm_source", "freeshow")
+    url.searchParams.set("utm_source", "hamrochurch")
     url.searchParams.set("utm_medium", "link")
 
     if (translation.trim()) {

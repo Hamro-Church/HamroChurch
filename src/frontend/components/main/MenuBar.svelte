@@ -2,7 +2,7 @@
     import { fade } from "svelte/transition"
     import { Main } from "../../../types/IPC/Main"
     import { sendMain } from "../../IPC/main"
-    import { activeProfile, profiles, saved, topContextActive, windowState } from "../../stores"
+    import { activePopup, activeProfile, profiles, saved, topContextActive, windowState } from "../../stores"
     import { initializeClosing } from "../../utils/save"
     import ContextChild from "../context/ContextChild.svelte"
     import ContextItem from "../context/ContextItem.svelte"
@@ -70,6 +70,10 @@
                 <T id="titlebar.{menu}" />
             </Button>
         {/each}
+
+        <Button on:click={() => activePopup.set("update_manager")}>
+            <T id="about.check_updates" />
+        </Button>
     </div>
 
     {#if $activeProfile && Object.keys($profiles).filter((a) => a !== "admin").length > 1}

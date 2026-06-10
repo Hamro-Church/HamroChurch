@@ -135,6 +135,7 @@ export enum Main {
     MEDIA_FOLDER_COPY = "MEDIA_FOLDER_COPY",
     READ_BIBLES_FOLDER = "READ_BIBLES_FOLDER",
     READ_HYMNS = "READ_HYMNS",
+    SAVE_HYMN = "SAVE_HYMN",
     FILE_INFO = "FILE_INFO",
     READ_FOLDER = "READ_FOLDER",
     READ_FILE = "READ_FILE",
@@ -233,6 +234,7 @@ export interface MainSendPayloads {
     [Main.BUNDLE_MEDIA_FILES]: { openFolder?: boolean }
     [Main.MEDIA_FOLDER_COPY]: { paths: string[] }
     [Main.READ_HYMNS]?: undefined
+    [Main.SAVE_HYMN]: { title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }
     [Main.FILE_INFO]: string
     [Main.READ_FOLDER]: { path: string | string[]; depth?: number; generateThumbnails?: boolean; captureFolderContent?: boolean }
     [Main.READ_FILE]: { path: string }
@@ -334,6 +336,7 @@ export interface MainReturnPayloads {
     [Main.GET_MEDIA_FOLDER_PATH]: string
     [Main.READ_BIBLES_FOLDER]: { path: string; name: string }[]
     [Main.READ_HYMNS]: { path: string | null; content: string | null }
+    [Main.SAVE_HYMN]: { success: boolean; path?: string; id?: string; error?: string }
     [Main.FILE_INFO]: { path: string; stat: Stats; extension: string; folder: boolean } | null
     [Main.READ_FOLDER]: Promise<{ [key: string]: FileFolder }>
     [Main.READ_FILE]: { content: string }

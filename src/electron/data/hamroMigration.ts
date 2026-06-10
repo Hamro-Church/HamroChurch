@@ -86,18 +86,27 @@ const NEPALI_BOOK_NAMES: Record<number, string> = {
 }
 
 export async function runHamroChurchMigration() {
-    if (!doesPathExist(SOURCE_DATA_ROOT) || !doesPathExist(SOURCE_LIBRARY_DB)) return
+    await seedBundledChurchData()
 
     const settings = getStore("SETTINGS")
     await ensureNepaliBiblePresent()
+
+    const dataRoot = path.join(getDataFolderRoot(), "data")
+    const librarySource = resolveExistingFile([path.join(dataRoot, "library.sqlite"), SOURCE_LIBRARY_DB, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "library.sqlite")])
+    const cacheSource = resolveExistingFile([path.join(dataRoot, "library-cache.json"), SOURCE_LIBRARY_CACHE, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "library-cache.json")])
+    const hymnSource = resolveExistingFile([path.join(dataRoot, "nepali_hymns.json"), SOURCE_HYMNS_JSON, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "nepali_hymns.json")])
+
+    if (!librarySource) return
     if ((settings as any)?.hamroMigrationVersion >= MIGRATION_VERSION) return
 
     const importedRoot = createFolder(path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME))
 
-    await copyIfPresent(SOURCE_LIBRARY_DB, path.join(importedRoot, "library.sqlite"))
-    await copyIfPresent(SOURCE_LIBRARY_CACHE, path.join(importedRoot, "library-cache.json"))
-    await copyIfPresent(SOURCE_HYMNS_JSON, path.join(importedRoot, "nepali_hymns.json"))
-    await migrateHymnShows(SOURCE_HYMNS_JSON)
+    await copyIfPresent(librarySource, path.join(importedRoot, "library.sqlite"))
+    if (cacheSource) await copyIfPresent(cacheSource, path.join(importedRoot, "library-cache.json"))
+    if (hymnSource) {
+        await copyIfPresent(hymnSource, path.join(importedRoot, "nepali_hymns.json"))
+        await migrateHymnShows(hymnSource)
+    }
 
     await ensureNepaliBiblePresent()
 
@@ -105,15 +114,32 @@ export async function runHamroChurchMigration() {
     if (_store.SETTINGS) await safeStoreSet(_store.SETTINGS, nextSettings, "SETTINGS")
 }
 
+function resolveExistingFile(candidates: string[]) {
+    return candidates.find((candidate) => doesPathExist(candidate)) || ""
+}
+
+async function seedBundledChurchData() {
+    const dataFolder = createFolder(path.join(getDataFolderRoot(), "data"))
+    const candidateRoots = [path.join(process.resourcesPath || "", "bundled-data"), path.join(process.cwd(), "bundled-data")].filter(Boolean)
+    const sourceRoot = candidateRoots.find((candidate) => doesPathExist(candidate))
+    if (!sourceRoot) return false
+
+    await copyIfPresent(path.join(sourceRoot, "library.sqlite"), path.join(dataFolder, "library.sqlite"))
+    await copyIfPresent(path.join(sourceRoot, "library-cache.json"), path.join(dataFolder, "library-cache.json"))
+    await copyIfPresent(path.join(sourceRoot, "nepali_hymns.json"), path.join(dataFolder, "nepali_hymns.json"))
+    await copyIfPresent(path.join(sourceRoot, "nnrv_bible.sql"), path.join(dataFolder, "nnrv_bible.sql"))
+    return true
+}
+
 async function ensureNepaliBiblePresent() {
     const scripturesFolder = getDataFolderPath("scriptures")
     const biblePath = path.join(scripturesFolder, `${NEPALI_BIBLE_FILE_NAME}.fsb`)
     if (doesPathExist(biblePath)) return true
 
-    const fallbackSources = [SOURCE_LIBRARY_DB, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "library.sqlite")]
+    const fallbackSources = [path.join(getDataFolderRoot(), "data", "library.sqlite"), SOURCE_LIBRARY_DB, path.join(getDataFolderRoot(), IMPORT_FOLDER_NAME, "library.sqlite")]
     const sourcePath = fallbackSources.find((candidate) => doesPathExist(candidate))
     if (!sourcePath) {
-        console.warn(`Nepali Bible source not found. Expected library.sqlite in ${SOURCE_DATA_ROOT}.`)
+        console.warn(`Nepali Bible source not found. Expected bundled library.sqlite or ${SOURCE_DATA_ROOT}.`)
         return false
     }
 

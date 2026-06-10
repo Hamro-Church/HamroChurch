@@ -42,6 +42,8 @@
 <hr />
 
 <div class="main">
+    <p class="description"><T id="about.description" /></p>
+
     <div class="text">
         <div>
             • Website
@@ -81,7 +83,7 @@
         </div>
     </div>
 
-    <div style="text-align: center;font-size: 0.7em;opacity: 0.5;margin-top: 12px;"><T id="about.made" /> Hamro Church</div>
+    <div style="text-align: center;font-size: 0.7em;opacity: 0.5;margin-top: 12px;"><T id="about.made" /></div>
 </div>
 
 <style>
@@ -89,6 +91,14 @@
         display: flex;
         flex-direction: column;
         gap: 5px;
+    }
+
+    .description {
+        text-align: center;
+        line-height: 1.6;
+        opacity: 0.88;
+        margin: 0 auto 6px;
+        max-width: 760px;
     }
 
     .logo {
