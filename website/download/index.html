@@ -4,9 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Download Hamro Church</title>
-    <meta name="description" content="Download Hamro Church for Windows, macOS, and Linux. Use the website links or the GitHub releases page for published installers." />
+    <meta name="description" content="Download the latest Hamro Church installers from GitHub Releases. The page auto-resolves the newest Windows release and links to the latest release assets." />
     <link rel="stylesheet" href="/assets/css/style.css" />
     <script defer src="/assets/js/main.js"></script>
+    <script defer src="/assets/js/releases.js"></script>
 </head>
 <body data-lang="en" data-nav-open="false">
     <header class="site-header">
@@ -24,8 +25,8 @@
                     <li><a href="/" data-nav><span class="lang-en">Home</span><span class="lang-ne">गृहपृष्ठ</span></a></li>
                     <li><a href="/download/" data-nav><span class="lang-en">Download</span><span class="lang-ne">डाउनलोड</span></a></li>
                     <li><a href="/docs/" data-nav><span class="lang-en">Docs</span><span class="lang-ne">दस्तावेज</span></a></li>
+                    <li><a href="/typing-tips/" data-nav><span class="lang-en">Typing Tips</span><span class="lang-ne">टाइपिङ सुझाव</span></a></li>
                     <li><a href="/faq/" data-nav><span class="lang-en">FAQ</span><span class="lang-ne">प्रश्नोत्तर</span></a></li>
-                    <li><a href="https://github.com/Hamro-Church/HamroChurch" target="_blank" rel="noreferrer"><span class="lang-en">GitHub</span><span class="lang-ne">गिटहब</span></a></li>
                 </ul>
             </nav>
             <div class="header-actions">
@@ -43,25 +44,26 @@
                 <div class="page-hero-copy">
                     <p class="eyebrow"><span class="lang-en">Download</span><span class="lang-ne">डाउनलोड</span></p>
                     <h1>
-                        <span class="lang-en">Choose the installer that matches your system.</span>
-                        <span class="lang-ne">तपाईंको प्रणालीसँग मिल्ने इन्स्टलर छान्नुहोस्।</span>
+                        <span class="lang-en">Always point users to the latest Hamro Church release.</span>
+                        <span class="lang-ne">सधैं Hamro Church को नवीनतम रिलिजतर्फ प्रयोगकर्तालाई पठाउनुहोस्।</span>
                     </h1>
                     <p>
-                        <span class="lang-en">The Windows installer is published now. macOS and Linux downloads will appear on the GitHub release page as the hosted platform builds finish uploading.</span>
-                        <span class="lang-ne">Windows इन्स्टलर अहिले उपलब्ध छ। macOS र Linux डाउनलोडहरू होस्टेड प्लेटफर्म बिल्ड अपलोड भएपछि GitHub release पृष्ठमा देखिनेछन्।</span>
+                        <span class="lang-en">This page fetches the latest GitHub Release and updates the Windows installer link automatically. If a platform-specific asset is still uploading, the release page remains the safe fallback.</span>
+                        <span class="lang-ne">यो पृष्ठले नवीनतम GitHub Release पढेर Windows installer लिंक आफैं अद्यावधिक गर्छ। कुनै फाइल अझै अपलोड भइरहेमा release पृष्ठ नै सुरक्षित विकल्प हो।</span>
                     </p>
                     <div class="inline-badges">
-                        <span class="pill">.exe</span>
-                        <span class="pill">.dmg</span>
-                        <span class="pill">.AppImage / .deb</span>
+                        <span class="pill">Windows</span>
+                        <span class="pill">macOS</span>
+                        <span class="pill">Linux</span>
                     </div>
                 </div>
+
                 <div class="hero-panel">
-                    <small>Release workflow</small>
-                    <h3>Release assets are published through GitHub Releases</h3>
-                    <p>Use the direct Windows installer below today, and use the release page for the remaining platform assets while the GitHub Actions packaging workflow completes.</p>
+                    <small>Latest release</small>
+                    <h3>Current public version: <span data-release-version>latest</span></h3>
+                    <p data-release-summary>Latest stable release details will load from GitHub automatically.</p>
                     <div class="link-row">
-                        <a class="button secondary" href="https://github.com/Hamro-Church/HamroChurch/releases/tag/v1.2.0" target="_blank" rel="noreferrer">Open GitHub Release</a>
+                        <a class="button secondary" href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer" data-release-page>Open GitHub Release</a>
                         <a class="button ghost" href="/docs/getting-started/">Install Guide</a>
                     </div>
                 </div>
@@ -74,24 +76,24 @@
                     <small>Windows</small>
                     <h3>Windows Installer</h3>
                     <p>Recommended for most projection and presentation computers running Windows 10 or Windows 11.</p>
-                    <a class="button primary" href="https://github.com/Hamro-Church/HamroChurch/releases/download/v1.2.0/HamroChurch-1.2.0-x64.exe">Download .exe Installer</a>
-                    <p class="placeholder-note">Published asset: <strong>HamroChurch-1.2.0-x64.exe</strong></p>
+                    <a class="button primary" href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer" data-release-windows>Download latest Windows installer</a>
+                    <p class="placeholder-note">The button above updates to the newest published `.exe` asset automatically.</p>
                 </article>
 
                 <article class="download-card">
                     <small>macOS</small>
-                    <h3>macOS Installer</h3>
-                    <p>Use the GitHub release page while the hosted macOS DMG build is still publishing. This link stays live and correct even before the final DMG asset finishes uploading.</p>
-                    <a class="button primary" href="https://github.com/Hamro-Church/HamroChurch/releases/tag/v1.2.0" target="_blank" rel="noreferrer">Open macOS Release Assets</a>
-                    <p class="placeholder-note">Direct DMG links can be added here once the hosted macOS build completes.</p>
+                    <h3>macOS Assets</h3>
+                    <p>Use the latest release page to download the current DMG or ZIP asset when macOS builds are published.</p>
+                    <a class="button primary" href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer" data-release-macos>Open latest macOS assets</a>
+                    <p class="placeholder-note">If a direct DMG is available, the button will switch to that asset automatically.</p>
                 </article>
 
                 <article class="download-card">
                     <small>Linux</small>
-                    <h3>Linux Package</h3>
-                    <p>Use the GitHub release page while the hosted Linux AppImage and package assets are still publishing from the release workflow.</p>
-                    <a class="button primary" href="https://github.com/Hamro-Church/HamroChurch/releases/tag/v1.2.0" target="_blank" rel="noreferrer">Open Linux Release Assets</a>
-                    <p class="placeholder-note">Direct AppImage or `.deb` links can be added here once the hosted Linux builds complete.</p>
+                    <h3>Linux Assets</h3>
+                    <p>Use the latest release page for AppImage, `.deb`, or other Linux packages published by the release workflow.</p>
+                    <a class="button primary" href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer" data-release-linux>Open latest Linux assets</a>
+                    <p class="placeholder-note">If a direct AppImage or `.deb` asset is available, the button will point to it automatically.</p>
                 </article>
             </div>
         </section>
@@ -99,29 +101,38 @@
         <section class="section">
             <div class="container support-grid">
                 <article class="support-card">
-                    <small>Alternative Source</small>
-                    <h3>Use GitHub Releases</h3>
-                    <p>If a platform-specific asset is still uploading, use the Hamro Church release page as the canonical source for the latest published installers.</p>
+                    <small>Canonical Source</small>
+                    <h3>GitHub Releases</h3>
+                    <p>GitHub Releases is the source of truth for published installers, release notes, and attached build artifacts.</p>
                     <div class="link-row">
-                        <a class="button secondary" href="https://github.com/Hamro-Church/HamroChurch/releases/tag/v1.2.0" target="_blank" rel="noreferrer">Open v1.2.0 Release</a>
+                        <a class="button secondary" href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer" data-release-page>Open latest release</a>
                     </div>
                 </article>
                 <article class="support-card">
                     <small>Before You Install</small>
                     <h3>Prepare your service machine</h3>
-                    <p>Verify display outputs, copy any local Bible or hymn libraries you need, and keep your media folder on a fast local disk.</p>
+                    <p>Make sure display outputs work, then verify that the fresh installer includes the Nepali Bible and bundled hymn library on first launch.</p>
                     <div class="link-row">
                         <a class="button ghost" href="/docs/getting-started/">Read setup guide</a>
                     </div>
                 </article>
                 <article class="support-card">
-                    <small>After You Install</small>
-                    <h3>Finish first-launch setup</h3>
-                    <p>Choose English or Nepali, confirm your content location, and test stage or remote outputs before the service starts.</p>
+                    <small>Operator Training</small>
+                    <h3>Teach volunteers quickly</h3>
+                    <p>Share the typing guide and the hymns documentation before rehearsal so search, transliteration, and edits stay consistent.</p>
                     <div class="link-row">
-                        <a class="button ghost" href="/faq/#installation">Read common install answers</a>
+                        <a class="button ghost" href="/typing-tips/">Open typing tips</a>
                     </div>
                 </article>
+            </div>
+
+            <div class="container" style="margin-top: 1.5rem;">
+                <noscript>
+                    <div class="callout">
+                        JavaScript is disabled, so this page cannot auto-detect the latest GitHub Release. Use the release page directly:
+                        <a href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer">https://github.com/Hamro-Church/HamroChurch/releases/latest</a>
+                    </div>
+                </noscript>
             </div>
         </section>
     </main>
@@ -129,32 +140,32 @@
     <footer class="footer">
         <div class="container footer-grid">
             <div class="footer-brand">
-                <h2>Hamro Church</h2>
-                <p>Download the bilingual desktop app, then use the docs and FAQ pages to get your first service ready quickly.</p>
+                <h2>Hamro Church Downloads</h2>
+                <p>Use the latest GitHub Release for installers and release notes, then use the docs hub for setup and operator training.</p>
                 <p class="footer-meta">&copy; <span data-year></span> Hamro Church</p>
             </div>
             <div class="footer-column">
                 <h3>Product</h3>
                 <ul>
                     <li><a href="/download/">Download</a></li>
-                    <li><a href="/docs/">Documentation</a></li>
-                    <li><a href="/faq/">FAQ</a></li>
+                    <li><a href="/docs/getting-started/">Install Guide</a></li>
+                    <li><a href="/typing-tips/">Typing Tips</a></li>
                 </ul>
             </div>
             <div class="footer-column">
                 <h3>Resources</h3>
                 <ul>
-                    <li><a href="/bible-resources/">Bible Resources</a></li>
-                    <li><a href="/translations/">Translations</a></li>
-                    <li><a href="/support/">Support</a></li>
+                    <li><a href="/docs/bible/">Bible Guide</a></li>
+                    <li><a href="/docs/hymns/">Hymns Guide</a></li>
+                    <li><a href="/faq/">FAQ</a></li>
                 </ul>
             </div>
             <div class="footer-column">
                 <h3>Community</h3>
                 <ul>
+                    <li><a href="https://github.com/Hamro-Church/HamroChurch/releases/latest" target="_blank" rel="noreferrer">Latest Release</a></li>
                     <li><a href="https://github.com/Hamro-Church/HamroChurch" target="_blank" rel="noreferrer">GitHub Repository</a></li>
                     <li><a href="https://github.com/Hamro-Church/HamroChurch/issues" target="_blank" rel="noreferrer">Report an Issue</a></li>
-                    <li><a href="https://github.com/Hamro-Church/HamroChurch/releases/tag/v1.2.0" target="_blank" rel="noreferrer">Release Notes</a></li>
                 </ul>
             </div>
         </div>

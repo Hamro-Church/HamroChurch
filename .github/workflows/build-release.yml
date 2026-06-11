@@ -1,0 +1,110 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build_windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: repo
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: repo/.nvmrc
+          cache: npm
+          cache-dependency-path: repo/package-lock.json
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Map repository to a no-space drive
+        shell: pwsh
+        run: |
+          subst R: "$env:GITHUB_WORKSPACE\repo"
+          if (-not (Test-Path "R:\package.json")) {
+            throw "Failed to map the repository to R:."
+          }
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          Set-Location R:\
+          npm install
+
+      - name: Restore the NDI SDK for grandiose
+        shell: pwsh
+        run: |
+          Set-Location R:\
+          node .\node_modules\grandiose\ndi.js
+
+      - name: Build production bundles
+        shell: pwsh
+        run: |
+          Set-Location R:\
+          npm run build
+
+      - name: Build installer artifacts
+        shell: pwsh
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          Set-Location R:\
+          npx electron-builder --config config/building/electron-builder.yaml --publish never
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers-${{ github.ref_name }}
+          path: |
+            repo/dist/*.exe
+            repo/dist/*.exe.blockmap
+            repo/dist/latest*.yml
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Remove drive mapping
+        if: always()
+        shell: pwsh
+        run: |
+          subst R: /D
+
+  publish_release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: build_windows
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/**/*

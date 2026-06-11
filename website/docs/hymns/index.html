@@ -4,16 +4,109 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hamro Church Docs | Hymns</title>
-    <meta name="description" content="Browse, prepare, and present Nepali hymn content in Hamro Church, including bilingual song workflows and hymn insertion tips." />
+    <meta name="description" content="Browse, edit, sort, and reset Nepali hymn content in Hamro Church, including number search and persistent hymn saving." />
     <link rel="stylesheet" href="/assets/css/style.css" />
     <script defer src="/assets/js/main.js"></script>
 </head>
 <body data-lang="en" data-nav-open="false">
-    <header class="site-header"><div class="container header-inner"><a class="brand" href="/"><img class="brand-mark" src="/assets/images/logo.svg" alt="Hamro Church logo" /><div class="brand-copy"><strong>Hamro Church</strong><span>Hymns guide</span></div></a><button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">Menu</button><nav class="site-nav" id="site-nav" data-site-nav><ul><li><a href="/" data-nav>Home</a></li><li><a href="/download/" data-nav>Download</a></li><li><a href="/docs/" data-nav>Docs</a></li><li><a href="/faq/" data-nav>FAQ</a></li></ul></nav><div class="header-actions"><div class="lang-switch" role="group" aria-label="Language switcher"><button type="button" class="is-active" data-language="en" aria-pressed="true">EN</button><button type="button" data-language="ne" aria-pressed="false">ने</button></div></div></div></header>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="/"><img class="brand-mark" src="/assets/images/logo.svg" alt="Hamro Church logo" /><div class="brand-copy"><strong>Hamro Church</strong><span>Hymns guide</span></div></a>
+            <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">Menu</button>
+            <nav class="site-nav" id="site-nav" data-site-nav>
+                <ul>
+                    <li><a href="/" data-nav>Home</a></li>
+                    <li><a href="/download/" data-nav>Download</a></li>
+                    <li><a href="/docs/" data-nav>Docs</a></li>
+                    <li><a href="/typing-tips/" data-nav>Typing Tips</a></li>
+                    <li><a href="/faq/" data-nav>FAQ</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions"><div class="lang-switch" role="group" aria-label="Language switcher"><button type="button" class="is-active" data-language="en" aria-pressed="true">EN</button><button type="button" data-language="ne" aria-pressed="false">ने</button></div></div>
+        </div>
+    </header>
+
     <main>
-        <section class="page-hero"><div class="container page-hero-grid"><div class="page-hero-copy"><p class="eyebrow">Hymns</p><h1>Browse, organize, and insert hymns with less manual cleanup.</h1><p class="doc-lead">Hamro Church is designed for churches that need reliable Nepali hymn workflows while still supporting English or bilingual presentation when required.</p></div><div class="hero-panel"><small>Use case</small><h3>Prepare worship songs before rehearsal</h3><p>Keep hymn content clean, categorized, and easy to search so the worship team does not fight the library during service prep.</p></div></div></section>
-        <section class="section"><div class="container doc-layout"><aside class="toc-card"><nav><h3>On this page</h3><ul><li><a href="#browse-library">Browse the library</a></li><li><a href="#insert-into-show">Insert into a show</a></li><li><a href="#layout-overview">Hymns layout</a></li><li><a href="#custom-hymns">Add new hymns</a></li></ul></nav><nav><h3>Related</h3><ul><li><a href="/docs/interface/">Interface</a></li><li><a href="/docs/nepali-typing/">Nepali Typing</a></li><li><a href="/docs/adding-hymns/">Adding Hymns</a></li></ul></nav></aside><article class="prose"><section id="browse-library"><h2>Browse the library</h2><p>The new Hymns panel uses fixed category tabs, a numbered list, and a transliteration column so operators can scan Nepali titles quickly without losing English searchability.</p><ul><li>Filter by All Hymns, Bhajan, Chorus, Bal Sangati, or New Songs.</li><li>Search by Nepali title, transliteration, hymn number, or lyrics text.</li><li>Clicking a hymn now inserts it directly into the current project flow while also updating the right-side preview panel.</li></ul></section><section id="insert-into-show"><h2>Insert into a show</h2><p>When a hymn is selected, Hamro Church builds verse and chorus slides automatically so the worship team does not need to re-split the text manually.</p></section><section id="layout-overview"><h2>Hymns layout</h2><p>The hymns drawer mirrors the production-friendly layout requested by churches: category tabs on the left, a searchable hymn table in the center, and metadata plus lyrics on the right.</p><div class="callout"><strong>Operator tip:</strong> Use the transliteration column when volunteers know the hymn phonetically but not the exact Devanagari spelling.</div></section><section id="custom-hymns"><h2>Add new hymns</h2><p>Use the <strong>Add New Hymn</strong> button in the hymns toolbar to create a new hymn with title, transliteration, lyrics, category, and hymn number. New hymns are saved into the persistent Nepali hymn JSON file in the church data folder and remain available after restart.</p></section></article></div></section>
+        <section class="page-hero">
+            <div class="container page-hero-grid">
+                <div class="page-hero-copy">
+                    <p class="eyebrow">Hymns</p>
+                    <h1>Browse, edit, and keep hymns saved for future services.</h1>
+                    <p class="doc-lead">The hymns drawer now supports number search, sort buttons, transliteration, editing existing hymns, and a reset option that restores the original bundled library.</p>
+                </div>
+                <div class="hero-panel">
+                    <small>Best for</small>
+                    <h3>Weekly worship preparation</h3>
+                    <p>Use this guide when you need a fast song list, accurate Nepali titles, and confidence that changes will still be there after restart.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container doc-layout">
+                <aside class="toc-card">
+                    <nav>
+                        <h3>On this page</h3>
+                        <ul>
+                            <li><a href="#browse-library">Browse the library</a></li>
+                            <li><a href="#edit-and-save">Edit and save hymns</a></li>
+                            <li><a href="#add-new">Add new hymns</a></li>
+                            <li><a href="#reset-library">Reset to original</a></li>
+                        </ul>
+                    </nav>
+                    <nav>
+                        <h3>Related</h3>
+                        <ul>
+                            <li><a href="/typing-tips/">Typing Tips</a></li>
+                            <li><a href="/docs/adding-hymns/">Adding Hymns</a></li>
+                            <li><a href="/docs/bible/">Bible</a></li>
+                        </ul>
+                    </nav>
+                </aside>
+
+                <article class="prose">
+                    <section id="browse-library">
+                        <h2>Browse the library</h2>
+                        <p>The current hymns table is designed for live church use: a compact list, a transliteration column, and sort buttons for both hymn number and hymn name.</p>
+                        <ul>
+                            <li>Search by Nepali title, transliteration, lyrics text, or hymn number.</li>
+                            <li>Use the No. and Name headers to sort ascending or descending.</li>
+                            <li>The list is denser than before, so more hymns stay visible during rehearsal.</li>
+                        </ul>
+                    </section>
+
+                    <section id="edit-and-save">
+                        <h2>Edit and save hymns</h2>
+                        <p>Select a hymn, then use the <strong>Edit</strong> button in the right-side viewer. The form opens with the hymn pre-filled so you can correct lyrics, update transliteration, or fix the hymn number.</p>
+                        <div class="callout"><strong>Important:</strong> hymn edits are now written to the persistent local hymn file and are no longer overwritten on the next app launch.</div>
+                    </section>
+
+                    <section id="add-new">
+                        <h2>Add new hymns</h2>
+                        <p>Use <strong>Add New Hymn</strong> to create a local hymn record for songs that are not in the original library. New hymns use the same persistent storage as edited hymns, so they remain available in future sessions.</p>
+                        <ul>
+                            <li>Store the Nepali title and lyrics at minimum.</li>
+                            <li>Add transliteration and hymn number so volunteers can search faster.</li>
+                            <li>Use the transliteration field for phonetic lookup when the exact spelling is not known.</li>
+                        </ul>
+                    </section>
+
+                    <section id="reset-library">
+                        <h2>Reset to original</h2>
+                        <p>If the local hymn library becomes messy, use the hymns toolbar <strong>Reset to original</strong> action. This discards user edits and restores the bundled Nepali hymn library and Nepali Bible that ship with the installer.</p>
+                    </section>
+                </article>
+            </div>
+        </section>
     </main>
-    <footer class="footer"><div class="container footer-grid"><div class="footer-brand"><h2>Hymns Guide</h2><p>Keep your song library consistent so worship prep stays fast even when volunteers rotate.</p><p class="footer-meta">&copy; <span data-year></span> Hamro Church</p></div><div class="footer-column"><h3>Related</h3><ul><li><a href="/docs/interface/">Interface</a></li><li><a href="/docs/bible/">Bible</a></li></ul></div><div class="footer-column"><h3>More</h3><ul><li><a href="/faq/#custom-hymns">Custom Hymns FAQ</a></li><li><a href="/download/">Download</a></li></ul></div><div class="footer-column"><h3>Community</h3><ul><li><a href="https://github.com/Hamro-Church/HamroChurch/issues" target="_blank" rel="noreferrer">Report an Issue</a></li></ul></div></div></footer>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand"><h2>Hymns Guide</h2><p>Keep the worship library accurate, searchable, and safe to edit between services.</p><p class="footer-meta">&copy; <span data-year></span> Hamro Church</p></div>
+            <div class="footer-column"><h3>Related</h3><ul><li><a href="/typing-tips/">Typing Tips</a></li><li><a href="/docs/bible/">Bible</a></li></ul></div>
+            <div class="footer-column"><h3>More</h3><ul><li><a href="/docs/adding-hymns/">Adding Hymns</a></li><li><a href="/download/">Download</a></li></ul></div>
+            <div class="footer-column"><h3>Community</h3><ul><li><a href="https://github.com/Hamro-Church/HamroChurch/issues" target="_blank" rel="noreferrer">Report an Issue</a></li></ul></div>
+        </div>
+    </footer>
 </body>
 </html>
