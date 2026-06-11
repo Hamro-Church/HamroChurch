@@ -36,44 +36,36 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Map repository to a no-space drive
-        shell: pwsh
-        run: |
-          subst R: "$env:GITHUB_WORKSPACE\repo"
-          if (-not (Test-Path "R:\package.json")) {
-            throw "Failed to map the repository to R:."
-          }
-
       - name: Install dependencies
         shell: pwsh
+        working-directory: repo
         run: |
-          Set-Location R:\
           npm ci --ignore-scripts
 
       - name: Restore the NDI SDK for grandiose
         shell: pwsh
+        working-directory: repo
         run: |
-          Set-Location R:\
           node .\node_modules\grandiose\ndi.js
 
       - name: Install Electron native dependencies
         shell: pwsh
+        working-directory: repo
         run: |
-          Set-Location R:\
           npx electron-builder install-app-deps
 
       - name: Build production bundles
         shell: pwsh
+        working-directory: repo
         run: |
-          Set-Location R:\
           npm run build
 
       - name: Build installer artifacts
         shell: pwsh
+        working-directory: repo
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: |
-          Set-Location R:\
           npx electron-builder --config config/building/electron-builder.yaml --publish never
 
       - name: Upload release artifacts
@@ -86,12 +78,6 @@ jobs:
             repo/dist/latest*.yml
           if-no-files-found: error
           retention-days: 14
-
-      - name: Remove drive mapping
-        if: always()
-        shell: pwsh
-        run: |
-          subst R: /D
 
   publish_release:
     name: Publish GitHub Release
