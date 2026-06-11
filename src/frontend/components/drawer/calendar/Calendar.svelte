@@ -15,7 +15,7 @@
     // WIP search for events
     $: console.log(searchValue)
 
-    $: sundayFirstDay = $special.firstDayOfWeek === "7"
+    $: sundayFirstDay = ($special.firstDayOfWeek || "7") === "7"
 
     let today = new Date()
     $: current = new Date(today.getFullYear(), today.getMonth())

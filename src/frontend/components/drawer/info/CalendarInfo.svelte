@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { activeDays, calendarAddShow, drawerTabsData, events, language, nextActionEventPaused, nextActionEventStart, shows, special } from "../../../stores"
+    import { activeDays, calendarAddShow, drawerTabsData, events, nextActionEventPaused, nextActionEventStart, shows, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
     import T from "../../helpers/T.svelte"
@@ -30,23 +30,21 @@
         })
     }
 
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/getWeekInfo
     const firstWeekDayOptions = [
         { value: "1", label: translateText("weekday.1"), style: "text-transform: capitalize;" },
         { value: "7", label: translateText("weekday.7"), style: "text-transform: capitalize;" }
     ]
 
-    $: if (!$special.firstDayOfWeek) getPreferredFirstDay()
-    function getPreferredFirstDay() {
-        const localeInfo: any = new Intl.Locale(navigator.language || $language)
-        const firstDay = localeInfo.getWeekInfo().firstDay
-        if (firstDay) updateSpecial(firstDay.toString(), "firstDayOfWeek")
+    $: if (!$special.hamroSundayFirstDayMigrated) {
+        updateSpecial("7", "firstDayOfWeek")
+        updateSpecial(true, "hamroSundayFirstDayMigrated")
     }
+
 </script>
 
 {#if settingsOpened}
     <main style="flex: 1;overflow-x: hidden;padding: 10px;">
-        <MaterialDropdown label="calendar.first_day" options={firstWeekDayOptions} value={$special.firstDayOfWeek || "1"} on:change={(e) => updateSpecial(e.detail, "firstDayOfWeek")} />
+        <MaterialDropdown label="calendar.first_day" options={firstWeekDayOptions} value={$special.firstDayOfWeek || "7"} on:change={(e) => updateSpecial(e.detail, "firstDayOfWeek")} />
 
         {#if type === "event"}
             <!-- create show options -->

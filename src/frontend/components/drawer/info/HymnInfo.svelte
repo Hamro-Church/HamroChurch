@@ -19,8 +19,7 @@
               { label: "info.category", value: getHymnCategoryDisplay(hymn.categoryId, $language) },
               { label: "info.slides", value: hymn.slidesCount },
               { label: "info.words", value: hymn.wordCount },
-              { label: "hymns.number", value: formatHymnNumber(hymn.number, $language) },
-              { label: "hymns.source", value: hymn.sourcePage || hymn.rawDetails || null, type: hymn.sourcePage ? "url" : undefined }
+                            { label: "hymns.number", value: formatHymnNumber(hymn.number, $language) }
           ]
         : []
 </script>

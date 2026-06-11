@@ -14,7 +14,7 @@ import { ContentProviderRegistry } from "../contentProviders"
 import { ChurchAppsChat } from "../contentProviders/churchApps/ChurchAppsChat"
 import { deleteBackup, getBackups, restoreFiles } from "../data/backup"
 import { getLocalIPs } from "../data/bonjour"
-import { reseedHamroChurchData } from "../data/hamroMigration"
+import { ensureNepaliBiblePresent, reseedHamroChurchData } from "../data/hamroMigration"
 import { checkIfMediaDownloaded, downloadLessonsMedia, downloadMedia } from "../data/downloadMedia"
 import { importShow } from "../data/import"
 import { save } from "../data/save"
@@ -163,7 +163,10 @@ export const mainResponses: MainResponses = {
     [Main.GET_SIMILAR]: (data) => getSimularPaths(data),
     [Main.BUNDLE_MEDIA_FILES]: (data) => bundleMediaFiles(data),
     [Main.MEDIA_FOLDER_COPY]: (data) => addToMediaFolder(data.paths),
-    [Main.READ_BIBLES_FOLDER]: () => readBiblesFolder(),
+    [Main.READ_BIBLES_FOLDER]: async () => {
+        await ensureNepaliBiblePresent()
+        return readBiblesFolder()
+    },
     [Main.READ_HYMNS]: () => readHamroHymns(),
     [Main.SAVE_HYMN]: (data) => saveHamroHymn(data),
     [Main.RESET_HYMNS]: () => resetHamroData(),
@@ -298,9 +301,12 @@ function readBiblesFolder() {
 
 function readHamroHymns() {
     const root = getDataFolderRoot()
+    const primaryPath = path.join(root, "data", "nepali_hymns.json")
+    const primaryContent = readFile(primaryPath)
+    if (primaryContent) return { path: primaryPath, content: primaryContent }
+
     const candidates = [
         path.join(root, "nepali_hymns.json"),
-        path.join(root, "data", "nepali_hymns.json"),
         path.join(root, "imports", "nepali_hymns.json"),
         path.join(root, "imports", "Hymns", "nepali_hymns.json"),
         path.join(root, "imports", "Hamro Church", "nepali_hymns.json"),

@@ -156,7 +156,7 @@ export async function reseedHamroChurchData() {
     return true
 }
 
-async function ensureNepaliBiblePresent() {
+export async function ensureNepaliBiblePresent() {
     const scripturesFolder = getDataFolderPath("scriptures")
     const biblePath = path.join(scripturesFolder, `${NEPALI_BIBLE_FILE_NAME}.fsb`)
     if (doesPathExist(biblePath)) return true

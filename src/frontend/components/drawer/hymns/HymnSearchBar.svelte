@@ -60,7 +60,7 @@
             id="hymnSearchInput"
             bind:this={searchInput}
             type="text"
-            class="searchInput"
+            class="searchInput edit"
             bind:value
             on:input={onInput}
             on:focus={() => (isFocused = true)}

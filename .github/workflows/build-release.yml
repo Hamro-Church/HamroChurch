@@ -48,13 +48,19 @@ jobs:
         shell: pwsh
         run: |
           Set-Location R:\
-          npm install
+          npm ci --ignore-scripts
 
       - name: Restore the NDI SDK for grandiose
         shell: pwsh
         run: |
           Set-Location R:\
           node .\node_modules\grandiose\ndi.js
+
+      - name: Install Electron native dependencies
+        shell: pwsh
+        run: |
+          Set-Location R:\
+          npx electron-builder install-app-deps
 
       - name: Build production bundles
         shell: pwsh

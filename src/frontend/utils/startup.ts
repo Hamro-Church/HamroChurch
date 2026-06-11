@@ -1,4 +1,5 @@
 import { get } from "svelte/store"
+import { uid } from "uid"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import { OUTPUT, STARTUP } from "../../types/Channels"
 import { Main } from "../../types/IPC/Main"
@@ -6,7 +7,7 @@ import { checkStartupActions } from "../components/actions/actions"
 import { getTimeFromInterval } from "../components/helpers/time"
 import { requestMain, requestMainMultiple, sendMain, sendMainMultiple } from "../IPC/main"
 import { cameraManager } from "../media/cameraManager"
-import { activePopup, alertMessage, cachePath, cloudSyncData, contentProviderData, currentWindow, deviceId, driveKeys, isDev, loaded, loadedState, os, providerConnections, shows, special, version, windowState } from "../stores"
+import { activePopup, alertMessage, cachePath, cloudSyncData, contentProviderData, currentWindow, deviceId, drawerTabsData, driveKeys, isDev, loaded, loadedState, os, providerConnections, scriptures, shows, special, version, windowState } from "../stores"
 import { startTracking } from "./analytics"
 import { wait, waitUntilValueIsDefined } from "./common"
 import { getDefaultElements } from "./createData"
@@ -67,6 +68,7 @@ async function startupMain() {
     else autoOpenLastUsedProfile()
 
     storeSubscriber()
+    await ensureBundledNepaliBibleRegistered()
     remoteListen()
     checkStartupActions()
     startTracking()
@@ -90,6 +92,28 @@ async function startupMain() {
     // RAM MONITOR (every 10 minutes)
     setTimeout(() => checkRamUsage(), 10000)
     setInterval(() => checkRamUsage(), 600000)
+}
+
+async function ensureBundledNepaliBibleRegistered() {
+    const localBibles = (await requestMain(Main.READ_BIBLES_FOLDER)) || []
+    const nepaliBible = localBibles.find((bible) => bible.name === "Nepali Bible")
+    if (!nepaliBible) return
+
+    const existingEntry = Object.entries(get(scriptures)).find(([, value]: any) => value?.name?.replace(/\.fsb$/i, "") === nepaliBible.name)
+    if (existingEntry) {
+        drawerTabsData.update((tabs) => {
+            tabs.scripture = { ...tabs.scripture, activeSubTab: tabs.scripture?.activeSubTab || existingEntry[0] }
+            return tabs
+        })
+        return
+    }
+
+    const id = uid()
+    scriptures.update((current) => ({ ...current, [id]: { name: nepaliBible.name, id } }))
+    drawerTabsData.update((tabs) => {
+        tabs.scripture = { ...tabs.scripture, activeSubTab: tabs.scripture?.activeSubTab || id }
+        return tabs
+    })
 }
 
 async function checkRamUsage() {

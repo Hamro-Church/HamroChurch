@@ -5,6 +5,7 @@ import { stripMarkdown } from "json-bible/lib/markdown"
 import { get } from "svelte/store"
 import { uid } from "uid"
 import { sanitizeVerseText } from "../../../../common/scripture/sanitizeVerseText"
+import { localizeNumberText, shouldUseNepaliLocale } from "../../../../common/nepali"
 import { Main } from "../../../../types/IPC/Main"
 import type { BibleContent } from "../../../../types/Scripture"
 import type { Item, Show } from "../../../../types/Show"
@@ -12,7 +13,7 @@ import { ShowObj } from "../../../classes/Show"
 import { createCategory } from "../../../converters/importHelpers"
 import { requestMain, sendMain } from "../../../IPC/main"
 import { splitTextContentInHalf } from "../../../show/slides"
-import { activeProject, activeScripture, activeShow, drawerTabsData, media, notFound, outLocked, overlays, scriptureHistory, scriptures, scripturesCache, scriptureSettings, styles, templates } from "../../../stores"
+import { activeProject, activeScripture, activeShow, drawerTabsData, language, media, notFound, outLocked, overlays, scriptureHistory, scriptures, scripturesCache, scriptureSettings, styles, templates } from "../../../stores"
 import { trackScriptureUsage } from "../../../utils/analytics"
 import { TemplateHelper } from "../../../utils/templates"
 import { getKey } from "../../../values/keys"
@@ -945,7 +946,7 @@ export async function getScriptureSlidesNew(data: any, onlyOne = false, disableR
 
     function format(text: string) {
         if (disableReference) return ""
-        return text
+        return shouldUseNepaliLocale(get(language)) ? localizeNumberText(text, get(language)) : text
     }
 
     // metadata, uses the default "meta_" values
