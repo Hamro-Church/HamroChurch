@@ -202,21 +202,46 @@ function createMain() {
 }
 
 let isLoaded = false
+let revealMainWindowTimer: ReturnType<typeof setTimeout> | null = null
+
+function clearRevealMainWindowTimer() {
+    if (!revealMainWindowTimer) return
+    clearTimeout(revealMainWindowTimer)
+    revealMainWindowTimer = null
+}
+
+function revealMainWindowShell() {
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.show()
+    loadingWindow?.close()
+}
+
 function mainWindowLoaded() {
+    clearRevealMainWindowTimer()
     if (RECORD_STARTUP_TIME) console.timeEnd("Main window content")
     isLoaded = true
 
     mainWindowInitialize()
     if (config.get("maximized")) maximizeMain()
 
-    mainWindow?.show()
-    loadingWindow?.close()
+    revealMainWindowShell()
 
     if (RECORD_STARTUP_TIME) console.timeEnd("Full startup")
 }
 
 export async function loadWindowContent(window: BrowserWindow, type: null | "output" = null) {
     const mainOutput = type === null
+
+    if (mainOutput) {
+        // If startup data is slow, fall back to the in-app loader instead of leaving the splash up forever.
+        window.once("ready-to-show", () => {
+            revealMainWindowTimer = setTimeout(() => {
+                if (isLoaded) return
+                console.warn("Renderer shell is ready before LOADED; showing main window and closing splash.")
+                revealMainWindowShell()
+            }, 150)
+        })
+    }
 
     if (isProd) window.loadFile("public/index.html").catch(loadingFailed)
     else {
