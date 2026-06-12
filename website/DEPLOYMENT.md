@@ -64,3 +64,19 @@ After deployment, verify these URLs in a browser:
 - `https://hamrocms.com/support/`
 
 Also test the language toggle, mobile navigation, and every footer link after the first upload.
+
+## GitHub Secret Helper
+
+If you want to configure deploy secrets from a terminal instead of typing them in the GitHub web UI, this repo includes:
+
+```powershell
+Set-Location "C:\Hamro Church"
+
+# FTP
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\set-github-secrets.ps1 -WebsiteDeploy ftp
+
+# SSH / rsync
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\set-github-secrets.ps1 -WebsiteDeploy ssh
+```
+
+The script uses secure terminal prompts and writes the values to GitHub repository secrets through `gh secret set`.

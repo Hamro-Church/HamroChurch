@@ -107,6 +107,13 @@ git push --force origin --tags
 5. Save it in repository secrets as `HAMRO_CHURCH_RELEASE_TOKEN`.
 6. Update `.github/workflows/build-release.yml` so the release action uses that token.
 
+You can set the secret from your terminal with the helper script in this repo:
+
+```powershell
+Set-Location "C:\Hamro Church"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\set-github-secrets.ps1 -SetReleaseToken
+```
+
 Example workflow line:
 
 ```yaml
