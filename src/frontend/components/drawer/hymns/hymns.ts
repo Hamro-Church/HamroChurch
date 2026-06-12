@@ -157,6 +157,14 @@ function extractSongNumber(sourceRefs: string[] = [], categoryId: HymnCategoryId
             if (match?.[1]) return String(Number.parseInt(match[1], 10))
         }
 
+        // User-entered numbers from the add/edit hymn form are stored as manual:<prefix><number>.
+        for (const ref of sourceRefs) {
+            const [prefix, code = ""] = String(ref || "").split(":")
+            if (prefix?.toLowerCase() !== "manual") continue
+            const digits = code.match(/(\d+)\s*$/)
+            if (digits?.[1]) return String(Number.parseInt(digits[1], 10))
+        }
+
         if (categoryId === "new") {
             for (const ref of sourceRefs) {
                 const code = String(ref || "").split(":")[1] || ""

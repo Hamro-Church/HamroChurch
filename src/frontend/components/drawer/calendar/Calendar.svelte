@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { activeDays, activePopup, eventEdit, events, labelsDisabled, popupData, special } from "../../../stores"
+    import { activeDays, activePopup, eventEdit, events, labelsDisabled, language, popupData, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
+    import { BS_MONTHS, bsToGregorian, getBsDateParts, getBsMonthLength, shouldUseNepaliLocale, toNepaliDigits } from "../../../../common/nepali"
     import { actionData } from "../../actions/actionData"
     import { removeDuplicates, sortByTime } from "../../helpers/array"
     import Icon from "../../helpers/Icon.svelte"
@@ -17,6 +18,11 @@
 
     $: sundayFirstDay = ($special.firstDayOfWeek || "7") === "7"
 
+    // Display the calendar using the Nepali Bikram Sambat system when running in a Nepali locale.
+    $: useBs = shouldUseNepaliLocale($language)
+    $: bsView = useBs ? getBsDateParts(current) : null
+    const BS_WEEKDAYS_SHORT = ["आइत", "सोम", "मंगल", "बुध", "बिही", "शुक्र", "शनि"]
+
     let today = new Date()
     $: current = new Date(today.getFullYear(), today.getMonth())
     $: year = current.getFullYear()
@@ -25,9 +31,15 @@
     activeDays.set([copyDate(today).getTime()])
 
     let days: Date[][] = []
-    $: getDays(month, sundayFirstDay)
+    let bsInfo = new Map<number, { bsDay: number; inMonth: boolean }>()
+    $: getDays(month, sundayFirstDay, useBs, current)
 
-    function getDays(month: number, _updater: any) {
+    function getDays(month: number, _updater: any, _bs?: any, _current?: any) {
+        if (useBs) {
+            buildBsGrid()
+            return
+        }
+
         let daysList: any = []
         for (let i = 1; i <= getDaysInMonth(year, month); i++) daysList.push(new Date(year, month, i))
 
@@ -38,6 +50,59 @@
 
         while (daysList.length < 42) daysList.push(copyDate(daysList[daysList.length - 1], 1))
         while (daysList.length) days.push(daysList.splice(0, 7))
+    }
+
+    // Build a true Bikram Sambat month grid. Each cell stays a Gregorian Date so events,
+    // selection and "today" highlighting keep working; bsInfo holds the BS day label per cell.
+    function buildBsGrid() {
+        const parts = getBsDateParts(current)
+        const bsYear = parts.year
+        const bsMonth = parts.monthIndex + 1
+        const monthStart = bsToGregorian(bsYear, bsMonth, 1)
+        const monthLength = getBsMonthLength(bsYear, bsMonth)
+        const firstWeekday = monthStart.getDay()
+        const lead = sundayFirstDay ? firstWeekday : (firstWeekday + 6) % 7
+        const prevMonth = bsMonth === 1 ? 12 : bsMonth - 1
+        const prevYear = bsMonth === 1 ? bsYear - 1 : bsYear
+        const prevLength = lead > 0 ? getBsMonthLength(prevYear, prevMonth) : 0
+
+        const info = new Map<number, { bsDay: number; inMonth: boolean }>()
+        const cells: Date[] = []
+        for (let i = 0; i < 42; i++) {
+            const date = copyDate(monthStart, i - lead)
+            let bsDay: number
+            let inMonth: boolean
+            if (i < lead) {
+                bsDay = prevLength - lead + 1 + i
+                inMonth = false
+            } else if (i < lead + monthLength) {
+                bsDay = i - lead + 1
+                inMonth = true
+            } else {
+                bsDay = i - lead - monthLength + 1
+                inMonth = false
+            }
+            info.set(date.getTime(), { bsDay, inMonth })
+            cells.push(date)
+        }
+
+        bsInfo = info
+        days = []
+        while (cells.length) days.push(cells.splice(0, 7))
+    }
+
+    function shiftBsMonth(direction: number): Date {
+        const parts = getBsDateParts(current)
+        let bsMonth = parts.monthIndex + 1 + direction
+        let bsYear = parts.year
+        if (bsMonth > 12) {
+            bsMonth = 1
+            bsYear += 1
+        } else if (bsMonth < 1) {
+            bsMonth = 12
+            bsYear -= 1
+        }
+        return bsToGregorian(bsYear, bsMonth, 1)
     }
 
     function getDaysBefore(firstDay: number): Date[] {
@@ -51,7 +116,7 @@
     }
 
     let currentEvents: any[] = []
-    $: updateEvents($events, { month })
+    $: updateEvents($events, days)
 
     function updateEvents(events: any, _updater: any) {
         if (!days[0]) return
@@ -75,8 +140,13 @@
     $: {
         weekdays = []
         for (let i = 0; i < 7; i++) {
-            let index = sundayFirstDay ? (i === 0 ? 7 : i) : i + 1
-            weekdays.push(translateText("weekday." + index))
+            if (useBs) {
+                const weekdayIndex = sundayFirstDay ? i : (i + 1) % 7
+                weekdays.push(BS_WEEKDAYS_SHORT[weekdayIndex])
+            } else {
+                let index = sundayFirstDay ? (i === 0 ? 7 : i) : i + 1
+                weekdays.push(translateText("weekday." + index))
+            }
         }
     }
 
@@ -102,14 +172,14 @@
         let scrolledToBottom = calendarElem.scrollTop + 1 + calendarElem.offsetHeight >= calendarElem.scrollHeight
         if (checkScroll && !scrolledToBottom) return
 
-        current = new Date(year, month, 33)
+        current = useBs ? shiftBsMonth(1) : new Date(year, month, 33)
     }
 
     function previousMonth(checkScroll = false) {
         let scrolledToTop = calendarElem?.scrollTop === 0
         if (checkScroll && !scrolledToTop) return
 
-        current = new Date(year, month, 0)
+        current = useBs ? shiftBsMonth(-1) : new Date(year, month, 0)
     }
 
     function getEvents(day: Date, currentEvents: any[], type: string) {
@@ -187,7 +257,15 @@
         return type
     }
 
-    $: isPresentDay = !!$activeDays.length && isSameDay(new Date($activeDays[0]), today) && current.getMonth() === new Date($activeDays[0]).getMonth() && current.getFullYear() === new Date($activeDays[0]).getFullYear()
+    $: isPresentDay = !!$activeDays.length && isSameDay(new Date($activeDays[0]), today) && isSameMonthView(current, new Date($activeDays[0]))
+    function isSameMonthView(a: Date, b: Date) {
+        if (useBs) {
+            const partsA = getBsDateParts(a)
+            const partsB = getBsDateParts(b)
+            return partsA.year === partsB.year && partsA.monthIndex === partsB.monthIndex
+        }
+        return a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()
+    }
     function setToPresentDay() {
         current = today
         activeDays.set([copyDate(today).getTime()])
@@ -197,7 +275,7 @@
 <div class="calendar">
     <div class="week" style="flex: 1;">
         <div class="weekday" style="min-width: 25px;flex: 1;padding: 0;background-color: var(--primary-darker);font-size: 0.9em;opacity: 0.7;font-weight: 600;">
-            {current.getFullYear().toString().slice(2)}
+            {useBs && bsView ? toNepaliDigits(bsView.year) : current.getFullYear().toString().slice(2)}
         </div>
 
         {#each weekdays as weekday}
@@ -217,9 +295,9 @@
 
                 {#each week as day}
                     {@const dayEvents = getEvents(day, currentEvents, active || "event")}
-                    <div class="day" class:today={isSameDay(day, today)} class:faded={day.getMonth() !== month || day.getFullYear() !== year} class:active={$activeDays?.includes(copyDate(day).getTime())} on:mousedown={(e) => dayClick(e, day)} on:mousemove={(e) => move(e, day)}>
+                    <div class="day" class:today={isSameDay(day, today)} class:faded={useBs ? !bsInfo.get(day.getTime())?.inMonth : day.getMonth() !== month || day.getFullYear() !== year} class:active={$activeDays?.includes(copyDate(day).getTime())} on:mousedown={(e) => dayClick(e, day)} on:mousemove={(e) => move(e, day)}>
                         <!-- // isSameDay(day, new Date($activeDays[0]))} -->
-                        <span style="font-size: 1.5em;font-weight: 600;">{day.getDate()}</span>
+                        <span style="font-size: 1.5em;font-weight: 600;">{useBs ? toNepaliDigits(bsInfo.get(day.getTime())?.bsDay ?? day.getDate()) : day.getDate()}</span>
                         <span class="events">
                             {#each dayEvents as event, i}
                                 {@const eventIcon = getEventIcon(event.type, { actionId: event.action?.id })}
@@ -258,8 +336,12 @@
     <div class="divider"></div>
 
     <span style="opacity: 0.8;text-transform: capitalize;white-space: nowrap;align-self: center;padding: 0 10px;">
-        {translateText("month." + (current.getMonth() + 1))}
-        {current.getFullYear()}
+        {#if useBs && bsView}
+            {BS_MONTHS[bsView.monthIndex]} {toNepaliDigits(bsView.year)}
+        {:else}
+            {translateText("month." + (current.getMonth() + 1))}
+            {current.getFullYear()}
+        {/if}
     </span>
 </FloatingInputs>
 
