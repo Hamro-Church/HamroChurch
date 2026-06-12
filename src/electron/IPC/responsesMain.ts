@@ -169,6 +169,7 @@ export const mainResponses: MainResponses = {
     },
     [Main.READ_HYMNS]: () => readHamroHymns(),
     [Main.SAVE_HYMN]: (data) => saveHamroHymn(data),
+    [Main.SYNC_HYMN_SHOWS]: (data) => syncHamroHymnShows(data),
     [Main.RESET_HYMNS]: () => resetHamroData(),
     [Main.FILE_INFO]: (data) => getFileInfo(data),
     [Main.READ_FOLDER]: (data) => readFolderContent(data),
@@ -430,6 +431,94 @@ function saveHamroHymn(data: { id?: string; title: string; titleEn?: string; lyr
 
         writeFile(targetPath, JSON.stringify(payload, null, 2))
         return { success: true, path: targetPath, id: hymnId }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+}
+
+function syncHamroHymnShows(updates: { id?: string; title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }[] = []) {
+    const normalize = (value: any) => String(value || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim()
+    const normalizeCategory = (value: any) => {
+        const category = String(value || "").trim().toLowerCase()
+        if (category === "chorus") return "chorus"
+        if (category === "children") return "children"
+        if (category === "new") return "new"
+        return "bhajan"
+    }
+    const extractNumber = (sourceRefs: any[] = []) => {
+        for (const ref of sourceRefs) {
+            const match = String(ref || "").match(/:(?:[a-z]+)?(\d+)\s*$/i)
+            if (match?.[1]) return String(Number.parseInt(match[1], 10))
+        }
+        return ""
+    }
+    const getSongLyrics = (song: any) => {
+        const lyrics = normalize(song?.lyrics)
+        if (lyrics) return lyrics
+        if (Array.isArray(song?.slides)) return song.slides.map((slide: any) => normalize(slide)).filter(Boolean).join("\n\n")
+        return ""
+    }
+    const findExistingSong = (payload: any, data: { id?: string; title: string; number?: string }) => {
+        const editId = normalize(data.id)
+        const title = normalize(data.title)
+        const number = normalize(data.number)
+        const matches: { song: any; categoryId: "bhajan" | "chorus" | "children" | "new" }[] = []
+
+        for (const category of payload?.categories || []) {
+            const categoryId = normalizeCategory(category?.name)
+            for (const song of category?.songs || []) {
+                if (editId && String(song?.sourceKey || "") === editId) return { song, categoryId }
+                if (!title || normalize(song?.title) !== title) continue
+                const songNumber = normalize(extractNumber(song?.sourceRefs || []))
+                if (!number || songNumber === number) matches.push({ song, categoryId })
+            }
+        }
+
+        return matches.length === 1 ? matches[0] : null
+    }
+
+    try {
+        const existing = readHamroHymns()
+        const payload = existing.content ? JSON.parse(existing.content) : { categories: [] }
+        let updated = 0
+
+        for (const update of updates || []) {
+            const title = normalize(update?.title)
+            const lyrics = normalize(update?.lyrics)
+            if (!title || !lyrics) continue
+
+            const matched = findExistingSong(payload, update)
+            const currentSong = matched?.song
+            const nextCategoryId = normalizeCategory(update?.categoryId)
+
+            if (currentSong) {
+                const unchanged =
+                    normalize(currentSong?.title) === title &&
+                    normalize(currentSong?.titleEn) === normalize(update?.titleEn) &&
+                    normalize(currentSong?.authors) === normalize(update?.authors) &&
+                    normalize(extractNumber(currentSong?.sourceRefs || [])) === normalize(update?.number) &&
+                    matched?.categoryId === nextCategoryId &&
+                    getSongLyrics(currentSong) === lyrics
+
+                if (unchanged) continue
+            } else if (!normalize(update?.id)) {
+                continue
+            }
+
+            const result = saveHamroHymn({
+                id: matched?.song?.sourceKey || update.id,
+                title,
+                titleEn: normalize(update?.titleEn) || undefined,
+                lyrics,
+                categoryId: nextCategoryId,
+                number: normalize(update?.number) || undefined,
+                authors: normalize(update?.authors) || undefined
+            })
+
+            if (result?.success) updated += 1
+        }
+
+        return { success: true, updated }
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
     }

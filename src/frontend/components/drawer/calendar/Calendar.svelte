@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { activeDays, activePopup, eventEdit, events, labelsDisabled, language, popupData, special } from "../../../stores"
+    import { activeDays, activePopup, eventEdit, events, labelsDisabled, popupData, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
-    import { BS_MONTHS, bsToGregorian, getBsDateParts, getBsMonthLength, shouldUseNepaliLocale, toNepaliDigits } from "../../../../common/nepali"
+    import { BS_MONTHS, bsToGregorian, getBsDateParts, getBsMonthLength, toNepaliDigits } from "../../../../common/nepali"
     import { actionData } from "../../actions/actionData"
     import { removeDuplicates, sortByTime } from "../../helpers/array"
     import Icon from "../../helpers/Icon.svelte"
@@ -18,9 +18,9 @@
 
     $: sundayFirstDay = ($special.firstDayOfWeek || "7") === "7"
 
-    // Display the calendar using the Nepali Bikram Sambat system when running in a Nepali locale.
-    $: useBs = shouldUseNepaliLocale($language)
-    $: bsView = useBs ? getBsDateParts(current) : null
+    // The Hamro Church calendar should always use Bikram Sambat.
+    const useBs = true
+    $: bsView = getBsDateParts(current)
     const BS_WEEKDAYS_SHORT = ["आइत", "सोम", "मंगल", "बुध", "बिही", "शुक्र", "शनि"]
 
     let today = new Date()

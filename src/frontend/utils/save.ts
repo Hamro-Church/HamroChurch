@@ -113,6 +113,77 @@ import { socketDisconnect, syncWithCloud } from "./cloudSync"
 import { newToast, setStatus, startAutosave } from "./common"
 import { syncDrive } from "./drive"
 
+type HymnSyncCategoryId = "bhajan" | "chorus" | "children" | "new"
+type HymnSyncPayload = {
+    id?: string
+    title: string
+    titleEn?: string
+    lyrics: string
+    categoryId: HymnSyncCategoryId
+    number?: string
+    authors?: string
+}
+
+function normalizeHymnText(value: any) {
+    return String(value || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim()
+}
+
+function getHymnSlideText(slide: any) {
+    return (slide?.items || [])
+        .filter((item: any) => item?.type === "text")
+        .flatMap((item: any) => item?.lines || [])
+        .map((line: any) => (line?.text || []).map((text: any) => String(text?.value || "")).join(""))
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+}
+
+function getHymnLyricsFromShow(show: any) {
+    const firstLayoutId = Object.keys(show?.layouts || {})[0]
+    const slideRefs = firstLayoutId ? show?.layouts?.[firstLayoutId]?.slides || [] : []
+    const verses = slideRefs.map((ref: any) => getHymnSlideText(show?.slides?.[ref?.id])).filter(Boolean)
+    return verses.join("\n\n").trim()
+}
+
+function getHymnCategoryFromShow(show: any): HymnSyncCategoryId {
+    const raw = String(show?.quickAccess?.metadata?.hymnCategoryId || "").trim().toLowerCase()
+    if (raw === "bhajan" || raw === "chorus" || raw === "children" || raw === "new") return raw
+    return "bhajan"
+}
+
+function getHymnSyncPayloads(showsData: Shows): HymnSyncPayload[] {
+    const seen = new Set<string>()
+
+    return Object.values(showsData || {}).flatMap((show: any) => {
+        if (show?.origin !== "hamro-hymns") return []
+
+        const title = normalizeHymnText(show?.meta?.title || show?.name || "")
+        const lyrics = getHymnLyricsFromShow(show)
+        if (!title || !lyrics) return []
+
+        const id = normalizeHymnText(show?.quickAccess?.metadata?.hymnSourceKey || "")
+        const number = normalizeHymnText(show?.quickAccess?.number || show?.meta?.number || "")
+        const dedupeKey = id || `${title}|${number}`
+        if (seen.has(dedupeKey)) return []
+        seen.add(dedupeKey)
+
+        const titleEn = normalizeHymnText(show?.quickAccess?.metadata?.hymnTitleEn || "")
+        const authors = normalizeHymnText(show?.meta?.author || "")
+
+        return [
+            {
+                id: id || undefined,
+                title,
+                titleEn: titleEn || undefined,
+                lyrics,
+                categoryId: getHymnCategoryFromShow(show),
+                number: number || undefined,
+                authors: authors || undefined
+            }
+        ]
+    })
+}
+
 export function save(closeWhenFinished = false, customTriggers: SaveActions = {}) {
     startAutosave() // reset auto save timer
 
@@ -225,7 +296,11 @@ export function save(closeWhenFinished = false, customTriggers: SaveActions = {}
 
     if (customTriggers.backup) newToast("settings.backup_started")
     // trigger toast before saving
-    setTimeout(() => sendMain(Main.SAVE, saveData))
+    const hymnSyncPayloads = getHymnSyncPayloads(saveData.showsCache || {})
+    setTimeout(() => {
+        if (hymnSyncPayloads.length) sendMain(Main.SYNC_HYMN_SHOWS, hymnSyncPayloads)
+        sendMain(Main.SAVE, saveData)
+    })
 }
 
 export function getSyncedSettings(): { [key in SaveListSyncedSettings]: any } {

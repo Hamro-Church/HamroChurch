@@ -136,6 +136,7 @@ export enum Main {
     READ_BIBLES_FOLDER = "READ_BIBLES_FOLDER",
     READ_HYMNS = "READ_HYMNS",
     SAVE_HYMN = "SAVE_HYMN",
+    SYNC_HYMN_SHOWS = "SYNC_HYMN_SHOWS",
     RESET_HYMNS = "RESET_HYMNS",
     FILE_INFO = "FILE_INFO",
     READ_FOLDER = "READ_FOLDER",
@@ -236,6 +237,7 @@ export interface MainSendPayloads {
     [Main.MEDIA_FOLDER_COPY]: { paths: string[] }
     [Main.READ_HYMNS]?: undefined
     [Main.SAVE_HYMN]: { id?: string; title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }
+    [Main.SYNC_HYMN_SHOWS]: { id?: string; title: string; titleEn?: string; lyrics: string; categoryId: "bhajan" | "chorus" | "children" | "new"; number?: string; authors?: string }[]
     [Main.RESET_HYMNS]?: undefined
     [Main.FILE_INFO]: string
     [Main.READ_FOLDER]: { path: string | string[]; depth?: number; generateThumbnails?: boolean; captureFolderContent?: boolean }
@@ -339,6 +341,7 @@ export interface MainReturnPayloads {
     [Main.READ_BIBLES_FOLDER]: Promise<{ path: string; name: string }[]>
     [Main.READ_HYMNS]: { path: string | null; content: string | null }
     [Main.SAVE_HYMN]: { success: boolean; path?: string; id?: string; error?: string }
+    [Main.SYNC_HYMN_SHOWS]: void
     [Main.RESET_HYMNS]: Promise<{ success: boolean; error?: string }>
     [Main.FILE_INFO]: { path: string; stat: Stats; extension: string; folder: boolean } | null
     [Main.READ_FOLDER]: Promise<{ [key: string]: FileFolder }>

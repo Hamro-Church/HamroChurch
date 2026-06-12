@@ -456,6 +456,11 @@ function buildHymnShow(hymn: HymnRecord): Show {
     show.name = checkName(titleWithNumber)
     show.origin = "hamro-hymns"
     show.quickAccess = hymn.number ? { number: hymn.number } : {}
+    show.quickAccess.metadata = {
+        hymnSourceKey: hymn.sourceKey,
+        hymnCategoryId: hymn.categoryId,
+        hymnTitleEn: hymn.titleEn || ""
+    }
     show.meta = {
         title: hymn.title,
         number: hymn.number || undefined,
