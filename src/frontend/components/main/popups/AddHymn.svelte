@@ -66,12 +66,12 @@
 </script>
 
 <div class="form">
-    <MaterialTextInput label="hymns.form_title" value={title} on:change={(e) => (title = e.detail)} autofocus />
-    <MaterialTextInput label="hymns.form_transliteration" value={titleEn} on:change={(e) => (titleEn = e.detail)} />
+    <MaterialTextInput label="hymns.form_title" value={title} on:input={(e) => (title = e.detail)} autofocus />
+    <MaterialTextInput label="hymns.form_transliteration" value={titleEn} on:input={(e) => (titleEn = e.detail)} />
     <MaterialDropdown label="hymns.form_category" options={categoryOptions} value={categoryId} on:change={(e) => (categoryId = e.detail)} />
-    <MaterialTextInput label="hymns.form_number" value={number} on:change={(e) => (number = e.detail)} />
-    <MaterialTextInput label="hymns.form_author" value={authors} on:change={(e) => (authors = e.detail)} />
-    <MaterialTextarea label="hymns.form_lyrics" value={lyrics} rows={10} on:change={(e) => (lyrics = e.detail)} />
+    <MaterialTextInput label="hymns.form_number" value={number} on:input={(e) => (number = e.detail)} />
+    <MaterialTextInput label="hymns.form_author" value={authors} on:input={(e) => (authors = e.detail)} />
+    <MaterialTextarea label="hymns.form_lyrics" value={lyrics} rows={10} on:input={(e) => (lyrics = e.detail)} />
 
     {#if errorMessage}
         <p class="error">{errorMessage}</p>

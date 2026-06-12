@@ -192,6 +192,7 @@
     }
 
     let data: { [key: string]: Data } = {}
+    let referenceSearchField = ""
 
     $: currentBibleData = data[previewBibleId] || null
     $: currentBible = currentBibleData?.bibleData?.data || null
@@ -299,13 +300,25 @@
         return { base, suffix }
     }
 
+    function isNepaliBibleActive() {
+        return previewBibleData?.name === "Nepali Bible" || previewBibleData?.metadata?.abbreviation === "NNRV"
+    }
+
     function getDisplayBookName(book: { name?: string; number?: number | string } | undefined, index: number) {
         const customName = $customScriptureBooks[previewBibleId]?.[index]
         const englishName = defaultBibleBookNames[Number(book?.number) || index + 1] || ""
 
+        if (isNepaliBibleActive()) return customName || book?.name || englishName
         if (shouldUseNepaliLocale($language)) return customName || book?.name || englishName
         return englishName || customName || book?.name || ""
     }
+
+    function referenceInputChanged(e: any) {
+        referenceSearchField = e.target?.value || ""
+        searchValue = referenceSearchField
+    }
+
+    $: if (!referenceSearchField && searchValue) referenceSearchField = searchValue
 
     function getLocalizedReferenceRange() {
         return localizeNumberText(joinRange(sortScriptureSelection(activeReference.verses[0] || [])), $language)
@@ -1049,12 +1062,15 @@
             <!-- LIST/GRID MODE -->
             <div class={$scriptureMode === "grid" ? "grid" : "list"}>
                 <div class="books" bind:this={booksScrollElem} class:center={!books?.length}>
+                    <div class="bookSearchBar">
+                        <TextInput placeholder={translateText("scripture.search")} value={referenceSearchField} on:input={referenceInputChanged} style="width: 100%;border-radius: 14px;" />
+                    </div>
                     {#if books?.length}
                         {#key books}
                             {#each books as book, i}
                                 {@const id = book.number?.toString()}
                                 {@const color = booksData[i]?.category?.color || ""}
-                                {@const name = $scriptureMode === "grid" ? booksData[i]?.abbreviation || getDisplayBookName(book, i) : getDisplayBookName(book, i)}
+                                {@const name = $scriptureMode === "grid" && !isNepaliBibleActive() ? booksData[i]?.abbreviation || getDisplayBookName(book, i) : getDisplayBookName(book, i)}
                                 {@const isActive = activeReference.book?.toString() === id}
 
                                 <span {id} class={isApi || isCollection || !Object.values(defaultBibleBookNames).includes(book.name) ? "" : "context #bible_book_local"} class:isActive style="{color ? `border-${$scriptureMode === 'grid' ? 'bottom' : 'left'}: 2px solid ${color};` : ''}{$scriptureMode === 'grid' ? 'border-radius: 2px;' : ''}" on:click={() => openBook(id)} role="none">
@@ -1381,6 +1397,15 @@
         flex-direction: row !important;
         width: 100%;
     }
+
+    .bookSearchBar {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 0.35rem 0.45rem 0.45rem;
+        background: var(--primary-darker);
+    }
+
     .list .content {
         display: flex;
         flex-direction: row;

@@ -1,3 +1,4 @@
+import { app } from "electron"
 import fs from "fs"
 import path from "path"
 import { uid } from "uid"
@@ -85,6 +86,35 @@ const NEPALI_BOOK_NAMES: Record<number, string> = {
     66: "प्रकाश"
 }
 
+function getBundledDataRoots() {
+    const appPath = (() => {
+        try {
+            return app.getAppPath()
+        } catch {
+            return ""
+        }
+    })()
+
+    return [path.join(appPath, "bundled-data"), path.join(process.resourcesPath || "", "bundled-data"), path.join(process.cwd(), "bundled-data")].filter(Boolean)
+}
+
+function getBundledDataRoot() {
+    return getBundledDataRoots().find((candidate) => doesPathExist(candidate)) || ""
+}
+
+function shouldRebuildBundledNepaliBible(filePath: string) {
+    if (!doesPathExist(filePath)) return true
+
+    try {
+        const parsed = JSON.parse(fs.readFileSync(filePath, { encoding: "utf-8" }))
+        const bible = Array.isArray(parsed) ? parsed[1] : parsed
+        const firstBookName = String(bible?.books?.[0]?.name || "").trim()
+        return firstBookName !== NEPALI_BOOK_NAMES[1]
+    } catch {
+        return true
+    }
+}
+
 export async function runHamroChurchMigration() {
     await seedBundledChurchData()
 
@@ -120,8 +150,7 @@ function resolveExistingFile(candidates: string[]) {
 
 async function seedBundledChurchData() {
     const dataFolder = createFolder(path.join(getDataFolderRoot(), "data"))
-    const candidateRoots = [path.join(process.resourcesPath || "", "bundled-data"), path.join(process.cwd(), "bundled-data")].filter(Boolean)
-    const sourceRoot = candidateRoots.find((candidate) => doesPathExist(candidate))
+    const sourceRoot = getBundledDataRoot()
     if (!sourceRoot) return false
 
     // Seed only when the file is missing so the user's added/edited hymns are never overwritten on restart.
@@ -135,8 +164,7 @@ async function seedBundledChurchData() {
 // Restore the original bundled hymns and Nepali Bible, discarding any user additions/edits.
 export async function reseedHamroChurchData() {
     const dataFolder = createFolder(path.join(getDataFolderRoot(), "data"))
-    const candidateRoots = [path.join(process.resourcesPath || "", "bundled-data"), path.join(process.cwd(), "bundled-data")].filter(Boolean)
-    const sourceRoot = candidateRoots.find((candidate) => doesPathExist(candidate))
+    const sourceRoot = getBundledDataRoot()
 
     if (sourceRoot) {
         await copyIfPresent(path.join(sourceRoot, "nepali_hymns.json"), path.join(dataFolder, "nepali_hymns.json"))
@@ -159,10 +187,10 @@ export async function reseedHamroChurchData() {
 export async function ensureNepaliBiblePresent() {
     const scripturesFolder = getDataFolderPath("scriptures")
     const biblePath = path.join(scripturesFolder, `${NEPALI_BIBLE_FILE_NAME}.fsb`)
-    if (doesPathExist(biblePath)) return true
+    if (doesPathExist(biblePath) && !shouldRebuildBundledNepaliBible(biblePath)) return true
 
     // 1) Prefer the bundled SQL dump: it needs no native module and works on every fresh install.
-    const sqlSources = [path.join(getDataFolderRoot(), "data", "nnrv_bible.sql"), path.join(process.resourcesPath || "", "bundled-data", "nnrv_bible.sql"), path.join(process.cwd(), "bundled-data", "nnrv_bible.sql")]
+    const sqlSources = [path.join(getDataFolderRoot(), "data", "nnrv_bible.sql"), ...getBundledDataRoots().map((root) => path.join(root, "nnrv_bible.sql"))]
     const sqlSource = sqlSources.find((candidate) => doesPathExist(candidate))
     if (sqlSource) {
         const bibleFromSql = buildNepaliBibleFromSqlText(sqlSource)

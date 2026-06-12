@@ -300,10 +300,47 @@ function readBiblesFolder() {
 }
 
 function readHamroHymns() {
+    const excludedSourceKeys = new Set(["song1928", "song1929", "song1930"])
+
+    const normalizePayload = (content: string, filePath: string) => {
+        try {
+            const payload = JSON.parse(content)
+            if (!Array.isArray(payload?.categories)) return content
+
+            let changed = false
+            if (payload.version !== 2) {
+                payload.version = 2
+                changed = true
+            }
+            if (payload.language !== "ne") {
+                payload.language = "ne"
+                changed = true
+            }
+            if (payload.source?.name !== "Hamro Church" || payload.source?.url !== "https://hamrocms.com") {
+                payload.source = { name: "Hamro Church", url: "https://hamrocms.com" }
+                changed = true
+            }
+
+            payload.categories = payload.categories.map((category: any) => {
+                if (!Array.isArray(category?.songs)) return category
+                const songs = category.songs.filter((song: any) => !excludedSourceKeys.has(String(song?.sourceKey || "")))
+                if (songs.length !== category.songs.length) changed = true
+                return { ...category, songs }
+            })
+
+            if (!changed) return content
+            const nextContent = JSON.stringify(payload, null, 2)
+            writeFile(filePath, nextContent)
+            return nextContent
+        } catch {
+            return content
+        }
+    }
+
     const root = getDataFolderRoot()
     const primaryPath = path.join(root, "data", "nepali_hymns.json")
     const primaryContent = readFile(primaryPath)
-    if (primaryContent) return { path: primaryPath, content: primaryContent }
+    if (primaryContent) return { path: primaryPath, content: normalizePayload(primaryContent, primaryPath) }
 
     const candidates = [
         path.join(root, "nepali_hymns.json"),
@@ -316,7 +353,7 @@ function readHamroHymns() {
 
     for (const candidate of candidates) {
         const content = readFile(candidate)
-        if (content) return { path: candidate, content }
+        if (content) return { path: candidate, content: normalizePayload(content, candidate) }
     }
 
     return { path: null, content: null }
@@ -337,6 +374,9 @@ function saveHamroHymn(data: { id?: string; title: string; titleEn?: string; lyr
         }
 
         if (!Array.isArray(payload.categories)) payload.categories = []
+        payload.version = 2
+        payload.language = "ne"
+        payload.source = { name: "Hamro Church", url: "https://hamrocms.com" }
 
         const categoryNameMap = {
             bhajan: "Bhajan",
@@ -362,7 +402,8 @@ function saveHamroHymn(data: { id?: string; title: string; titleEn?: string; lyr
             .filter(Boolean)
 
         const trimmedNumber = String(data.number || "").trim()
-        const sourceRefs = trimmedNumber ? [`manual:s${trimmedNumber}`] : []
+        const manualPrefix = data.categoryId === "chorus" ? "c" : data.categoryId === "children" ? "ch" : data.categoryId === "new" ? "n" : "s"
+        const sourceRefs = trimmedNumber ? [`manual:${manualPrefix}${trimmedNumber}`] : []
         const songRecord = {
             sourceKey: hymnId,
             sourcePage: "",

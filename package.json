@@ -15,7 +15,7 @@
     "author": "Hamro Church",
     "license": "GPL-3.0",
     "scripts": {
-        "postinstall": "electron-builder install-app-deps",
+        "postinstall": "npm run rebuild:native",
         "---DEVELOPMENT---": "",
         "start": "node scripts/start.js",
         "start:old": "npx cross-env NODE_ENV=development npm-run-all -p -r build:frontend:dev start:electron",
@@ -28,6 +28,9 @@
         "start:electron:run": "electron .",
         "---PRODUCTION---": "",
         "prebuild": "cross-env NODE_ENV=production node scripts/preBuild.js",
+        "prepare:grandiose-ndi": "node scripts/prepareGrandioseNdi.js",
+        "install:app-deps": "electron-builder install-app-deps",
+        "rebuild:native": "npm-run-all -s prepare:grandiose-ndi install:app-deps",
         "build": "cross-env NODE_ENV=production npm-run-all -s build:frontend:prod build:servers:prod build:electron:prod",
         "postbuild": "cross-env NODE_ENV=production node scripts/postBuild.js",
         "build:frontend:prod": "cross-env NODE_ENV=production vite build",

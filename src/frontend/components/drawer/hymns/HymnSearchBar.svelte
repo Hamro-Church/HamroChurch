@@ -82,8 +82,8 @@
     .searchbar {
         display: flex;
         flex-direction: column;
-        gap: 0.55rem;
-        padding: 0.85rem 1rem 0.7rem;
+        gap: 0.4rem;
+        padding: 0.65rem 0.9rem 0.55rem;
         border-bottom: 1px solid var(--primary-lighter);
         background: linear-gradient(180deg, color-mix(in srgb, var(--primary-darkest) 94%, var(--secondary) 6%) 0%, var(--primary-darker) 100%);
     }
@@ -102,12 +102,12 @@
     .searchInput {
         width: 100%;
         border: 1px solid color-mix(in srgb, var(--secondary) 25%, var(--primary-lighter) 75%);
-        border-radius: 14px;
+        border-radius: 12px;
         background: var(--primary-darkest);
         color: var(--text);
-        padding: 0.9rem 2.8rem 0.9rem 0.95rem;
+        padding: 0.7rem 2.35rem 0.7rem 0.85rem;
         font: inherit;
-        font-size: 1rem;
+        font-size: 0.95rem;
         outline: none;
     }
 

@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location 'C:\Hamro Church'
 
 git pull
-npm install
+npm install --ignore-scripts
 
 subst X: /d 2>$null
 subst X: 'C:\Hamro Church'
@@ -11,7 +11,7 @@ subst X: 'C:\Hamro Church'
 Push-Location 'X:\'
 
 try {
-    node .\node_modules\grandiose\ndi.js
+    npm run rebuild:native
     npm run build
     npx electron-builder --config config/building/electron-builder.yaml --publish never
 }

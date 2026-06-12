@@ -81,6 +81,8 @@ export type HymnSortField = "number" | "name"
 export const hymnSort = writable<{ field: HymnSortField | null; direction: "asc" | "desc" }>({ field: null, direction: "asc" })
 export const hymnEditTarget = writable<HymnRecord | null>(null)
 
+const EXCLUDED_HYMN_SOURCE_KEYS = new Set(["song1928", "song1929", "song1930"])
+
 export function toggleHymnSort(field: HymnSortField) {
     hymnSort.update((current) => {
         if (current.field !== field) return { field, direction: "asc" as const }
@@ -138,14 +140,33 @@ function mapCategoryId(rawCategory: string) {
     return "bhajan"
 }
 
-function extractSongNumber(sourceRefs: string[] = [], sourceKey = "") {
-    for (const ref of sourceRefs) {
-        const match = String(ref).match(/s(\d+)/i)
-        if (match?.[1]) return match[1]
+function extractSongNumber(sourceRefs: string[] = [], categoryId: HymnCategoryId = "bhajan") {
+    const categoryPatternMap: Partial<Record<Exclude<HymnCategoryId, "all">, RegExp>> = {
+        bhajan: /^(?:[a-z]+)?s(\d+)$/i,
+        chorus: /^(?:[a-z]+)?c(\d+)$/i,
+        children: /^(?:[a-z]+)?ch(\d+)$/i
     }
 
-    const sourceKeyMatch = String(sourceKey).match(/(\d+)/)
-    return sourceKeyMatch?.[1] || ""
+    const categoryPattern = categoryPatternMap[categoryId as Exclude<HymnCategoryId, "all">]
+    if (categoryPattern) {
+        for (const ref of sourceRefs) {
+            const code = String(ref || "").split(":")[1] || ""
+            const match = code.match(categoryPattern)
+            if (match?.[1]) return String(Number.parseInt(match[1], 10))
+        }
+    }
+
+    for (const ref of sourceRefs) {
+        const code = String(ref || "").split(":")[1] || ""
+        const match = code.match(/^(?:[a-z]+)?(\d+)$/i)
+        if (match?.[1]) return String(Number.parseInt(match[1], 10))
+    }
+
+    return ""
+}
+
+function shouldExcludeHymn(song: RawHymnSong) {
+    return EXCLUDED_HYMN_SOURCE_KEYS.has(String(song.sourceKey || ""))
 }
 
 function deriveVerses(song: RawHymnSong) {
@@ -294,6 +315,8 @@ export async function loadHymns() {
 
         ;(parsed.categories || []).forEach((category) => {
             ;(category.songs || []).forEach((song, index) => {
+                if (shouldExcludeHymn(song)) return
+
                 const title = normalizeWhitespace(String(song.title || ""))
                 const titleEn = normalizeWhitespace(String(song.titleEn || ""))
                 const verses = deriveVerses(song)
@@ -301,7 +324,7 @@ export async function loadHymns() {
                 if (!title || !lyrics || !verses.length) return
 
                 const categoryId = mapCategoryId(song.category || category.name || "")
-                const number = extractSongNumber(song.sourceRefs || [], song.sourceKey || "")
+                const number = extractSongNumber(song.sourceRefs || [], categoryId) || String(index + 1)
                 const firstLine = verses[0]?.split("\n").map((line) => line.trim()).find(Boolean) || title
                 const transliteration = normalizeWhitespace(titleEn || romanizeNepali(title))
                 const slidesCount = verses.length

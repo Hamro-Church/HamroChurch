@@ -42,17 +42,11 @@ jobs:
         run: |
           npm ci --ignore-scripts
 
-      - name: Restore the NDI SDK for grandiose
+      - name: Prepare NDI SDK and rebuild native dependencies
         shell: pwsh
         working-directory: repo
         run: |
-          node .\node_modules\grandiose\ndi.js
-
-      - name: Install Electron native dependencies
-        shell: pwsh
-        working-directory: repo
-        run: |
-          npx electron-builder install-app-deps
+          npm run rebuild:native
 
       - name: Build production bundles
         shell: pwsh

@@ -411,13 +411,13 @@ const ROMAN_CONSONANTS: Record<string, string> = {
 }
 
 const ROMAN_INDEPENDENT_VOWELS: Record<string, string> = {
-    "अ": "a", "आ": "aa", "इ": "i", "ई": "ee", "उ": "u", "ऊ": "oo",
+    "अ": "a", "आ": "aa", "इ": "i", "ई": "i", "उ": "u", "ऊ": "u",
     "ऋ": "ri", "ॠ": "ri", "ए": "e", "ऐ": "ai", "ओ": "o", "औ": "au",
     "ऍ": "e", "ऑ": "o"
 }
 
 const ROMAN_MATRAS: Record<string, string> = {
-    "ा": "aa", "ि": "i", "ी": "ee", "ु": "u", "ू": "oo", "ृ": "ri",
+    "ा": "aa", "ि": "i", "ी": "i", "ु": "u", "ू": "u", "ृ": "ri",
     "ॄ": "ri", "े": "e", "ै": "ai", "ो": "o", "ौ": "au", "ॅ": "e", "ॉ": "o"
 }
 
@@ -431,37 +431,27 @@ const ROMAN_DIGITS: Record<string, string> = {
 export function romanizeNepali(text: string): string {
     if (!text) return ""
 
-    const HAL = "्"
+    const INHERENT_VOWEL = "\u0001"
     const chars = Array.from(text)
     let result = ""
 
-    for (let index = 0; index < chars.length; index++) {
-        const char = chars[index]
+    const stripTrailingInherentVowel = (value: string) => (value.endsWith(INHERENT_VOWEL) ? value.slice(0, -1) : value)
 
+    for (const char of chars) {
         if (ROMAN_CONSONANTS[char] !== undefined) {
-            result += ROMAN_CONSONANTS[char]
-            const next = chars[index + 1]
-
-            if (next === HAL) {
-                index++ // conjunct: drop inherent vowel, skip the halant
-                continue
-            }
-            if (next !== undefined && ROMAN_MATRAS[next] !== undefined) {
-                result += ROMAN_MATRAS[next]
-                index++
-                continue
-            }
-
-            result += "a" // inherent schwa
+            result += ROMAN_CONSONANTS[char] + INHERENT_VOWEL
             continue
         }
-
         if (ROMAN_INDEPENDENT_VOWELS[char] !== undefined) {
             result += ROMAN_INDEPENDENT_VOWELS[char]
             continue
         }
         if (ROMAN_MATRAS[char] !== undefined) {
-            result += ROMAN_MATRAS[char]
+            result = stripTrailingInherentVowel(result) + ROMAN_MATRAS[char]
+            continue
+        }
+        if (char === HALANT) {
+            result = stripTrailingInherentVowel(result)
             continue
         }
         if (char === "ं" || char === "ँ") {
@@ -472,16 +462,11 @@ export function romanizeNepali(text: string): string {
             result += "h"
             continue
         }
-        if (char === HAL) continue
         if (ROMAN_DIGITS[char] !== undefined) {
             result += ROMAN_DIGITS[char]
             continue
         }
-        if (char === "।" || char === "॥") {
-            result += " "
-            continue
-        }
-        if (/\s/.test(char)) {
+        if (char === "।" || char === "॥" || /\s/.test(char)) {
             result += " "
             continue
         }
@@ -494,5 +479,6 @@ export function romanizeNepali(text: string): string {
         if (char.charCodeAt(0) < 128) result += char
     }
 
-    return result.replace(/\s+/g, " ").trim()
+    const marker = new RegExp(`${INHERENT_VOWEL}(?=$|[^A-Za-z0-9])`, "gu")
+    return result.replace(marker, "").replace(/\u0001/g, "a").replace(/\s+/g, " ").trim()
 }
