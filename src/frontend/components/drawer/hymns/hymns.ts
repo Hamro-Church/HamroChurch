@@ -144,22 +144,28 @@ function extractSongNumber(sourceRefs: string[] = [], categoryId: HymnCategoryId
     const categoryPatternMap: Partial<Record<Exclude<HymnCategoryId, "all">, RegExp>> = {
         bhajan: /^(?:[a-z]+)?s(\d+)$/i,
         chorus: /^(?:[a-z]+)?c(\d+)$/i,
-        children: /^(?:[a-z]+)?ch(\d+)$/i
+        children: /^(?:[a-z]+)?ch(\d+)$/i,
+        new: /^(?:[a-z]+)?(?:nw|np|ms)(\d+)$/i
     }
 
     const categoryPattern = categoryPatternMap[categoryId as Exclude<HymnCategoryId, "all">]
     if (categoryPattern) {
         for (const ref of sourceRefs) {
-            const code = String(ref || "").split(":")[1] || ""
+            const [prefix, code = ""] = String(ref || "").split(":")
+            if (prefix?.toLowerCase() !== "kb") continue
             const match = code.match(categoryPattern)
             if (match?.[1]) return String(Number.parseInt(match[1], 10))
         }
-    }
 
-    for (const ref of sourceRefs) {
-        const code = String(ref || "").split(":")[1] || ""
-        const match = code.match(/^(?:[a-z]+)?(\d+)$/i)
-        if (match?.[1]) return String(Number.parseInt(match[1], 10))
+        if (categoryId === "new") {
+            for (const ref of sourceRefs) {
+                const code = String(ref || "").split(":")[1] || ""
+                const match = code.match(categoryPattern)
+                if (match?.[1]) return String(Number.parseInt(match[1], 10))
+            }
+        }
+
+        return ""
     }
 
     return ""
@@ -324,7 +330,7 @@ export async function loadHymns() {
                 if (!title || !lyrics || !verses.length) return
 
                 const categoryId = mapCategoryId(song.category || category.name || "")
-                const number = extractSongNumber(song.sourceRefs || [], categoryId) || String(index + 1)
+                const number = extractSongNumber(song.sourceRefs || [], categoryId)
                 const firstLine = verses[0]?.split("\n").map((line) => line.trim()).find(Boolean) || title
                 const transliteration = normalizeWhitespace(titleEn || romanizeNepali(title))
                 const slidesCount = verses.length
